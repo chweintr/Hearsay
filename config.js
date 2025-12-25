@@ -83,10 +83,10 @@ export const characters = {
         role: 'House Detective',
         agentId: 'xxx',  // TODO: Simli agent ID
         faceId: 'xxx',   // TODO: Simli face ID
-        idleToActive: [],  // TODO: need transition video
-        activeToIdle: [],  // TODO: need departure video
+        idleToActive: ['assets/videos/Marisol_Walkup.mp4'],
+        activeToIdle: ['assets/videos/Marisol_Walkup.mp4'],  // TODO: need departure video
         knockSound: 'assets/sounds/knock.mp3',
-        previewVideo: null  // No preview yet
+        previewVideo: 'assets/videos/Marisol_Walkup.mp4'
     },
     
     // Future characters for ROOM 412:

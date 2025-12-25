@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEARSAY</title>
+    <title>Room 412 — HEARSAY</title>
+    <meta name="description" content="Stories through the door. A HEARSAY experience.">
+    
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,18 +63,24 @@
 
     <!-- Character selector (dev/demo mode - will be replaced with narrative triggers) -->
     <div id="character-selector" class="dev-panel">
-        <h3>HEARSAY</h3>
-        <p class="dev-subtitle">The Hotel</p>
+        <h3 id="experience-title">ROOM 412</h3>
+        <p class="dev-subtitle" id="experience-tagline">Stories through the door</p>
         <div id="character-buttons"></div>
         <button id="btn-dismiss" class="btn-dismiss" disabled>Send Away</button>
+        <p class="platform-credit">A <span class="platform-name">HEARSAY</span> experience</p>
     </div>
 
     <!-- Module imports -->
     <script type="module">
-        import { config, characters } from './config.js';
+        import { config, characters, platform, experience } from './config.js';
         import { StateMachine } from './state-machine.js';
         import { Compositor } from './compositor.js';
         import { SimliIntegration } from './simli-integration.js';
+
+        // Update page title and meta
+        document.title = `${experience.name} — ${platform.name}`;
+        document.getElementById('experience-title').textContent = experience.name.toUpperCase();
+        document.getElementById('experience-tagline').textContent = experience.tagline;
 
         // Initialize core systems
         const stateMachine = new StateMachine();
@@ -124,9 +132,9 @@
         });
 
         // Expose for debugging
-        window.hearsay = { stateMachine, compositor, simli, config, characters };
-        console.log('HEARSAY initialized. Access via window.hearsay');
+        window.hearsay = { stateMachine, compositor, simli, config, characters, platform, experience };
+        console.log(`${platform.name} — ${experience.name} initialized`);
+        console.log('Access via window.hearsay');
     </script>
 </body>
 </html>
-

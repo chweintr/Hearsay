@@ -1,10 +1,41 @@
 # HEARSAY
 
-> Conversational narrative experiences through AI-driven talking heads.
+> Unreliable narrators, reliable conversations.
 
-**Current Experience: THE HOTEL**
+A platform for conversational narrative experiences delivered through AI-driven talking heads.
+
+---
+
+## Platform Structure
+
+```
+HEARSAY (platform)
+├── Room 412        ← Current experience (peephole conceit)
+├── The Gallery     ← Future (portrait frames)
+├── The Waiting Room← Future (intake window)
+├── The Séance      ← Future (dark mirror)
+└── ...
+```
+
+---
+
+## Room 412
+
+**"Stories through the door"**
 
 The owner died six months ago. People keep knocking on your door. You talk to them through the peephole. You decide what to believe.
+
+### Visual Conceit
+POV through brass hotel door peephole:
+- Fisheye barrel distortion
+- Circular frame, heavy vignette
+- Dark baroque palette (Thom Browne, Delicatessen, Tom Waits)
+- The feeling of 2am, uncertain whether to open
+
+### Characters
+- **Wire** — Night Porter. Been here longer than the building.
+- **Marisol** — House Detective. Hired for unclear purposes.
+- *More in development...*
 
 ---
 
@@ -18,51 +49,36 @@ The owner died six months ago. People keep knocking on your door. You talk to th
    ```
 4. **Deploy**
 
-Railway will:
-- Detect Python via `requirements.txt`
-- Run the FastAPI server via `Procfile`
-- Serve frontend files automatically
-
 ---
 
 ## Project Structure
 
 ```
 hearsay/
-├── index.html              # Main app, video layers, Simli mount
+├── index.html              # Room 412 experience
 ├── styles.css              # Baroque peephole styling
-├── config.js               # Character definitions
-├── state-machine.js        # State: idle → transitioning → active
+├── config.js               # Platform, experience, character definitions
+├── state-machine.js        # idle → transitioning → active flow
 ├── compositor.js           # Video layer orchestration
 ├── simli-integration.js    # Simli widget lifecycle
+├── requirements.txt        # Python dependencies (root for Railway)
 ├── Procfile                # Railway start command
 ├── railway.json            # Railway configuration
+├── nixpacks.toml           # Nixpacks build config
 ├── assets/
 │   ├── videos/             # Transition videos, idle loops
 │   ├── sounds/             # Knock sounds, ambient audio
-│   └── images/             # Door overlay PNG (optional)
+│   └── images/             # Room_412.png, door overlays
 └── backend/
     ├── server.py           # FastAPI token server
-    └── requirements.txt    # Python dependencies
+    └── requirements.txt    # Python deps (backup)
 ```
-
----
-
-## Characters (THE HOTEL)
-
-### Wire (Wiremu Tūhoe)
-Night porter. Been here longer than the building, according to him. Speaks in racing idioms and slippery time references.
-
-### Marisol Vance
-House detective. Hired for unclear purposes. Keeps records on everyone, including Wire.
-
-*More characters in development.*
 
 ---
 
 ## Adding Characters
 
-1. **Create Simli agent** at [simli.com](https://simli.com) with character prompt
+1. **Create Simli agent** at [simli.com](https://simli.com)
 2. **Add to `config.js`:**
    ```javascript
    newcharacter: {
@@ -75,7 +91,6 @@ House detective. Hired for unclear purposes. Keeps records on everyone, includin
        knockSound: 'assets/sounds/knock.mp3'
    }
    ```
-3. **Add transition videos** to `assets/videos/`
 
 ---
 
@@ -83,12 +98,6 @@ House detective. Hired for unclear purposes. Keeps records on everyone, includin
 
 ```
 idle → transitioning-in → active → transitioning-out → idle
-  │                                        │
-  │  Knock sound                           │
-  │  Transition video plays                │
-  │  Simli widget created                  │
-  │                                        │
-  └────────────────────────────────────────┘
 ```
 
 ---
@@ -99,7 +108,7 @@ idle → transitioning-in → active → transitioning-out → idle
 |----------|--------|-------------|
 | `/api/simli-token` | POST | Generate Simli session token |
 | `/api/health` | GET | Health check for Railway |
-| `/` | GET | Serve frontend |
+| `/` | GET | Serve Room 412 experience |
 
 ---
 
@@ -107,33 +116,13 @@ idle → transitioning-in → active → transitioning-out → idle
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SIMLI_API_KEY` | Yes | Simli API key from dashboard |
+| `SIMLI_API_KEY` | Yes | Simli API key |
 | `PORT` | Auto | Set by Railway |
 
 ---
 
-## Visual Conceit
+## Debug Console
 
-POV through brass hotel door peephole:
-- Fisheye barrel distortion (CSS approximation + optional video bake)
-- Circular frame, heavy vignette
-- Dark baroque palette (Thom Browne, Delicatessen, Tom Waits)
-- The feeling of 2am, uncertain whether to open
-
----
-
-## Development Notes
-
-- **No backend state** between characters (user is the state)
-- **System prompts** live in Simli dashboard, not frontend
-- **Hint system** triggers by conversation count (future)
-- **Interstitials** (envelopes, texts, footage) planned for v2
-
----
-
-## Debug
-
-Open browser console:
 ```javascript
 window.hearsay.stateMachine.getState()
 window.hearsay.stateMachine.summonCharacter('wire')
@@ -142,7 +131,17 @@ window.hearsay.stateMachine.dismissCharacter()
 
 ---
 
-## License
+## Future Experiences
 
-Private project. Not for distribution.
+Each experience uses the same Simli infrastructure with different visual conceits:
 
+| Experience | Visual Frame |
+|------------|--------------|
+| Room 412 | Peephole, fisheye, brass ring |
+| The Gallery | Gilt frames, faces in paintings |
+| The Waiting Room | Intake window, plexiglass |
+| The Séance | Dark mirror, scrying screen |
+
+---
+
+*Private project. Not for distribution.*

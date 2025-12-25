@@ -1,21 +1,41 @@
 /**
  * HEARSAY Configuration
  * ─────────────────────────────────────────────────────────────────────────────
- * Experience: THE HOTEL
+ * Platform: HEARSAY - "Unreliable narrators, reliable conversations"
+ * Experience: ROOM 412 - "Stories through the door"
  * 
  * Characters appear at your door. You decide what to believe.
  * System prompts are configured in Simli agent dashboard, not here.
  */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PLATFORM CONFIG
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const platform = {
+    name: 'HEARSAY',
+    tagline: 'Unreliable narrators, reliable conversations',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPERIENCE CONFIG (Room 412)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const experience = {
+    id: 'room-412',
+    name: 'Room 412',
+    tagline: 'Stories through the door',
+    landingImage: 'assets/images/Room_412.png',
+    visualConceit: 'peephole',  // peephole | portrait | window | mirror | etc.
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APP CONFIG
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const config = {
-    // Backend endpoint for Simli token generation (Railway will set this)
+    // Backend endpoint for Simli token generation
     tokenEndpoint: '/api/simli-token',
-    
-    // Experience metadata
-    experience: {
-        name: 'The Hotel',
-        tagline: 'The owner died six months ago. People keep knocking.',
-    },
     
     // Audio settings
     audio: {
@@ -32,10 +52,10 @@ export const config = {
     }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CHARACTER DEFINITIONS (Room 412)
+// ─────────────────────────────────────────────────────────────────────────────
 /**
- * Character Definitions
- * ─────────────────────────────────────────────────────────────────────────────
- * 
  * Each character:
  *   - name: Display name
  *   - role: Their position at the hotel
@@ -67,62 +87,34 @@ export const characters = {
         knockSound: 'assets/sounds/knock_firm.mp3'
     },
     
-    // Future characters for THE HOTEL:
+    // Future characters for ROOM 412:
     //
     // evelyn: {
     //     name: 'Evelyn',
-    //     role: 'Long-term Guest, Evening Wear',
-    //     agentId: 'xxx',
-    //     faceId: 'xxx',
-    //     idleToActive: ['assets/videos/idle_to_evelyn.mp4'],
-    //     activeToIdle: ['assets/videos/evelyn_to_idle.mp4'],
-    //     knockSound: 'assets/sounds/knock_timid.mp3'
+    //     role: 'Long-term Guest',
+    //     ...
     // },
     //
     // thursday: {
     //     name: 'The Thursday Guest',
     //     role: 'Weekly Visitor',
-    //     agentId: 'xxx',
-    //     faceId: 'xxx',
-    //     // Multiple transition options for variety
-    //     idleToActive: [
-    //         'assets/videos/idle_to_thursday_1.mp4',
-    //         'assets/videos/idle_to_thursday_2.mp4'
-    //     ],
-    //     activeToIdle: ['assets/videos/thursday_to_idle.mp4'],
     //     knockSound: null  // He doesn't knock
     // },
-    //
-    // assistant: {
-    //     name: 'Ms. Park',
-    //     role: "Owner's Former Assistant",
-    //     agentId: 'xxx',
-    //     faceId: 'xxx',
-    //     idleToActive: ['assets/videos/idle_to_park.mp4'],
-    //     activeToIdle: ['assets/videos/park_to_idle.mp4'],
-    //     knockSound: 'assets/sounds/knock_businesslike.mp3'
-    // }
 };
 
-/**
- * Helper: Get random item from array
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function randomFrom(arr) {
     if (!arr || arr.length === 0) return null;
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/**
- * Helper: Get character by key
- */
 export function getCharacter(key) {
     return characters[key] || null;
 }
 
-/**
- * Helper: Get all character keys
- */
 export function getCharacterKeys() {
     return Object.keys(characters);
 }
-

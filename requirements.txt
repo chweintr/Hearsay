@@ -1,0 +1,7 @@
+# HEARSAY Backend Dependencies
+# Root-level for Railway auto-detection
+
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+httpx>=0.25.0
+

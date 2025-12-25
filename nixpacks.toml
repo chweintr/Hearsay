@@ -1,12 +1,5 @@
 # Nixpacks configuration for Railway
-# Ensures proper Python setup
-
-[phases.setup]
-nixPkgs = ["python311", "gcc"]
-
-[phases.install]
-cmds = ["pip install -r backend/requirements.txt"]
+# Let nixpacks auto-detect Python from requirements.txt
 
 [start]
 cmd = "cd backend && python -m uvicorn server:app --host 0.0.0.0 --port ${PORT:-8000}"
-

@@ -1,0 +1,541 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEARSAY - The Hotel
+   Baroque peephole experience. Paranoid intimacy. 2am, uncertain whether to open.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Dark Baroque Palette - Thom Browne Fall 2012, Delicatessen, Tom Waits */
+:root {
+    /* Shadows and depths */
+    --shadow-deep: #050403;
+    --shadow-mid: #0a0806;
+    --shadow-soft: #151210;
+    
+    /* Brass and metal */
+    --brass-highlight: #d4af37;
+    --brass-mid: #c9a227;
+    --brass-dark: #8b6914;
+    --brass-oxidized: #5c4a1f;
+    
+    /* Wood and warmth */
+    --wood-dark: #1a120c;
+    --wood-mid: #2d1f14;
+    --wood-light: #4a3423;
+    --wood-grain: #3d2a1c;
+    
+    /* Accent */
+    --parchment: #d4c5a9;
+    --parchment-dark: #a69778;
+    --blood-dried: #4a1a1a;
+    --blood-fresh: #6b1c1c;
+    --exit-red: #8b0000;
+    
+    /* Hallway ambience */
+    --sconce-warm: rgba(255, 200, 120, 0.15);
+    --hallway-carpet: #3d2929;
+    
+    /* Sizing */
+    --peephole-size: min(65vh, 65vw);
+    
+    /* Z-index layers */
+    --z-background: 0;
+    --z-transition: 10;
+    --z-simli: 20;
+    --z-peephole: 30;
+    --z-door-overlay: 40;
+    --z-vignette: 50;
+    --z-ui: 100;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--shadow-deep);
+}
+
+body {
+    font-family: 'EB Garamond', 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    color: var(--parchment);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN CONTAINER - The door, from inside
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#hearsay-app {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Door surface - dark wood grain */
+    background: 
+        /* Wood grain texture */
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.1) 2px,
+            rgba(0, 0, 0, 0.1) 4px
+        ),
+        /* Base wood color */
+        radial-gradient(ellipse at 30% 20%, var(--wood-mid) 0%, var(--wood-dark) 50%, var(--shadow-deep) 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIDEO LAYERS - Stacked within the peephole viewport
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.video-layer {
+    position: absolute;
+    width: var(--peephole-size);
+    height: var(--peephole-size);
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-layer video {
+    width: 120%;
+    height: 120%;
+    object-fit: cover;
+    /* Slight fisheye barrel distortion approximation */
+    transform: scale(1.05);
+}
+
+.video-layer.hidden {
+    visibility: hidden;
+    opacity: 0;
+}
+
+#layer-background {
+    z-index: var(--z-background);
+    /* Fallback if no video: dim hallway suggestion */
+    background: radial-gradient(
+        ellipse at center,
+        var(--hallway-carpet) 0%,
+        var(--shadow-mid) 60%,
+        var(--shadow-deep) 100%
+    );
+}
+
+#layer-transition {
+    z-index: var(--z-transition);
+    transition: opacity 0.15s ease;
+}
+
+#layer-simli {
+    z-index: var(--z-simli);
+    transition: opacity 0.4s ease;
+}
+
+#simli-mount {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#simli-mount simli-widget {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PEEPHOLE FRAME - Brass ring, glass distortion, edge vignette
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#layer-peephole {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-peephole);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#peephole-mask {
+    position: relative;
+    width: calc(var(--peephole-size) + 50px);
+    height: calc(var(--peephole-size) + 50px);
+    border-radius: 50%;
+    
+    /* Brass ring - layered gradients for depth */
+    background: 
+        /* Inner bevel highlight */
+        radial-gradient(circle at center, 
+            transparent 0%,
+            transparent calc(50% - 30px),
+            var(--brass-oxidized) calc(50% - 30px),
+            var(--brass-dark) calc(50% - 25px),
+            var(--brass-mid) calc(50% - 18px),
+            var(--brass-highlight) calc(50% - 15px),
+            var(--brass-mid) calc(50% - 12px),
+            var(--brass-dark) calc(50% - 8px),
+            var(--wood-dark) calc(50% - 5px),
+            var(--shadow-deep) calc(50% - 5px)
+        );
+    
+    /* Deep shadow around peephole */
+    box-shadow: 
+        inset 0 0 80px 30px rgba(0, 0, 0, 0.9),
+        inset 0 0 30px 10px rgba(0, 0, 0, 0.6),
+        0 0 150px 80px rgba(0, 0, 0, 0.95);
+}
+
+/* Glass distortion - fisheye edge darkening */
+#peephole-glass {
+    position: absolute;
+    inset: 25px;
+    border-radius: 50%;
+    
+    /* Edge distortion vignette */
+    background: radial-gradient(
+        circle at center,
+        transparent 55%,
+        rgba(0, 0, 0, 0.08) 65%,
+        rgba(0, 0, 0, 0.2) 75%,
+        rgba(0, 0, 0, 0.45) 85%,
+        rgba(0, 0, 0, 0.7) 92%,
+        rgba(0, 0, 0, 0.9) 100%
+    );
+    
+    pointer-events: none;
+}
+
+/* Glass reflection - subtle highlight */
+#peephole-mask::after {
+    content: '';
+    position: absolute;
+    width: 25%;
+    height: 12%;
+    top: 18%;
+    left: 22%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.05) 40%,
+        transparent 70%
+    );
+    border-radius: 50%;
+    transform: rotate(-25deg);
+}
+
+/* Secondary reflection */
+#peephole-mask::before {
+    content: '';
+    position: absolute;
+    width: 8%;
+    height: 6%;
+    top: 25%;
+    left: 55%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(255, 255, 255, 0.08) 0%,
+        transparent 70%
+    );
+    border-radius: 50%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DOOR OVERLAY - Additional brass hardware PNG (optional)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#layer-door-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-door-overlay);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#door-ring {
+    max-width: calc(var(--peephole-size) + 120px);
+    max-height: calc(var(--peephole-size) + 120px);
+    opacity: 0; /* Hidden until asset loaded */
+    transition: opacity 0.5s ease;
+}
+
+#door-ring.loaded {
+    opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIGNETTE - Heavy, paranoid, the darkness of your room
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#vignette-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-vignette);
+    pointer-events: none;
+    
+    background: radial-gradient(
+        ellipse at center,
+        transparent 25%,
+        rgba(5, 4, 3, 0.3) 45%,
+        rgba(5, 4, 3, 0.6) 60%,
+        rgba(5, 4, 3, 0.85) 75%,
+        rgba(5, 4, 3, 0.95) 90%,
+        rgb(5, 4, 3) 100%
+    );
+}
+
+.overlay-layer {
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DEV PANEL - Character selector (will be replaced with narrative triggers)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.dev-panel {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-ui);
+    
+    background: linear-gradient(
+        180deg,
+        rgba(45, 31, 20, 0.92) 0%,
+        rgba(26, 18, 12, 0.96) 100%
+    );
+    border: 1px solid var(--brass-oxidized);
+    border-top-color: var(--brass-dark);
+    border-radius: 6px;
+    padding: 1.25rem 2rem 1.5rem;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    
+    box-shadow: 
+        0 15px 50px rgba(0, 0, 0, 0.7),
+        0 5px 20px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(201, 162, 39, 0.15);
+}
+
+.dev-panel h3 {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--brass-mid);
+    margin: 0;
+}
+
+.dev-panel .dev-subtitle {
+    font-size: 0.65rem;
+    font-style: italic;
+    letter-spacing: 0.15em;
+    color: var(--parchment-dark);
+    margin: -0.25rem 0 0.5rem;
+    opacity: 0.7;
+}
+
+#character-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.character-btn {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.55rem 1.4rem;
+    
+    background: linear-gradient(
+        180deg,
+        var(--wood-light) 0%,
+        var(--wood-mid) 50%,
+        var(--wood-dark) 100%
+    );
+    border: 1px solid var(--brass-oxidized);
+    border-radius: 3px;
+    color: var(--parchment);
+    
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.character-btn:hover:not(:disabled) {
+    background: linear-gradient(
+        180deg,
+        var(--brass-dark) 0%,
+        var(--wood-light) 50%,
+        var(--wood-mid) 100%
+    );
+    border-color: var(--brass-mid);
+    transform: translateY(-1px);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.character-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.character-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-dismiss {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 0.45rem 1.8rem;
+    margin-top: 0.25rem;
+    
+    background: linear-gradient(
+        180deg,
+        var(--blood-fresh) 0%,
+        var(--blood-dried) 100%
+    );
+    border: 1px solid #5a2020;
+    border-radius: 3px;
+    color: var(--parchment);
+    
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-dismiss:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.btn-dismiss:not(:disabled):hover {
+    background: linear-gradient(
+        180deg,
+        #7a2525 0%,
+        var(--blood-fresh) 100%
+    );
+    border-color: #8a3535;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATE ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Subtle brass glow when character is present */
+@keyframes brass-pulse {
+    0%, 100% {
+        box-shadow: 
+            inset 0 0 80px 30px rgba(0, 0, 0, 0.9),
+            inset 0 0 30px 10px rgba(0, 0, 0, 0.6),
+            0 0 150px 80px rgba(0, 0, 0, 0.95),
+            0 0 20px 5px rgba(201, 162, 39, 0.1);
+    }
+    50% {
+        box-shadow: 
+            inset 0 0 80px 30px rgba(0, 0, 0, 0.9),
+            inset 0 0 30px 10px rgba(0, 0, 0, 0.6),
+            0 0 150px 80px rgba(0, 0, 0, 0.95),
+            0 0 30px 8px rgba(201, 162, 39, 0.2);
+    }
+}
+
+.simli-active #peephole-mask {
+    animation: brass-pulse 3s ease-in-out infinite;
+}
+
+/* Loading spinner */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading #layer-simli::after {
+    content: '';
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border: 2px solid transparent;
+    border-top-color: var(--brass-mid);
+    border-right-color: var(--brass-dark);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+    :root {
+        --peephole-size: 80vw;
+    }
+    
+    .dev-panel {
+        bottom: 1rem;
+        padding: 1rem 1.25rem;
+        max-width: 90vw;
+    }
+    
+    .character-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-height: 500px) {
+    :root {
+        --peephole-size: 70vh;
+    }
+    
+    .dev-panel {
+        bottom: 0.5rem;
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY - Reduced motion
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+    .simli-active #peephole-mask {
+        animation: none;
+    }
+    
+    .loading #layer-simli::after {
+        animation: none;
+        opacity: 0.5;
+    }
+    
+    .video-layer,
+    .character-btn,
+    .btn-dismiss {
+        transition: none;
+    }
+}
+

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEARSAY</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <!-- Simli Widget SDK -->
+    <script src="https://cdn.simli.com/widget/simli-widget.umd.min.js" defer></script>
+</head>
+<body>
+    <div id="hearsay-app">
+        <!-- Layer 0: Background / Ambient (hallway through peephole when idle) -->
+        <div id="layer-background" class="video-layer">
+            <video id="video-idle" loop muted playsinline>
+                <source src="assets/videos/idle_loop.mp4" type="video/mp4">
+            </video>
+        </div>
+
+        <!-- Layer 1: Transition Videos (knock, approach, departure) -->
+        <div id="layer-transition" class="video-layer hidden">
+            <video id="video-transition" playsinline>
+                <!-- Source set dynamically by compositor -->
+            </video>
+        </div>
+
+        <!-- Layer 2: Simli Widget Container (AI talking head) -->
+        <div id="layer-simli" class="video-layer hidden">
+            <div id="simli-mount">
+                <!-- <simli-widget> injected here dynamically -->
+            </div>
+        </div>
+
+        <!-- Layer 3: Peephole Frame - brass ring, fisheye edge distortion -->
+        <div id="layer-peephole" class="overlay-layer">
+            <div id="peephole-mask">
+                <div id="peephole-glass"></div>
+            </div>
+        </div>
+
+        <!-- Layer 4: Door texture overlay (wood grain, brass hardware) -->
+        <div id="layer-door-overlay" class="overlay-layer">
+            <img src="assets/images/door_ring.png" alt="" id="door-ring">
+        </div>
+
+        <!-- Vignette - heavy, paranoid, 2am feeling -->
+        <div id="vignette-overlay"></div>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="audio-knock" preload="auto">
+        <source src="assets/sounds/knock.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="audio-ambient" loop preload="auto">
+        <source src="assets/sounds/ambient.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Character selector (dev/demo mode - will be replaced with narrative triggers) -->
+    <div id="character-selector" class="dev-panel">
+        <h3>HEARSAY</h3>
+        <p class="dev-subtitle">The Hotel</p>
+        <div id="character-buttons"></div>
+        <button id="btn-dismiss" class="btn-dismiss" disabled>Send Away</button>
+    </div>
+
+    <!-- Module imports -->
+    <script type="module">
+        import { config, characters } from './config.js';
+        import { StateMachine } from './state-machine.js';
+        import { Compositor } from './compositor.js';
+        import { SimliIntegration } from './simli-integration.js';
+
+        // Initialize core systems
+        const stateMachine = new StateMachine();
+        const compositor = new Compositor(stateMachine);
+        const simli = new SimliIntegration(stateMachine, config);
+
+        // Generate character buttons (dev mode)
+        const buttonContainer = document.getElementById('character-buttons');
+        const dismissBtn = document.getElementById('btn-dismiss');
+
+        Object.entries(characters).forEach(([key, character]) => {
+            const btn = document.createElement('button');
+            btn.className = 'character-btn';
+            btn.textContent = character.name;
+            btn.dataset.character = key;
+            btn.addEventListener('click', () => {
+                if (stateMachine.currentState === 'idle') {
+                    stateMachine.summonCharacter(key);
+                }
+            });
+            buttonContainer.appendChild(btn);
+        });
+
+        // Dismiss button - "send away" the visitor
+        dismissBtn.addEventListener('click', () => {
+            if (stateMachine.currentState === 'active') {
+                stateMachine.dismissCharacter();
+            }
+        });
+
+        // Update UI based on state
+        stateMachine.on('stateChange', ({ to }) => {
+            dismissBtn.disabled = to !== 'active';
+            
+            // Disable character buttons during conversation
+            const buttons = buttonContainer.querySelectorAll('.character-btn');
+            buttons.forEach(btn => {
+                btn.disabled = to !== 'idle';
+            });
+        });
+
+        // Try to start idle loop (may be blocked by autoplay policy)
+        document.getElementById('video-idle').play().catch(e => {
+            console.log('Autoplay blocked, waiting for user interaction');
+            document.body.addEventListener('click', () => {
+                document.getElementById('video-idle').play();
+                document.getElementById('audio-ambient').play();
+            }, { once: true });
+        });
+
+        // Expose for debugging
+        window.hearsay = { stateMachine, compositor, simli, config, characters };
+        console.log('HEARSAY initialized. Access via window.hearsay');
+    </script>
+</body>
+</html>
+

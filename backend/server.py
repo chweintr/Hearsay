@@ -44,10 +44,23 @@ PORT = int(os.getenv("PORT", 8000))
 # Path to frontend files (parent directory of backend/)
 FRONTEND_DIR = Path(__file__).parent.parent
 
+print(f"[HEARSAY] Frontend directory: {FRONTEND_DIR}")
+print(f"[HEARSAY] Frontend directory exists: {FRONTEND_DIR.exists()}")
+
 
 # ─────────────────────────────────────────────────────────────────────────────
-# API ENDPOINTS
+# API ENDPOINTS (defined BEFORE static file mounting)
 # ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/api/health")
+async def health_check():
+    """Health check for Railway monitoring - must respond quickly"""
+    return {
+        "status": "ok",
+        "service": "hearsay",
+        "simli_configured": bool(SIMLI_API_KEY)
+    }
+
 
 @app.post("/api/simli-token")
 async def get_simli_token(
@@ -110,16 +123,6 @@ async def get_simli_token(
         )
 
 
-@app.get("/api/health")
-async def health_check():
-    """Health check for Railway monitoring"""
-    return {
-        "status": "ok",
-        "service": "hearsay",
-        "simli_configured": bool(SIMLI_API_KEY)
-    }
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # STATIC FILE SERVING
 # ─────────────────────────────────────────────────────────────────────────────
@@ -132,14 +135,18 @@ async def serve_index():
         return FileResponse(index_path)
     return JSONResponse(
         status_code=404,
-        content={"error": "index.html not found"}
+        content={"error": "index.html not found", "path": str(index_path)}
     )
 
 
-# Serve assets folder
+# Serve assets folder - only mount if it exists and has content
 assets_dir = FRONTEND_DIR / "assets"
-if assets_dir.exists():
-    app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+if assets_dir.exists() and assets_dir.is_dir():
+    try:
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+        print(f"[HEARSAY] Mounted assets from {assets_dir}")
+    except Exception as e:
+        print(f"[HEARSAY] Could not mount assets: {e}")
 
 
 # Serve root-level static files (JS, CSS)
@@ -147,12 +154,16 @@ if assets_dir.exists():
 async def serve_static(filename: str):
     """Serve static files from frontend directory"""
     
+    # Skip API routes (shouldn't reach here but just in case)
+    if filename.startswith("api/"):
+        raise HTTPException(status_code=404, detail="Not found")
+    
     # Security: prevent directory traversal
     if ".." in filename:
         raise HTTPException(status_code=400, detail="Invalid path")
     
     # Only serve known file types
-    allowed_extensions = {'.js', '.css', '.html', '.json', '.ico', '.png', '.jpg', '.mp4', '.mp3', '.webm'}
+    allowed_extensions = {'.js', '.css', '.html', '.json', '.ico', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.mp3', '.webm', '.wav', '.ogg'}
     ext = Path(filename).suffix.lower()
     
     if ext not in allowed_extensions:
@@ -167,20 +178,29 @@ async def serve_static(filename: str):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# STARTUP EVENT
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.on_event("startup")
+async def startup_event():
+    """Log startup info"""
+    print(f"[HEARSAY] ════════════════════════════════════════")
+    print(f"[HEARSAY] Server starting on port {PORT}")
+    print(f"[HEARSAY] Simli API key configured: {bool(SIMLI_API_KEY)}")
+    print(f"[HEARSAY] Frontend directory: {FRONTEND_DIR}")
+    print(f"[HEARSAY] Index exists: {(FRONTEND_DIR / 'index.html').exists()}")
+    print(f"[HEARSAY] ════════════════════════════════════════")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import uvicorn
-    
-    print(f"[HEARSAY] Starting server on port {PORT}")
-    print(f"[HEARSAY] Simli API key configured: {bool(SIMLI_API_KEY)}")
-    print(f"[HEARSAY] Frontend directory: {FRONTEND_DIR}")
-    
     uvicorn.run(
         app,
         host="0.0.0.0",
         port=PORT,
         log_level="info"
     )
-

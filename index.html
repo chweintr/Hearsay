@@ -9,48 +9,87 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Simli Widget SDK -->
     <script src="https://cdn.simli.com/widget/simli-widget.umd.min.js" defer></script>
 </head>
 <body>
-    <div id="hearsay-app">
-        <!-- Layer 0: Background / Ambient (hallway through peephole when idle) -->
-        <div id="layer-background" class="video-layer">
-            <video id="video-idle" loop muted playsinline>
-                <source src="assets/videos/idle_loop.mp4" type="video/mp4">
-            </video>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         LANDING PAGE - Character Selection
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="landing-page" class="page active">
+        <div class="landing-background">
+            <img src="assets/images/The_Knock.png" alt="" class="landing-bg-image">
+            <div class="landing-overlay"></div>
         </div>
-
-        <!-- Layer 1: Transition Videos (knock, approach, departure) -->
-        <div id="layer-transition" class="video-layer hidden">
-            <video id="video-transition" playsinline>
-                <!-- Source set dynamically by compositor -->
-            </video>
-        </div>
-
-        <!-- Layer 2: Simli Widget Container (AI talking head) -->
-        <div id="layer-simli" class="video-layer hidden">
-            <div id="simli-mount">
-                <!-- <simli-widget> injected here dynamically -->
+        
+        <div class="landing-content">
+            <header class="landing-header">
+                <p class="platform-label">A HEARSAY Experience</p>
+                <h1 class="experience-title">ROOM 412</h1>
+                <p class="experience-tagline">Stories through the door</p>
+            </header>
+            
+            <div class="character-instruction">
+                <p>Choose who answers</p>
+            </div>
+            
+            <div class="character-gallery" id="character-gallery">
+                <!-- Characters injected by JS -->
             </div>
         </div>
+    </div>
 
-        <!-- Layer 3: Peephole Frame - brass ring, fisheye edge distortion -->
-        <div id="layer-peephole" class="overlay-layer">
-            <div id="peephole-mask">
-                <div id="peephole-glass"></div>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         EXPERIENCE PAGE - Peephole Interface
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="experience-page" class="page">
+        <div id="hearsay-app">
+            <!-- Layer 0: Background / Ambient -->
+            <div id="layer-background" class="video-layer">
+                <video id="video-idle" loop muted playsinline>
+                    <source src="assets/videos/idle_loop.mp4" type="video/mp4">
+                </video>
             </div>
+
+            <!-- Layer 1: Transition Videos -->
+            <div id="layer-transition" class="video-layer hidden">
+                <video id="video-transition" playsinline></video>
+            </div>
+
+            <!-- Layer 2: Simli Widget Container -->
+            <div id="layer-simli" class="video-layer hidden">
+                <div id="simli-mount"></div>
+            </div>
+
+            <!-- Layer 3: Peephole Frame -->
+            <div id="layer-peephole" class="overlay-layer">
+                <div id="peephole-mask">
+                    <div id="peephole-glass"></div>
+                </div>
+            </div>
+
+            <!-- Layer 4: Door overlay -->
+            <div id="layer-door-overlay" class="overlay-layer">
+                <img src="assets/images/door_ring.png" alt="" id="door-ring">
+            </div>
+
+            <!-- Vignette -->
+            <div id="vignette-overlay"></div>
         </div>
 
-        <!-- Layer 4: Door texture overlay (wood grain, brass hardware) -->
-        <div id="layer-door-overlay" class="overlay-layer">
-            <img src="assets/images/door_ring.png" alt="" id="door-ring">
+        <!-- Experience Controls -->
+        <div id="experience-controls" class="experience-ui">
+            <button id="btn-dismiss" class="btn-dismiss" disabled>Send Away</button>
+            <button id="btn-back" class="btn-back">← Back</button>
         </div>
 
-        <!-- Vignette - heavy, paranoid, 2am feeling -->
-        <div id="vignette-overlay"></div>
+        <!-- Character info overlay -->
+        <div id="character-info" class="character-info">
+            <span id="current-character-name"></span>
+            <span id="current-character-role"></span>
+        </div>
     </div>
 
     <!-- Audio elements -->
@@ -61,80 +100,154 @@
         <source src="assets/sounds/ambient.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- Character selector (dev/demo mode - will be replaced with narrative triggers) -->
-    <div id="character-selector" class="dev-panel">
-        <h3 id="experience-title">ROOM 412</h3>
-        <p class="dev-subtitle" id="experience-tagline">Stories through the door</p>
-        <div id="character-buttons"></div>
-        <button id="btn-dismiss" class="btn-dismiss" disabled>Send Away</button>
-        <p class="platform-credit">A <span class="platform-name">HEARSAY</span> experience</p>
-    </div>
-
-    <!-- Module imports -->
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         APPLICATION LOGIC
+         ═══════════════════════════════════════════════════════════════════════ -->
     <script type="module">
         import { config, characters, platform, experience } from './config.js';
         import { StateMachine } from './state-machine.js';
         import { Compositor } from './compositor.js';
         import { SimliIntegration } from './simli-integration.js';
 
-        // Update page title and meta
-        document.title = `${experience.name} — ${platform.name}`;
-        document.getElementById('experience-title').textContent = experience.name.toUpperCase();
-        document.getElementById('experience-tagline').textContent = experience.tagline;
+        // ─────────────────────────────────────────────────────────────────────
+        // PAGE MANAGEMENT
+        // ─────────────────────────────────────────────────────────────────────
+        
+        const landingPage = document.getElementById('landing-page');
+        const experiencePage = document.getElementById('experience-page');
+        
+        function showLanding() {
+            landingPage.classList.add('active');
+            experiencePage.classList.remove('active');
+        }
+        
+        function showExperience() {
+            landingPage.classList.remove('active');
+            experiencePage.classList.add('active');
+        }
 
-        // Initialize core systems
+        // ─────────────────────────────────────────────────────────────────────
+        // CHARACTER GALLERY
+        // ─────────────────────────────────────────────────────────────────────
+        
+        const gallery = document.getElementById('character-gallery');
+        
+        Object.entries(characters).forEach(([key, character]) => {
+            const card = document.createElement('div');
+            card.className = 'character-card';
+            card.dataset.character = key;
+            
+            // Check if we have a preview video
+            const videoSrc = character.previewVideo || 
+                (character.idleToActive && character.idleToActive.length > 0 ? character.idleToActive[0] : null);
+            
+            card.innerHTML = `
+                <div class="character-circle">
+                    ${videoSrc ? `
+                        <video class="character-preview" loop muted playsinline autoplay>
+                            <source src="${videoSrc}" type="video/mp4">
+                        </video>
+                    ` : `
+                        <div class="character-placeholder"></div>
+                    `}
+                    <div class="character-circle-border"></div>
+                </div>
+                <span class="character-name">${character.name}</span>
+                <span class="character-role">${character.role}</span>
+            `;
+            
+            card.addEventListener('click', () => {
+                enterExperience(key);
+            });
+            
+            // Play video on hover
+            const video = card.querySelector('video');
+            if (video) {
+                video.play().catch(() => {});
+            }
+            
+            gallery.appendChild(card);
+        });
+
+        // ─────────────────────────────────────────────────────────────────────
+        // CORE SYSTEMS
+        // ─────────────────────────────────────────────────────────────────────
+        
         const stateMachine = new StateMachine();
         const compositor = new Compositor(stateMachine);
         const simli = new SimliIntegration(stateMachine, config);
-
-        // Generate character buttons (dev mode)
-        const buttonContainer = document.getElementById('character-buttons');
+        
+        // UI Elements
         const dismissBtn = document.getElementById('btn-dismiss');
+        const backBtn = document.getElementById('btn-back');
+        const charNameEl = document.getElementById('current-character-name');
+        const charRoleEl = document.getElementById('current-character-role');
 
-        Object.entries(characters).forEach(([key, character]) => {
-            const btn = document.createElement('button');
-            btn.className = 'character-btn';
-            btn.textContent = character.name;
-            btn.dataset.character = key;
-            btn.addEventListener('click', () => {
-                if (stateMachine.currentState === 'idle') {
-                    stateMachine.summonCharacter(key);
-                }
-            });
-            buttonContainer.appendChild(btn);
-        });
+        // ─────────────────────────────────────────────────────────────────────
+        // ENTER EXPERIENCE
+        // ─────────────────────────────────────────────────────────────────────
+        
+        function enterExperience(characterKey) {
+            const character = characters[characterKey];
+            if (!character) return;
+            
+            // Update character info display
+            charNameEl.textContent = character.name;
+            charRoleEl.textContent = character.role;
+            
+            // Switch to experience view
+            showExperience();
+            
+            // Start the experience - summon character
+            setTimeout(() => {
+                stateMachine.summonCharacter(characterKey);
+            }, 500);
+        }
 
-        // Dismiss button - "send away" the visitor
+        // ─────────────────────────────────────────────────────────────────────
+        // CONTROLS
+        // ─────────────────────────────────────────────────────────────────────
+        
         dismissBtn.addEventListener('click', () => {
             if (stateMachine.currentState === 'active') {
                 stateMachine.dismissCharacter();
             }
         });
+        
+        backBtn.addEventListener('click', () => {
+            // If in conversation, dismiss first
+            if (stateMachine.currentState === 'active') {
+                stateMachine.dismissCharacter();
+            }
+            // Go back to landing after a moment
+            setTimeout(() => {
+                stateMachine.reset();
+                showLanding();
+            }, 300);
+        });
 
-        // Update UI based on state
+        // ─────────────────────────────────────────────────────────────────────
+        // STATE UPDATES
+        // ─────────────────────────────────────────────────────────────────────
+        
         stateMachine.on('stateChange', ({ to }) => {
             dismissBtn.disabled = to !== 'active';
-            
-            // Disable character buttons during conversation
-            const buttons = buttonContainer.querySelectorAll('.character-btn');
-            buttons.forEach(btn => {
-                btn.disabled = to !== 'idle';
-            });
+        });
+        
+        stateMachine.on('characterDismissed', () => {
+            // Return to landing after character leaves
+            setTimeout(() => {
+                showLanding();
+            }, 500);
         });
 
-        // Try to start idle loop (may be blocked by autoplay policy)
-        document.getElementById('video-idle').play().catch(e => {
-            console.log('Autoplay blocked, waiting for user interaction');
-            document.body.addEventListener('click', () => {
-                document.getElementById('video-idle').play();
-                document.getElementById('audio-ambient').play();
-            }, { once: true });
-        });
-
+        // ─────────────────────────────────────────────────────────────────────
+        // INIT
+        // ─────────────────────────────────────────────────────────────────────
+        
         // Expose for debugging
         window.hearsay = { stateMachine, compositor, simli, config, characters, platform, experience };
         console.log(`${platform.name} — ${experience.name} initialized`);
-        console.log('Access via window.hearsay');
     </script>
 </body>
 </html>

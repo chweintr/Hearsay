@@ -72,9 +72,10 @@ export const characters = {
         role: 'Night Porter',
         agentId: 'xxx',  // TODO: Simli agent ID
         faceId: 'xxx',   // TODO: Simli face ID
-        idleToActive: ['assets/videos/idle_to_wire.mp4'],
-        activeToIdle: ['assets/videos/wire_to_idle.mp4'],
-        knockSound: 'assets/sounds/knock_soft.mp3'
+        idleToActive: ['assets/videos/Wire_Walkup.mp4'],
+        activeToIdle: ['assets/videos/Wire_Walkup.mp4'],  // TODO: need departure video
+        knockSound: 'assets/sounds/knock.mp3',
+        previewVideo: 'assets/videos/Wire_Walkup.mp4'
     },
     
     marisol: {
@@ -82,9 +83,10 @@ export const characters = {
         role: 'House Detective',
         agentId: 'xxx',  // TODO: Simli agent ID
         faceId: 'xxx',   // TODO: Simli face ID
-        idleToActive: ['assets/videos/idle_to_marisol.mp4'],
-        activeToIdle: ['assets/videos/marisol_to_idle.mp4'],
-        knockSound: 'assets/sounds/knock_firm.mp3'
+        idleToActive: [],  // TODO: need transition video
+        activeToIdle: [],  // TODO: need departure video
+        knockSound: 'assets/sounds/knock.mp3',
+        previewVideo: null  // No preview yet
     },
     
     // Future characters for ROOM 412:

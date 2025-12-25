@@ -20,7 +20,7 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     <div id="landing-page" class="page active">
         <div class="landing-background">
-            <video class="landing-bg-video" autoplay loop muted playsinline>
+            <video id="landing-video" class="landing-bg-video" autoplay muted playsinline>
                 <source src="assets/videos/The_Knock_Background.mp4" type="video/mp4">
             </video>
             <div class="landing-overlay"></div>
@@ -234,6 +234,27 @@
                 showLanding();
             }, 500);
         });
+
+        // ─────────────────────────────────────────────────────────────────────
+        // INIT
+        // ─────────────────────────────────────────────────────────────────────
+        
+        // ─────────────────────────────────────────────────────────────────────
+        // LANDING VIDEO LOOP WITH PAUSE
+        // ─────────────────────────────────────────────────────────────────────
+        
+        const landingVideo = document.getElementById('landing-video');
+        const PAUSE_DURATION = 5000; // 5 seconds pause at end before looping
+        
+        if (landingVideo) {
+            landingVideo.addEventListener('ended', () => {
+                // Pause at the last frame for a few seconds
+                setTimeout(() => {
+                    landingVideo.currentTime = 0;
+                    landingVideo.play();
+                }, PAUSE_DURATION);
+            });
+        }
 
         // ─────────────────────────────────────────────────────────────────────
         // INIT

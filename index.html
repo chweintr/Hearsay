@@ -240,17 +240,29 @@
         // ─────────────────────────────────────────────────────────────────────
         
         // ─────────────────────────────────────────────────────────────────────
-        // LANDING VIDEO LOOP WITH PAUSE
+        // LANDING VIDEO LOOP WITH PAUSE ON FIRST FRAME
         // ─────────────────────────────────────────────────────────────────────
         
         const landingVideo = document.getElementById('landing-video');
-        const PAUSE_DURATION = 5000; // 5 seconds pause at end before looping
+        const PAUSE_DURATION = 5000; // 5 seconds pause on first frame
         
         if (landingVideo) {
+            // Start paused
+            landingVideo.pause();
+            landingVideo.currentTime = 0;
+            
+            // After pause duration, play the video
+            setTimeout(() => {
+                landingVideo.play();
+            }, PAUSE_DURATION);
+            
+            // When video ends, go back to start and pause again
             landingVideo.addEventListener('ended', () => {
-                // Pause at the last frame for a few seconds
+                landingVideo.currentTime = 0;
+                landingVideo.pause();
+                
+                // After pause, play again
                 setTimeout(() => {
-                    landingVideo.currentTime = 0;
                     landingVideo.play();
                 }, PAUSE_DURATION);
             });

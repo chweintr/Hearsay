@@ -110,12 +110,16 @@ body {
 .landing-overlay {
     position: absolute;
     inset: 0;
-    background: radial-gradient(
-        ellipse at center,
-        rgba(5, 4, 3, 0.3) 0%,
-        rgba(5, 4, 3, 0.6) 50%,
-        rgba(5, 4, 3, 0.85) 100%
-    );
+    background: 
+        /* Darker at bottom for character gallery readability */
+        linear-gradient(
+            to top,
+            rgba(5, 4, 3, 0.85) 0%,
+            rgba(5, 4, 3, 0.4) 30%,
+            transparent 50%,
+            rgba(5, 4, 3, 0.3) 80%,
+            rgba(5, 4, 3, 0.6) 100%
+        );
 }
 
 .landing-content {
@@ -124,10 +128,16 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-end;
     text-align: center;
     padding: 2rem;
+    padding-bottom: 4rem;
     width: 100%;
-    max-width: 900px;
+    height: 100%;
+}
+
+.landing-spacer {
+    flex: 1;
 }
 
 /* Landing Header */

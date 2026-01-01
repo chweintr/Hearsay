@@ -62,6 +62,45 @@ async def health_check():
     }
 
 
+@app.get("/api/test-simli")
+async def test_simli_connection():
+    """Debug endpoint to test Simli API connectivity"""
+    import socket
+    
+    results = {
+        "api_key_set": bool(SIMLI_API_KEY),
+        "api_key_length": len(SIMLI_API_KEY) if SIMLI_API_KEY else 0
+    }
+    
+    # Test DNS resolution
+    try:
+        ip = socket.gethostbyname("api.simli.com")
+        results["dns_resolved"] = True
+        results["simli_ip"] = ip
+    except socket.gaierror as e:
+        results["dns_resolved"] = False
+        results["dns_error"] = str(e)
+    
+    # Test HTTPS connection
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            # Just test connectivity with a simple GET (might 404, that's ok)
+            response = await client.get("https://api.simli.com/")
+            results["https_connection"] = True
+            results["https_status"] = response.status_code
+    except httpx.ConnectError as e:
+        results["https_connection"] = False
+        results["https_error"] = f"ConnectError: {str(e)}"
+    except httpx.TimeoutException as e:
+        results["https_connection"] = False
+        results["https_error"] = f"Timeout: {str(e)}"
+    except Exception as e:
+        results["https_connection"] = False
+        results["https_error"] = f"{type(e).__name__}: {str(e)}"
+    
+    return results
+
+
 @app.post("/api/simli-token")
 async def get_simli_token(
     agentId: str = Query(..., description="Simli Agent ID"),

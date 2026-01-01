@@ -27,7 +27,7 @@ export class Compositor {
         };
         
         this.videos = {
-            idle: document.getElementById('video-idle'),
+            idle: document.getElementById('video-hallway'),
             transition: document.getElementById('video-transition')
         };
         

@@ -105,11 +105,11 @@
         <source src="assets/sounds/hotel_hallway._subtl_#4-1767284404570.wav" type="audio/wav">
     </audio>
     
-    <!-- Music tracks - controlled by music slider -->
-    <audio id="music-1" class="music-track" loop preload="auto">
+    <!-- Music tracks - play sequentially, controlled by music slider -->
+    <audio id="music-1" class="music-track" preload="auto">
         <source src="assets/sounds/Mata Z.wav" type="audio/wav">
     </audio>
-    <audio id="music-2" class="music-track" loop preload="auto">
+    <audio id="music-2" class="music-track" preload="auto">
         <source src="assets/sounds/Mata Z  whole Kazoo cover  (Remastered).wav" type="audio/wav">
     </audio>
     
@@ -119,7 +119,7 @@
         <div class="volume-sliders">
             <div class="slider-group">
                 <label>Ambient</label>
-                <input type="range" id="ambient-volume" min="0" max="100" value="15">
+                <input type="range" id="ambient-volume" min="0" max="100" value="40">
             </div>
             <div class="slider-group">
                 <label>Music</label>
@@ -278,13 +278,14 @@
         // ─────────────────────────────────────────────────────────────────────
         
         const ambientTracks = document.querySelectorAll('.ambient-track');
-        const musicTracks = document.querySelectorAll('.music-track');
+        const musicTracks = Array.from(document.querySelectorAll('.music-track'));
         const ambientSlider = document.getElementById('ambient-volume');
         const musicSlider = document.getElementById('music-volume');
         const audioToggle = document.getElementById('audio-toggle');
         
         let audioStarted = false;
         let audioMuted = true;
+        let currentMusicIndex = 0;
         
         // Set initial volumes
         function updateAmbientVolume(value) {
@@ -301,22 +302,35 @@
             });
         }
         
+        // Play music tracks sequentially (one after another)
+        function playNextMusicTrack() {
+            const track = musicTracks[currentMusicIndex];
+            track.volume = musicSlider.value / 100;
+            track.play().catch(e => console.log('Music blocked:', e));
+        }
+        
+        // Set up sequential playback - when one ends, play the next
+        musicTracks.forEach((track, index) => {
+            track.addEventListener('ended', () => {
+                currentMusicIndex = (index + 1) % musicTracks.length;
+                playNextMusicTrack();
+            });
+        });
+        
         // Start all audio (must be triggered by user interaction)
         function startAudio() {
             if (audioStarted) return;
             audioStarted = true;
             
-            // Start ambient tracks
+            // Start all ambient tracks (they layer together)
             ambientTracks.forEach(track => {
                 track.volume = ambientSlider.value / 100;
                 track.play().catch(e => console.log('Ambient blocked:', e));
             });
             
-            // Start music tracks
-            musicTracks.forEach(track => {
-                track.volume = musicSlider.value / 100;
-                track.play().catch(e => console.log('Music blocked:', e));
-            });
+            // Start first music track only (sequential playback)
+            currentMusicIndex = 0;
+            playNextMusicTrack();
             
             audioMuted = false;
             audioToggle.textContent = '🔊';

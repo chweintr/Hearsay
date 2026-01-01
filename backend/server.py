@@ -78,44 +78,44 @@ async def get_simli_token(
             detail="SIMLI_API_KEY not configured. Set it in Railway environment variables."
         )
     
-try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{SIMLI_API_URL}/getSessionToken",
-                    headers={
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "simliAPIKey": SIMLI_API_KEY,
-                        "agentId": agentId,
-                        "faceId": faceId
-                    },
-                    timeout=30.0
-                )
-                
-                if response.status_code != 200:
-                    print(f"[HEARSAY] Simli API error: {response.status_code}")
-                    print(f"[HEARSAY] Response: {response.text}")
-                    raise HTTPException(
-                        status_code=response.status_code,
-                        detail=f"Simli API error: {response.text}"
-                    )
-                
-                data = response.json()
-                print(f"[HEARSAY] Simli response: {data}")
-                
-                # Simli returns 'sessionToken'
-                token = data.get("sessionToken") or data.get("token") or ""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{SIMLI_API_URL}/getSessionToken",
+                headers={
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "simliAPIKey": SIMLI_API_KEY,
+                    "agentId": agentId,
+                    "faceId": faceId
+                },
+                timeout=30.0
+            )
             
-            if not token:
-                print(f"[HEARSAY] No token in response: {data}")
+            if response.status_code != 200:
+                print(f"[HEARSAY] Simli API error: {response.status_code}")
+                print(f"[HEARSAY] Response: {response.text}")
                 raise HTTPException(
-                    status_code=500,
-                    detail="No token in Simli response"
+                    status_code=response.status_code,
+                    detail=f"Simli API error: {response.text}"
                 )
             
-            return {"token": token}
+            data = response.json()
+            print(f"[HEARSAY] Simli response: {data}")
             
+            # Simli returns 'sessionToken'
+            token = data.get("sessionToken") or data.get("token") or ""
+        
+        if not token:
+            print(f"[HEARSAY] No token in response: {data}")
+            raise HTTPException(
+                status_code=500,
+                detail="No token in Simli response"
+            )
+        
+        return {"token": token}
+        
     except httpx.RequestError as e:
         print(f"[HEARSAY] Request error: {e}")
         raise HTTPException(

@@ -103,24 +103,24 @@ async def test_simli_connection():
             results[f"{domain}_works"] = False
             results[f"{domain}_error"] = f"{type(e).__name__}: {str(e)}"
     
-    # Test with REAL credentials (Wire)
+    # Test with REAL endpoint: /auto/token
     if SIMLI_API_KEY:
         try:
             async with httpx.AsyncClient(timeout=15.0, headers=headers) as client:
                 response = await client.post(
-                    "https://api.simli.ai/getSessionToken",
+                    "https://api.simli.ai/auto/token",
                     json={
                         "simliAPIKey": SIMLI_API_KEY.strip(),
-                        "agentId": "2439209e-abb8-4ccc-ab18-2bbbfc78d4f6",
-                        "faceId": "bc603b3f-d355-424d-b613-d7db4588cb8a"
+                        "expiryStamp": -1,
+                        "createTranscript": True
                     }
                 )
-                results["real_token_works"] = True
-                results["real_token_status"] = response.status_code
-                results["real_token_response"] = response.text[:200]
+                results["auto_token_works"] = True
+                results["auto_token_status"] = response.status_code
+                results["auto_token_response"] = response.text[:200]
         except Exception as e:
-            results["real_token_works"] = False
-            results["real_token_error"] = f"{type(e).__name__}: {str(e)}"
+            results["auto_token_works"] = False
+            results["auto_token_error"] = f"{type(e).__name__}: {str(e)}"
     
     # Also try httpbin to verify outbound HTTPS works
     try:
@@ -150,60 +150,61 @@ async def get_simli_token(
             detail="SIMLI_API_KEY not configured. Set it in Railway environment variables."
         )
     
-    # Try multiple endpoints - note: simli.AI not simli.COM!
-    simli_urls = [
-        "https://api.simli.ai/getSessionToken",   # Correct domain!
-        "https://api.simli.com/getSessionToken",  # Backup
-    ]
+    # Correct endpoint: /auto/token (NOT /getSessionToken!)
+    simli_url = "https://api.simli.ai/auto/token"
     
     # Strip whitespace from API key
     api_key = SIMLI_API_KEY.strip()
     
     payload = {
         "simliAPIKey": api_key,
-        "agentId": agentId,
-        "faceId": faceId
+        "expiryStamp": -1,  # No expiry
+        "createTranscript": True
     }
     
-    # Headers - let httpx set Host automatically
     headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-        "Accept": "application/json",
         "Content-Type": "application/json"
     }
     
-    last_error = None
+    print(f"[HEARSAY] Calling Simli API: {simli_url}")
+    print(f"[HEARSAY] Payload (key hidden): expiryStamp=-1, createTranscript=True")
     
-    for simli_url in simli_urls:
-        print(f"[HEARSAY] Trying Simli API: {simli_url}")
-        print(f"[HEARSAY] Payload (key hidden): agentId={agentId}, faceId={faceId}")
-        
-        try:
-            # Use verify=False for IP-based requests
-            verify = not simli_url.startswith("https://35.")
-            async with httpx.AsyncClient(timeout=30.0, headers=headers, verify=verify) as client:
-                response = await client.post(
-                    simli_url,
-                    json=payload
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                simli_url,
+                json=payload,
+                headers=headers
+            )
+            
+            print(f"[HEARSAY] Simli response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"[HEARSAY] Success! Response keys: {list(data.keys())}")
+                token = data.get("token") or ""
+                if token:
+                    return {"token": token, "sessionId": data.get("sessionId", "")}
+                else:
+                    raise HTTPException(status_code=500, detail="No token in Simli response")
+            else:
+                print(f"[HEARSAY] Simli error: {response.text[:500]}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Simli API error: {response.text[:200]}"
                 )
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    print(f"[HEARSAY] Success from {simli_url}")
-                    token = data.get("sessionToken") or data.get("token") or ""
-                    if token:
-                        return {"token": token}
-                        
-                print(f"[HEARSAY] {simli_url} returned {response.status_code}: {response.text[:200]}")
-                last_error = f"Status {response.status_code}: {response.text[:200]}"
-                
-        except Exception as e:
-            print(f"[HEARSAY] {simli_url} failed: {type(e).__name__}: {str(e)}")
-            last_error = f"{type(e).__name__}: {str(e)}"
-            continue
-    
-    # If all URLs failed
-    raise HTTPException(status_code=503, detail=f"Cannot connect to Simli API: {last_error}")
+    except httpx.ConnectError as e:
+        print(f"[HEARSAY] Connection error: {e}")
+        raise HTTPException(status_code=503, detail=f"Cannot connect to Simli API: {str(e)}")
+    except httpx.TimeoutException as e:
+        print(f"[HEARSAY] Timeout: {e}")
+        raise HTTPException(status_code=504, detail=f"Simli API timeout: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[HEARSAY] Unexpected error: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -410,9 +410,9 @@ body.simli-active .animated-text-container {
 }
 
 #simli-mount simli-widget {
-    /* Face sizing - smaller to fit better in peephole */
-    width: 60%;
-    height: 60%;
+    /* Face sizing - fill the peephole opening */
+    width: 95%;
+    height: 95%;
     border-radius: 50%;
     overflow: hidden;
     

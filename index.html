@@ -111,15 +111,15 @@
     
     <!-- Audio Controls -->
     <div id="audio-controls" class="audio-controls">
-        <button id="audio-toggle" class="audio-toggle">🔇</button>
+        <button id="audio-toggle" class="audio-toggle">🔊</button>
         <div class="volume-sliders">
             <div class="slider-group">
                 <label>Ambient</label>
-                <input type="range" id="ambient-volume" min="0" max="100" value="40">
+                <input type="range" id="ambient-volume" min="0" max="100" value="65">
             </div>
             <div class="slider-group">
                 <label>Music</label>
-                <input type="range" id="music-volume" min="0" max="100" value="8">
+                <input type="range" id="music-volume" min="0" max="100" value="15">
             </div>
         </div>
     </div>
@@ -280,7 +280,7 @@
         const audioToggle = document.getElementById('audio-toggle');
         
         let audioStarted = false;
-        let audioMuted = true;
+        let audioMuted = false;  // Start unmuted
         
         // Set initial volumes
         function updateAmbientVolume(value) {
@@ -339,7 +339,13 @@
         ambientSlider.addEventListener('input', (e) => updateAmbientVolume(e.target.value));
         musicSlider.addEventListener('input', (e) => updateMusicVolume(e.target.value));
         
-        // Auto-start on first interaction
+        // Auto-start audio on page load (after user gesture or autoplay policy allows)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Try to start immediately
+            startAudio();
+        });
+        
+        // Fallback: start on first interaction if autoplay blocked
         document.body.addEventListener('click', () => {
             if (!audioStarted) startAudio();
         }, { once: true });

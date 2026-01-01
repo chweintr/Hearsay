@@ -81,36 +81,35 @@ async def test_simli_connection():
         results["dns_resolved"] = False
         results["dns_error"] = str(e)
     
-    # Test HTTPS connection with relaxed SSL (for debugging)
-    try:
-        import ssl
-        # Try with default SSL first
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get("https://api.simli.com/")
-            results["https_connection"] = True
-            results["https_status"] = response.status_code
-    except httpx.ConnectError as e:
-        results["https_connection"] = False
-        results["https_error"] = f"ConnectError: {str(e)}"
-        
-        # Try again with SSL verification disabled
-        try:
-            async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
-                response = await client.get("https://api.simli.com/")
-                results["https_no_verify"] = True
-                results["https_no_verify_status"] = response.status_code
-        except Exception as e2:
-            results["https_no_verify"] = False
-            results["https_no_verify_error"] = f"{type(e2).__name__}: {str(e2)}"
-            
-    except httpx.TimeoutException as e:
-        results["https_connection"] = False
-        results["https_error"] = f"Timeout: {str(e)}"
-    except Exception as e:
-        results["https_connection"] = False
-        results["https_error"] = f"{type(e).__name__}: {str(e)}"
+    # Test HTTPS connection with proper headers (Simli may block bare requests)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
     
-    # Also try a different known-good endpoint to verify outbound HTTPS works
+    # Try the actual token endpoint, not root
+    try:
+        async with httpx.AsyncClient(timeout=15.0, headers=headers) as client:
+            # Test with a dummy POST to the actual endpoint
+            response = await client.post(
+                "https://api.simli.com/getSessionToken",
+                json={"simliAPIKey": "test", "agentId": "test", "faceId": "test"}
+            )
+            results["simli_endpoint"] = True
+            results["simli_status"] = response.status_code
+            results["simli_response"] = response.text[:200]  # First 200 chars
+    except httpx.ConnectError as e:
+        results["simli_endpoint"] = False
+        results["simli_error"] = f"ConnectError: {str(e)}"
+    except httpx.TimeoutException as e:
+        results["simli_endpoint"] = False
+        results["simli_error"] = f"Timeout: {str(e)}"
+    except Exception as e:
+        results["simli_endpoint"] = False
+        results["simli_error"] = f"{type(e).__name__}: {str(e)}"
+    
+    # Also try httpbin to verify outbound HTTPS works
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.get("https://httpbin.org/get")
@@ -145,18 +144,22 @@ async def get_simli_token(
         "faceId": faceId
     }
     
+    # Headers to avoid being blocked
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Origin": "https://web-production-607f7.up.railway.app"
+    }
+    
     print(f"[HEARSAY] Calling Simli API: {simli_url}")
     print(f"[HEARSAY] Payload (key hidden): agentId={agentId}, faceId={faceId}")
     
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0, headers=headers) as client:
             response = await client.post(
                 simli_url,
-                headers={
-                    "Content-Type": "application/json"
-                },
-                json=payload,
-                timeout=30.0
+                json=payload
             )
             
             print(f"[HEARSAY] Simli API response status: {response.status_code}")

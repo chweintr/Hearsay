@@ -280,7 +280,7 @@
         const audioToggle = document.getElementById('audio-toggle');
         
         let audioStarted = false;
-        let audioMuted = false;  // Start unmuted
+        let audioMuted = false;
         
         // Set initial volumes
         function updateAmbientVolume(value) {
@@ -339,14 +339,13 @@
         ambientSlider.addEventListener('input', (e) => updateAmbientVolume(e.target.value));
         musicSlider.addEventListener('input', (e) => updateMusicVolume(e.target.value));
         
-        // Auto-start audio on page load (after user gesture or autoplay policy allows)
-        document.addEventListener('DOMContentLoaded', () => {
-            // Try to start immediately
-            startAudio();
-        });
-        
-        // Fallback: start on first interaction if autoplay blocked
+        // Start audio on first click anywhere on page
         document.body.addEventListener('click', () => {
+            if (!audioStarted) startAudio();
+        }, { once: true });
+        
+        // Also try on any touch (mobile)
+        document.body.addEventListener('touchstart', () => {
             if (!audioStarted) startAudio();
         }, { once: true });
 

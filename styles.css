@@ -141,6 +141,30 @@ body {
     flex: 1;
 }
 
+/* Animated text overlay - positioned above title area */
+.animated-text-container {
+    position: absolute;
+    top: 8vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    height: auto;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.animated-text-video {
+    width: 100%;
+    height: auto;
+    mix-blend-mode: screen;  /* Black becomes transparent */
+    opacity: 0.9;
+}
+
+/* Hide when Simli is active */
+body.simli-active .animated-text-container {
+    display: none;
+}
+
 /* Landing Header */
 .landing-header {
     margin-bottom: 2rem;

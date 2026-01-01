@@ -146,15 +146,11 @@ async def get_simli_token(
         "faceId": faceId
     }
     
-    # Headers to look like a browser
+    # Headers - let httpx set Host automatically
     headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Content-Type": "application/json",
-        "Origin": "https://app.simli.com",
-        "Referer": "https://app.simli.com/",
-        "Host": "api.simli.com"
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
     }
     
     last_error = None

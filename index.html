@@ -40,6 +40,21 @@
             <div class="character-gallery" id="character-gallery">
                 <!-- Characters injected by JS -->
             </div>
+            
+            <button id="about-btn" class="about-btn">About</button>
+        </div>
+    </div>
+    
+    <!-- About Modal -->
+    <div id="about-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" id="about-close">×</button>
+            <div class="about-text">
+                <p class="about-lead">Someone is at your door.</p>
+                <p>They have something to tell you. Whether you believe them is up to you.</p>
+                <p>HEARSAY is a series of conversational experiences. No puzzles. No right answers. Just unreliable narrators and the stories they tell.</p>
+                <p class="about-tagline">Somewhere between a novel, a play, a movie, a mystery, a dream, a confession, and a communion.</p>
+            </div>
         </div>
     </div>
 
@@ -269,6 +284,28 @@
         // INIT
         // ─────────────────────────────────────────────────────────────────────
         
+        // ─────────────────────────────────────────────────────────────────────
+        // ABOUT MODAL
+        // ─────────────────────────────────────────────────────────────────────
+        
+        const aboutBtn = document.getElementById('about-btn');
+        const aboutModal = document.getElementById('about-modal');
+        const aboutClose = document.getElementById('about-close');
+        
+        aboutBtn?.addEventListener('click', () => {
+            aboutModal?.classList.remove('hidden');
+        });
+        
+        aboutClose?.addEventListener('click', () => {
+            aboutModal?.classList.add('hidden');
+        });
+        
+        aboutModal?.addEventListener('click', (e) => {
+            if (e.target === aboutModal) {
+                aboutModal.classList.add('hidden');
+            }
+        });
+
         // ─────────────────────────────────────────────────────────────────────
         // AUDIO SYSTEM
         // ─────────────────────────────────────────────────────────────────────

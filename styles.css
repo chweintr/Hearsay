@@ -652,6 +652,98 @@ body.simli-active .animated-text-container {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   ABOUT BUTTON & MODAL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.about-btn {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent;
+    border: 1px solid var(--brass-oxidized);
+    color: var(--parchment-dark);
+    font-family: 'EB Garamond', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    padding: 0.5rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.about-btn:hover {
+    border-color: var(--brass-mid);
+    color: var(--parchment);
+    background: rgba(139, 109, 76, 0.1);
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 4, 3, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    position: relative;
+    max-width: 520px;
+    padding: 3rem;
+    text-align: center;
+}
+
+.modal-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: transparent;
+    border: none;
+    color: var(--brass-mid);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+    color: var(--parchment);
+}
+
+.about-text {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--parchment);
+}
+
+.about-text p {
+    margin-bottom: 1.25rem;
+}
+
+.about-lead {
+    font-size: 1.4rem;
+    font-style: italic;
+    color: var(--brass-mid);
+}
+
+.about-tagline {
+    font-style: italic;
+    color: var(--parchment-dark);
+    margin-top: 1.5rem;
+    font-size: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    AUDIO CONTROLS
    ═══════════════════════════════════════════════════════════════════════════ */
 

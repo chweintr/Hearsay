@@ -31,8 +31,9 @@
     --glow-warm: rgba(201, 162, 39, 0.4);
     --glow-soft: rgba(201, 162, 39, 0.2);
     
-    /* Sizing - fill the overlay's transparent center (the yellow ring) */
-    --peephole-size: min(42vh, 42vw);
+    /* Sizing - fill the overlay's transparent center (the brass ring opening) */
+    /* This needs to match the actual transparent area in overlay.png */
+    --peephole-size: min(58vh, 58vw);
     
     /* Z-index layers */
     --z-background: 0;
@@ -158,6 +159,8 @@ body {
     height: auto;
     mix-blend-mode: screen;  /* Black becomes transparent */
     opacity: 1;
+    background: transparent !important;
+    filter: contrast(1.1) brightness(1.1); /* Boost to help screen blend */
 }
 
 /* Hide when Simli is active */

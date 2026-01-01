@@ -182,11 +182,13 @@ async def get_simli_token(
             if response.status_code == 200:
                 data = response.json()
                 print(f"[HEARSAY] Success! Response keys: {list(data.keys())}")
-                token = data.get("token") or ""
+                # Simli returns "session_token" (with underscore!)
+                token = data.get("session_token") or data.get("token") or ""
                 if token:
-                    return {"token": token, "sessionId": data.get("sessionId", "")}
+                    return {"token": token}
                 else:
-                    raise HTTPException(status_code=500, detail="No token in Simli response")
+                    print(f"[HEARSAY] No token found in response: {data}")
+                    raise HTTPException(status_code=500, detail=f"No token in Simli response: {list(data.keys())}")
             else:
                 print(f"[HEARSAY] Simli error: {response.text[:500]}")
                 raise HTTPException(

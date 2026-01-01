@@ -103,6 +103,25 @@ async def test_simli_connection():
             results[f"{domain}_works"] = False
             results[f"{domain}_error"] = f"{type(e).__name__}: {str(e)}"
     
+    # Test with REAL credentials (Wire)
+    if SIMLI_API_KEY:
+        try:
+            async with httpx.AsyncClient(timeout=15.0, headers=headers) as client:
+                response = await client.post(
+                    "https://api.simli.ai/getSessionToken",
+                    json={
+                        "simliAPIKey": SIMLI_API_KEY.strip(),
+                        "agentId": "2439209e-abb8-4ccc-ab18-2bbbfc78d4f6",
+                        "faceId": "bc603b3f-d355-424d-b613-d7db4588cb8a"
+                    }
+                )
+                results["real_token_works"] = True
+                results["real_token_status"] = response.status_code
+                results["real_token_response"] = response.text[:200]
+        except Exception as e:
+            results["real_token_works"] = False
+            results["real_token_error"] = f"{type(e).__name__}: {str(e)}"
+    
     # Also try httpbin to verify outbound HTTPS works
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:

@@ -299,20 +299,26 @@ body.simli-active .animated-text-container {
 }
 
 .character-name {
-    font-family: 'Cinzel', 'EB Garamond', serif;
-    font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    color: var(--parchment);
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #1a5c3a;  /* Billiard green */
     margin-bottom: 0.15rem;
+    text-shadow: 
+        -1px -1px 0 #e84a8a,
+        1px -1px 0 #e84a8a,
+        -1px 1px 0 #e84a8a,
+        1px 1px 0 #e84a8a;  /* Pink outline */
 }
 
 .character-role {
     font-family: 'EB Garamond', serif;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-style: italic;
-    color: var(--parchment-dark);
-    opacity: 0.7;
+    color: #e84a8a;  /* Pink */
+    opacity: 1;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -660,22 +666,28 @@ body.simli-active .animated-text-container {
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    background: transparent;
-    border: 1px solid var(--brass-oxidized);
-    color: var(--parchment-dark);
-    font-family: 'EB Garamond', serif;
-    font-size: 0.85rem;
-    letter-spacing: 0.15em;
-    padding: 0.5rem 1.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid #e84a8a;  /* Pink outline */
+    color: #1a5c3a;  /* Billiard green */
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    padding: 0.6rem 2rem;
     cursor: pointer;
     transition: all 0.3s ease;
     text-transform: uppercase;
+    text-shadow: 
+        -1px -1px 0 #e84a8a,
+        1px -1px 0 #e84a8a,
+        -1px 1px 0 #e84a8a,
+        1px 1px 0 #e84a8a;  /* Pink text outline */
 }
 
 .about-btn:hover {
-    border-color: var(--brass-mid);
-    color: var(--parchment);
-    background: rgba(139, 109, 76, 0.1);
+    border-color: #ff6ba8;
+    background: rgba(0, 0, 0, 0.7);
+    transform: translateX(-50%) scale(1.05);
 }
 
 .modal {

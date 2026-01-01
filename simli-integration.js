@@ -141,21 +141,36 @@ export class SimliIntegration {
             console.log(`[Simli] ${character.name} mounted`);
             
             // Auto-click Simli's Start button after it loads
-            setTimeout(() => {
+            const clickStartButton = () => {
                 console.log('[Simli] Looking for Start button...');
-                const buttons = this.widget.querySelectorAll('button');
-                console.log(`[Simli] Found ${buttons.length} buttons`);
+                
+                // Try regular DOM first
+                let buttons = this.widget.querySelectorAll('button');
+                console.log(`[Simli] Found ${buttons.length} buttons in light DOM`);
+                
+                // Try Shadow DOM if widget has shadowRoot
+                if (this.widget.shadowRoot) {
+                    const shadowButtons = this.widget.shadowRoot.querySelectorAll('button');
+                    console.log(`[Simli] Found ${shadowButtons.length} buttons in shadow DOM`);
+                    buttons = [...buttons, ...shadowButtons];
+                }
+                
+                // Also try finding any clickable elements
+                const clickables = this.widget.querySelectorAll('[role="button"], [onclick], .start-button, .btn');
+                console.log(`[Simli] Found ${clickables.length} other clickables`);
+                
                 buttons.forEach(btn => {
-                    console.log('[Simli] Clicking button:', btn.textContent);
+                    console.log('[Simli] Clicking button:', btn.textContent || btn.className);
                     btn.click();
                 });
-            }, 500);
+                
+                clickables.forEach(el => el.click());
+            };
             
-            // Try again after a bit longer
-            setTimeout(() => {
-                const buttons = this.widget.querySelectorAll('button');
-                buttons.forEach(btn => btn.click());
-            }, 1500);
+            // Try multiple times with increasing delays
+            setTimeout(clickStartButton, 500);
+            setTimeout(clickStartButton, 1500);
+            setTimeout(clickStartButton, 3000);
             
         } catch (error) {
             console.error('[Simli] Widget creation failed:', error);

@@ -161,8 +161,8 @@ body {
     height: auto;
     /* Screen blend - black becomes transparent */
     mix-blend-mode: screen;
-    /* Boost contrast so black is true black */
-    filter: contrast(1.5) brightness(1.2);
+    /* Aggressively crush dark pixels to black, boost light pixels */
+    filter: contrast(3) brightness(0.8) saturate(1.2);
 }
 
 /* Hide when Simli is active */

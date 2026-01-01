@@ -1,0 +1,1 @@
+.tl-theme__light{--selection-color:rgb(0,115,255,1);--color-snap:hsl(0,76%,60%,0.5)}.scribble-canvas,.tl-theme__light{--color-selected:var(--selection-color);--color-selection-stroke:var(--selection-color)}.scribble-canvas{--color-selection-fill:rgba(255,174,0,0.1);--color-snap:hsl(0,76%,60%,0.5)}.tl-text{text-shadow:none}

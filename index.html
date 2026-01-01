@@ -40,10 +40,10 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     <div id="experience-page" class="page">
         <div id="hearsay-app">
-            <!-- Layer 0: Background / Ambient -->
+            <!-- Layer 0: Hallway Background - always visible behind Simli -->
             <div id="layer-background" class="video-layer">
-                <video id="video-idle" loop muted playsinline>
-                    <source src="assets/videos/idle_loop.mp4" type="video/mp4">
+                <video id="video-hallway" loop muted playsinline autoplay>
+                    <source src="assets/videos/hallway_background.mp4" type="video/mp4">
                 </video>
             </div>
 
@@ -90,9 +90,43 @@
     <audio id="audio-knock" preload="auto">
         <source src="assets/sounds/knock.mp3" type="audio/mpeg">
     </audio>
-    <audio id="audio-ambient" loop preload="auto">
-        <source src="assets/sounds/ambient.mp3" type="audio/mpeg">
+    
+    <!-- Ambient/SFX tracks - all play together, controlled by one slider -->
+    <audio id="ambient-1" class="ambient-track" loop preload="auto">
+        <source src="assets/sounds/hotel_hallway._subtl_#2-1767284387166.wav" type="audio/wav">
     </audio>
+    <audio id="ambient-2" class="ambient-track" loop preload="auto">
+        <source src="assets/sounds/hotel_hallway._subtl_#3-1767284396051.wav" type="audio/wav">
+    </audio>
+    <audio id="ambient-3" class="ambient-track" loop preload="auto">
+        <source src="assets/sounds/hotel_hallway._subtl_#3-1767284529268.wav" type="audio/wav">
+    </audio>
+    <audio id="ambient-4" class="ambient-track" loop preload="auto">
+        <source src="assets/sounds/hotel_hallway._subtl_#4-1767284404570.wav" type="audio/wav">
+    </audio>
+    
+    <!-- Music tracks - controlled by music slider -->
+    <audio id="music-1" class="music-track" loop preload="auto">
+        <source src="assets/sounds/Mata Z.wav" type="audio/wav">
+    </audio>
+    <audio id="music-2" class="music-track" loop preload="auto">
+        <source src="assets/sounds/Mata Z  whole Kazoo cover  (Remastered).wav" type="audio/wav">
+    </audio>
+    
+    <!-- Audio Controls -->
+    <div id="audio-controls" class="audio-controls">
+        <button id="audio-toggle" class="audio-toggle">🔇</button>
+        <div class="volume-sliders">
+            <div class="slider-group">
+                <label>Ambient</label>
+                <input type="range" id="ambient-volume" min="0" max="100" value="30">
+            </div>
+            <div class="slider-group">
+                <label>Music</label>
+                <input type="range" id="music-volume" min="0" max="100" value="20">
+            </div>
+        </div>
+    </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          APPLICATION LOGIC
@@ -239,6 +273,83 @@
         // INIT
         // ─────────────────────────────────────────────────────────────────────
         
+        // ─────────────────────────────────────────────────────────────────────
+        // AUDIO SYSTEM
+        // ─────────────────────────────────────────────────────────────────────
+        
+        const ambientTracks = document.querySelectorAll('.ambient-track');
+        const musicTracks = document.querySelectorAll('.music-track');
+        const ambientSlider = document.getElementById('ambient-volume');
+        const musicSlider = document.getElementById('music-volume');
+        const audioToggle = document.getElementById('audio-toggle');
+        
+        let audioStarted = false;
+        let audioMuted = true;
+        
+        // Set initial volumes
+        function updateAmbientVolume(value) {
+            const vol = value / 100;
+            ambientTracks.forEach(track => {
+                track.volume = vol;
+            });
+        }
+        
+        function updateMusicVolume(value) {
+            const vol = value / 100;
+            musicTracks.forEach(track => {
+                track.volume = vol;
+            });
+        }
+        
+        // Start all audio (must be triggered by user interaction)
+        function startAudio() {
+            if (audioStarted) return;
+            audioStarted = true;
+            
+            // Start ambient tracks
+            ambientTracks.forEach(track => {
+                track.volume = ambientSlider.value / 100;
+                track.play().catch(e => console.log('Ambient blocked:', e));
+            });
+            
+            // Start music tracks
+            musicTracks.forEach(track => {
+                track.volume = musicSlider.value / 100;
+                track.play().catch(e => console.log('Music blocked:', e));
+            });
+            
+            audioMuted = false;
+            audioToggle.textContent = '🔊';
+            audioToggle.classList.add('playing');
+        }
+        
+        // Toggle mute
+        function toggleAudio() {
+            if (!audioStarted) {
+                startAudio();
+                return;
+            }
+            
+            audioMuted = !audioMuted;
+            
+            [...ambientTracks, ...musicTracks].forEach(track => {
+                track.muted = audioMuted;
+            });
+            
+            audioToggle.textContent = audioMuted ? '🔇' : '🔊';
+            audioToggle.classList.toggle('playing', !audioMuted);
+        }
+        
+        // Event listeners
+        audioToggle.addEventListener('click', toggleAudio);
+        ambientSlider.addEventListener('input', (e) => updateAmbientVolume(e.target.value));
+        musicSlider.addEventListener('input', (e) => updateMusicVolume(e.target.value));
+        
+        // Auto-start on first interaction
+        document.body.addEventListener('click', () => {
+            if (!audioStarted) startAudio();
+        }, { once: true });
+
         // ─────────────────────────────────────────────────────────────────────
         // LANDING VIDEO LOOP WITH PAUSE ON FIRST FRAME
         // ─────────────────────────────────────────────────────────────────────

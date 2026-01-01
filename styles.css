@@ -601,6 +601,100 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   AUDIO CONTROLS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.audio-controls {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: var(--z-ui);
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+}
+
+.audio-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--brass-oxidized);
+    background: linear-gradient(180deg, var(--wood-mid) 0%, var(--wood-dark) 100%);
+    color: var(--parchment);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.audio-toggle:hover {
+    border-color: var(--brass-mid);
+    transform: scale(1.05);
+}
+
+.audio-toggle.playing {
+    border-color: var(--brass-mid);
+    box-shadow: 0 0 10px var(--glow-soft);
+}
+
+.volume-sliders {
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(26, 18, 12, 0.95);
+    border: 1px solid var(--brass-oxidized);
+    border-radius: 6px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+}
+
+.audio-controls:hover .volume-sliders,
+.audio-controls:focus-within .volume-sliders {
+    display: flex;
+}
+
+.slider-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.slider-group label {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--parchment-dark);
+    width: 50px;
+}
+
+.slider-group input[type="range"] {
+    width: 80px;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--wood-dark);
+    border-radius: 2px;
+    outline: none;
+}
+
+.slider-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--brass-mid);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.slider-group input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    ANIMATIONS
    ═══════════════════════════════════════════════════════════════════════════ */
 

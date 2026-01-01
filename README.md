@@ -71,16 +71,23 @@ The feeling: 2am. Someone knocking. You're not sure whether to open.
 
 ## Roadmap
 
-### Now
-- ✅ Peephole interface with video backgrounds
-- ✅ Character gallery with looping previews
-- ✅ Simli integration for AI conversations
-- ✅ Wire and Marisol characters
+### Now (Jan 2026)
+- ✅ Landing page with character gallery and looping previews
+- ✅ Animated text overlay ("A Conversation")  
+- ✅ Peephole interface with brass frame overlay
+- ✅ Background hallway video layer
+- ✅ Character walkup transition videos
+- ✅ Door knock sounds (unique per character)
+- ✅ Background music + ambient audio with volume sliders
+- ✅ About modal with project description
+- ✅ Wire and Marisol characters configured
+- 🔧 Simli widget integration (API connected, testing in progress)
 
 ### Next
+- 📋 Fine-tune peephole sizing to match overlay asset
+- 📋 Verify Simli face appears correctly after walkup video
 - 📋 Additional Room 412 characters (The Thursday Guest, Evelyn, Ms. Park)
 - 📋 Interstitials (envelopes under door, surveillance footage, voicemails)
-- 📋 Knock sounds and ambient audio
 - 📋 Hint system (surfaces new threads after N conversations)
 
 ### Future

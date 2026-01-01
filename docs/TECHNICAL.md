@@ -1,6 +1,8 @@
 # Technical Documentation
 
 > Developer guide for HEARSAY platform and Room 412 experience.
+> 
+> **Last Updated:** January 2026
 
 ---
 
@@ -31,6 +33,7 @@ HEARSAY uses a simple client-server architecture:
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                      SIMLI API                               │
+│      https://api.simli.com/getSessionToken                   │
 │              (WebRTC, AI conversation, video)                │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -54,9 +57,19 @@ hearsay/
 ├── nixpacks.toml           # Nixpacks build hints
 │
 ├── assets/
-│   ├── videos/             # Background loops, character transitions
-│   ├── sounds/             # Knock sounds, ambient audio
-│   └── images/             # Splash images, overlays
+│   ├── videos/
+│   │   ├── The_Knock_Background.mp4   # Landing page background
+│   │   ├── Background_1.mp4            # Hallway view in peephole
+│   │   ├── Animated_Text.mp4           # "A Conversation" text overlay
+│   │   ├── Wire_Walkup_2.mp4           # Wire's transition video
+│   │   └── Marisol_Walkup.mp4          # Marisol's transition video
+│   ├── sounds/
+│   │   ├── MataZ.wav                   # Background music
+│   │   ├── hotel_hallway_subtle_3a.wav # Ambient sound
+│   │   └── door_knocks/                # Character knock sounds
+│   └── images/
+│       ├── overlay.png                 # Peephole brass frame (full screen)
+│       └── Room_412.png                # Splash image
 │
 ├── backend/
 │   ├── server.py           # FastAPI token server + static file serving
@@ -69,233 +82,233 @@ hearsay/
 
 ---
 
-## Deployment (Railway)
+## Visual Layer Stack (Bottom to Top)
 
-### Initial Setup
+The experience uses CSS z-index layering. Order matters:
 
-1. Push repo to GitHub
-2. Create new Railway project → Deploy from GitHub repo
-3. Add environment variable:
-   ```
-   SIMLI_API_KEY=your_simli_api_key_from_dashboard
-   ```
-4. Railway auto-detects Python, installs deps, runs server
+| Z-Index | Layer | Content | Notes |
+|---------|-------|---------|-------|
+| 0 | `#layer-background` | Hallway video (Background_1.mp4) | Always visible in peephole |
+| 10 | `#layer-transition` | Character walkup videos | Plays during summon |
+| 20 | `#layer-simli` | Live Simli AI face | Uses `mix-blend-mode: screen` for transparent black |
+| 30 | `#layer-peephole` | CSS circular mask | Clips video to circle |
+| 40 | `#layer-door-overlay` | overlay.png | Full-screen brass peephole frame |
+| 100 | `.animated-text-container` | Animated_Text.mp4 | "A Conversation" - hidden when Simli active |
+| var(--z-ui) | UI elements | Buttons, sliders, About modal |
 
-### How It Works
-
-- Railway reads `requirements.txt` in root → installs Python deps
-- `Procfile` tells Railway to run: `cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT`
-- FastAPI serves both API endpoints and static frontend files
-- Health check: `GET /api/health`
-
-### Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SIMLI_API_KEY` | Yes | From Simli dashboard |
-| `PORT` | Auto | Set by Railway |
-| `SIMLI_API_URL` | No | Override Simli API endpoint (default: `https://api.simli.ai/v1`) |
-
----
-
-## API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `POST /api/simli-token?agentId=xxx&faceId=xxx` | POST | Generate session token for Simli widget |
-| `GET /api/health` | GET | Health check (returns `{"status": "ok"}`) |
-| `GET /` | GET | Serve index.html |
-| `GET /{path}` | GET | Serve static files (JS, CSS, assets) |
-
-### Token Request Example
-
-```bash
-curl -X POST "https://your-app.railway.app/api/simli-token?agentId=abc123&faceId=def456"
-# Response: {"token": "session_token_here"}
+### Key CSS Variable
+```css
+--peephole-size: min(42vh, 42vw);  /* Size of video circle - adjust to match overlay.png */
 ```
 
 ---
 
-## State Machine
+## Audio System
 
-The app uses a simple state machine pattern. States flow in one direction:
+Two independent audio tracks with volume sliders:
+
+1. **Ambient** (`#ambient-main`): `hotel_hallway_subtle_3a.wav` - loops
+2. **Music** (`#music-main`): `MataZ.wav` - loops
+
+### Audio starts on first user interaction (browser policy)
+
+```javascript
+document.body.addEventListener('click', () => {
+    if (!audioStarted) startAudio();
+}, { once: true });
+```
+
+### Volume defaults
+- Ambient: 65%
+- Music: 15%
+
+---
+
+## Simli Widget Integration (IMPORTANT)
+
+### Correct SDK URL
+```html
+<script src="https://app.simli.com/simli-widget/index.js" defer></script>
+```
+
+### Backend Token Request
+```python
+# POST to https://api.simli.com/getSessionToken
+response = await client.post(
+    "https://api.simli.com/getSessionToken",
+    json={
+        "simliAPIKey": SIMLI_API_KEY,  # API key in body, NOT header
+        "agentId": agentId,
+        "faceId": faceId
+    }
+)
+token = response.json()["sessionToken"]
+```
+
+### Frontend Widget Creation
+```javascript
+const widget = document.createElement('simli-widget');
+
+// Set token attribute
+widget.setAttribute('token', sessionToken);
+
+// Set ALL attribute formats (Simli is inconsistent about which it reads)
+widget.setAttribute('agentid', agentId);
+widget.setAttribute('agent-id', agentId);
+widget.setAttribute('agentId', agentId);
+widget.setAttribute('faceid', faceId);
+widget.setAttribute('face-id', faceId);
+widget.setAttribute('faceId', faceId);
+
+// Also set as direct properties
+widget.agentId = agentId;
+widget.faceId = faceId;
+
+// Mount
+document.getElementById('simli-mount').appendChild(widget);
+
+// Auto-click Start button (Simli shows a button overlay)
+setTimeout(() => {
+    widget.querySelectorAll('button').forEach(btn => btn.click());
+}, 500);
+```
+
+### CSS to Hide Simli UI, Show Video
+```css
+#simli-mount simli-widget button,
+#simli-mount simli-widget svg,
+#simli-mount simli-widget [class*="placeholder"] {
+    display: none !important;
+}
+
+#simli-mount simli-widget video {
+    display: block !important;
+}
+```
+
+---
+
+## Character Configuration
+
+Characters are defined in `config.js`:
+
+```javascript
+wire: {
+    name: 'Wire',
+    role: 'Long-Time Resident',
+    agentId: '2439209e-abb8-4ccc-ab18-2bbbfc78d4f6',
+    faceId: 'bc603b3f-d355-424d-b613-d7db4588cb8a',
+    idleToActive: ['assets/videos/Wire_Walkup_2.mp4'],
+    activeToIdle: ['assets/videos/Wire_Walkup_2.mp4'],
+    knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
+    previewVideo: 'assets/videos/Wire_Walkup_2.mp4'
+}
+```
+
+### Adding a New Character
+
+1. Create agent in Simli dashboard → get `agentId` and `faceId`
+2. Create walkup video (character approaching door)
+3. Create knock sound (or use existing)
+4. Add entry to `characters` object in `config.js`
+5. Character automatically appears in landing gallery
+
+---
+
+## State Machine Flow
 
 ```
 idle → transitioning-in → active → transitioning-out → idle
 ```
 
-### States
+### What Happens When User Clicks Character
 
-| State | Description |
-|-------|-------------|
-| `idle` | No one at door. Landing page or empty peephole. |
-| `transitioning-in` | Playing approach/knock video. |
-| `active` | Simli widget visible. Character is speaking. |
-| `transitioning-out` | Playing departure video. Destroying widget. |
-
-### Events Emitted
-
-- `stateChange` — `{ from, to, character }`
-- `characterSummoned` — `{ character }`
-- `characterDismissed` — `{ character }`
-- `transitionStart` — `{ type: 'in' | 'out', character }`
-- `transitionEnd` — `{ type: 'in' | 'out', character }`
+1. `enterExperience(characterKey)` called
+2. State machine calls `summonCharacter()`
+3. `transitionStart` event emitted
+4. Compositor plays walkup video + knock sound
+5. Video ends → `onTransitionInComplete()`
+6. `transitionEnd` event emitted
+7. SimliIntegration creates widget, fetches token
+8. Simli face appears (if everything works)
 
 ---
 
-## Adding Characters
+## Deployment (Railway)
 
-### 1. Create Simli Agent
+### Environment Variables Required
 
-Go to [simli.com](https://simli.com) dashboard:
-- Create new agent with system prompt
-- Note the `agentId` and `faceId`
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SIMLI_API_KEY` | **Yes** | From Simli dashboard |
+| `PORT` | Auto | Set by Railway |
 
-### 2. Add to config.js
-
-```javascript
-newcharacter: {
-    name: 'Display Name',
-    role: 'Their Role',
-    agentId: 'simli_agent_id',      // From Simli dashboard
-    faceId: 'simli_face_id',        // From Simli dashboard
-    idleToActive: ['assets/videos/idle_to_name.mp4'],
-    activeToIdle: ['assets/videos/name_to_idle.mp4'],
-    knockSound: 'assets/sounds/knock.mp3',
-    previewVideo: 'assets/videos/name_preview.mp4'  // For landing gallery
-}
+### Health Check
+```
+GET /api/health
+Response: {"status": "ok", "service": "hearsay", "simli_configured": true}
 ```
 
-### 3. Add Video Assets
-
-- **Transition in:** Character approaching door (plays when summoned)
-- **Transition out:** Character leaving (plays when dismissed)
-- **Preview:** Looping clip for character gallery on landing page
-
----
-
-## Video Layer Stack
-
-The compositor manages video layers (bottom to top):
-
-| Z-Index | Layer | Content |
-|---------|-------|---------|
-| 0 | Background | Idle loop (empty hallway) |
-| 10 | Transition | Approach/departure videos |
-| 20 | Simli | Live AI talking head |
-| 30 | Peephole | Brass ring, fisheye distortion (CSS) |
-| 40 | Door overlay | Optional PNG hardware overlay |
-| 50 | Vignette | Heavy edge darkening |
-| 100 | UI | Buttons, character info |
+If `simli_configured: false`, the API key is not set.
 
 ---
 
 ## Debug Console
 
-Open browser dev tools and access:
-
 ```javascript
-// Get current state
+// Access app state
 window.hearsay.stateMachine.getState()
 
-// Manually summon a character
+// Manually summon character
 window.hearsay.stateMachine.summonCharacter('wire')
-
-// Dismiss current character
-window.hearsay.stateMachine.dismissCharacter()
 
 // Reset to idle
 window.hearsay.stateMachine.reset()
 
-// Access config
+// Check characters
 window.hearsay.characters
-window.hearsay.config
 ```
 
 ---
 
-## Simli Widget Integration
+## Known Issues & Current State (Jan 2026)
 
-The Simli widget is created dynamically when a character is summoned:
+### Working ✓
+- Landing page with character gallery
+- Background video looping
+- Animated text overlay ("A Conversation")
+- Music and ambient audio with sliders
+- Door knock sounds per character
+- About modal
+- Character walkup videos play on summon
 
-```javascript
-// Fetch token from our backend
-const token = await fetch(`/api/simli-token?agentId=${agentId}&faceId=${faceId}`, 
-    { method: 'POST' }).then(r => r.json());
+### In Progress / Issues
+- **Simli integration**: Token fetch and widget creation flow implemented, needs testing
+- **Peephole sizing**: `--peephole-size` variable needs fine-tuning to match overlay.png
+- **Text styling**: Billiard green with pink outline for readability
 
-// Create widget element
-const widget = document.createElement('simli-widget');
-widget.setAttribute('agent-id', agentId);
-widget.setAttribute('face-id', faceId);
-widget.setAttribute('session-token', token.token);
+### File Naming Rules
+- **No spaces** in filenames (use underscores)
+- **No `#` symbols** (breaks URL encoding)
+- **Use `.mp4`** for videos (not `.mov` - browser compatibility)
 
-// Listen for events
-widget.addEventListener('simli-ready', () => { /* video stream active */ });
-widget.addEventListener('simli-error', (e) => { /* handle error */ });
-widget.addEventListener('simli-ended', () => { /* session ended */ });
+---
 
-// Mount
-document.getElementById('simli-mount').appendChild(widget);
-```
+## Text Styling (Current)
 
-### Destroying Widget
+Character names use billiard green (`#1a5c3a`) with pink outline (`#e84a8a`):
 
-```javascript
-if (typeof widget.destroy === 'function') {
-    widget.destroy();
+```css
+.character-name {
+    color: #1a5c3a;
+    text-shadow: 
+        -1px -1px 0 #e84a8a,
+        1px -1px 0 #e84a8a,
+        -1px 1px 0 #e84a8a,
+        1px 1px 0 #e84a8a;
 }
-widget.remove();
 ```
-
----
-
-## Troubleshooting
-
-### Railway Deploy Fails
-
-- Check `requirements.txt` is in root (not just in `backend/`)
-- Check Railway logs for Python version issues
-- Verify `Procfile` command is correct
-
-### Simli Widget Not Loading
-
-- Check browser console for errors
-- Verify `SIMLI_API_KEY` is set in Railway
-- Test `/api/health` endpoint returns `simli_configured: true`
-- Try Simli's demo directly to rule out their service issues
-
-### "Transport Disconnected" Errors
-
-This is Simli's WebRTC layer, not our code:
-- Check network/firewall (WebRTC needs specific ports)
-- Try different network (phone hotspot)
-- Contact Simli support with the Room URL from console
-
-### Video Not Playing
-
-- Check browser autoplay policy (videos must be muted)
-- Verify video file exists at correct path
-- Check browser console for 404 errors
-
----
-
-## Local Development
-
-```bash
-# Install Python deps
-cd backend
-pip install -r requirements.txt
-
-# Run server
-uvicorn server:app --reload --port 8000
-
-# Open browser
-open http://localhost:8000
-```
-
-Note: You'll need `SIMLI_API_KEY` in environment or a `.env` file.
 
 ---
 
 *For project vision and design principles, see [HEARSAY.md](HEARSAY.md)*
-

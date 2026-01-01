@@ -74,7 +74,7 @@ export const characters = {
         faceId: 'bc603b3f-d355-424d-b613-d7db4588cb8a',
         idleToActive: ['assets/videos/Wire_Walkup.mp4'],
         activeToIdle: ['assets/videos/Wire_Walkup.mp4'],  // TODO: need departure video
-        knockSound: 'assets/sounds/knock.mp3',
+        knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
         previewVideo: 'assets/videos/Wire_Walkup.mp4'
     },
     
@@ -85,7 +85,7 @@ export const characters = {
         faceId: 'xxx',   // TODO: Simli face ID
         idleToActive: ['assets/videos/Marisol_Walkup.mp4'],
         activeToIdle: ['assets/videos/Marisol_Walkup.mp4'],  // TODO: need departure video
-        knockSound: 'assets/sounds/knock.mp3',
+        knockSound: 'assets/sounds/door_knocks/knock_office.wav',
         previewVideo: 'assets/videos/Marisol_Walkup.mp4'
     },
     

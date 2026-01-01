@@ -491,6 +491,15 @@ body {
     justify-content: center;
 }
 
+/* Full-screen peephole overlay */
+#peephole-overlay {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Legacy door-ring support */
 #door-ring {
     max-width: calc(var(--peephole-size) + 120px);
     max-height: calc(var(--peephole-size) + 120px);

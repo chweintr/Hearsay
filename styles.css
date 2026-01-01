@@ -372,6 +372,9 @@ body {
     
     /* Make black pixels transparent - key for compositing face over hallway */
     mix-blend-mode: screen;
+    
+    /* Ensure Simli widget is clickable */
+    pointer-events: auto;
 }
 
 #simli-mount {
@@ -393,6 +396,11 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    
+    /* Ensure clickable for Simli's internal buttons */
+    pointer-events: auto;
+    position: relative;
+    z-index: 25;
 }
 
 /* Target the video element inside Simli widget */
@@ -413,10 +421,14 @@ body {
     position: absolute;
     inset: 0;
     z-index: var(--z-peephole);
-    pointer-events: none;
+    pointer-events: none;  /* Clicks pass through */
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#layer-peephole * {
+    pointer-events: none;
 }
 
 #peephole-mask {
@@ -485,10 +497,15 @@ body {
     position: absolute;
     inset: 0;
     z-index: var(--z-door-overlay);
-    pointer-events: none;
+    pointer-events: none;  /* Clicks pass through to Simli */
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Make sure overlay image also passes through clicks */
+#peephole-overlay {
+    pointer-events: none;
 }
 
 /* Full-screen peephole overlay */

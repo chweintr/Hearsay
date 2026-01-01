@@ -72,10 +72,10 @@ export const characters = {
         role: 'Long-Time Resident',
         agentId: '2439209e-abb8-4ccc-ab18-2bbbfc78d4f6',
         faceId: 'bc603b3f-d355-424d-b613-d7db4588cb8a',
-        idleToActive: ['assets/videos/Wire_Walkup.mp4'],
-        activeToIdle: ['assets/videos/Wire_Walkup.mp4'],  // TODO: need departure video
+        idleToActive: ['assets/videos/Wire_Walkup_2.mp4'],
+        activeToIdle: ['assets/videos/Wire_Walkup_2.mp4'],  // TODO: need departure video
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
-        previewVideo: 'assets/videos/Wire_Walkup.mp4'
+        previewVideo: 'assets/videos/Wire_Walkup_2.mp4'
     },
     
     marisol: {

@@ -150,19 +150,15 @@ body {
     right: 0;
     display: flex;
     justify-content: center;
-    z-index: 100;  /* Above overlay */
+    z-index: 5;  /* Below overlay so it blends with landing background */
     pointer-events: none;
-    /* Force blend with underlying content */
-    isolation: isolate;
 }
 
 .animated-text-video {
     width: 320px;
     height: auto;
-    /* Screen blend - black becomes transparent */
+    /* Screen blend - pure black becomes transparent */
     mix-blend-mode: screen;
-    /* Aggressively crush dark pixels to black, boost light pixels */
-    filter: contrast(3) brightness(0.8) saturate(1.2);
 }
 
 /* Hide when Simli is active */

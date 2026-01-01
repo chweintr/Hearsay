@@ -103,9 +103,21 @@ export class SimliIntegration {
             
             // Create widget element
             this.widget = document.createElement('simli-widget');
+            
+            // Set token
+            this.widget.setAttribute('token', token);
+            
+            // Set ALL attribute formats (Simli is inconsistent)
+            this.widget.setAttribute('agentid', character.agentId);
             this.widget.setAttribute('agent-id', character.agentId);
+            this.widget.setAttribute('agentId', character.agentId);
+            this.widget.setAttribute('faceid', character.faceId);
             this.widget.setAttribute('face-id', character.faceId);
-            this.widget.setAttribute('session-token', token);
+            this.widget.setAttribute('faceId', character.faceId);
+            
+            // Also set as direct properties
+            this.widget.agentId = character.agentId;
+            this.widget.faceId = character.faceId;
             
             // Widget event listeners
             this.widget.addEventListener('simli-ready', () => {
@@ -127,6 +139,23 @@ export class SimliIntegration {
             // Mount widget
             this.mountPoint.appendChild(this.widget);
             console.log(`[Simli] ${character.name} mounted`);
+            
+            // Auto-click Simli's Start button after it loads
+            setTimeout(() => {
+                console.log('[Simli] Looking for Start button...');
+                const buttons = this.widget.querySelectorAll('button');
+                console.log(`[Simli] Found ${buttons.length} buttons`);
+                buttons.forEach(btn => {
+                    console.log('[Simli] Clicking button:', btn.textContent);
+                    btn.click();
+                });
+            }, 500);
+            
+            // Try again after a bit longer
+            setTimeout(() => {
+                const buttons = this.widget.querySelectorAll('button');
+                buttons.forEach(btn => btn.click());
+            }, 1500);
             
         } catch (error) {
             console.error('[Simli] Widget creation failed:', error);

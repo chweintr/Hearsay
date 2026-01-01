@@ -38,7 +38,7 @@ app.add_middleware(
 
 # Configuration from environment
 SIMLI_API_KEY = os.getenv("SIMLI_API_KEY", "")
-SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.ai/v1")
+SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.com")
 PORT = int(os.getenv("PORT", 8000))
 
 # Path to frontend files (parent directory of backend/)
@@ -78,33 +78,34 @@ async def get_simli_token(
             detail="SIMLI_API_KEY not configured. Set it in Railway environment variables."
         )
     
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{SIMLI_API_URL}/sessions",
-                headers={
-                    "Authorization": f"Bearer {SIMLI_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "agentId": agentId,
-                    "faceId": faceId
-                },
-                timeout=30.0
-            )
-            
-            if response.status_code != 200:
-                print(f"[HEARSAY] Simli API error: {response.status_code}")
-                print(f"[HEARSAY] Response: {response.text}")
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Simli API error: {response.text}"
+try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{SIMLI_API_URL}/getSessionToken",
+                    headers={
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "simliAPIKey": SIMLI_API_KEY,
+                        "agentId": agentId,
+                        "faceId": faceId
+                    },
+                    timeout=30.0
                 )
-            
-            data = response.json()
-            
-            # Simli may return token as 'sessionToken' or 'token'
-            token = data.get("sessionToken") or data.get("token") or ""
+                
+                if response.status_code != 200:
+                    print(f"[HEARSAY] Simli API error: {response.status_code}")
+                    print(f"[HEARSAY] Response: {response.text}")
+                    raise HTTPException(
+                        status_code=response.status_code,
+                        detail=f"Simli API error: {response.text}"
+                    )
+                
+                data = response.json()
+                print(f"[HEARSAY] Simli response: {data}")
+                
+                # Simli returns 'sessionToken'
+                token = data.get("sessionToken") or data.get("token") or ""
             
             if not token:
                 print(f"[HEARSAY] No token in response: {data}")

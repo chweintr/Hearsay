@@ -105,12 +105,9 @@
         <source src="assets/sounds/hotel_hallway_subtle_4.wav" type="audio/wav">
     </audio>
     
-    <!-- Music tracks - play sequentially, controlled by music slider -->
-    <audio id="music-1" class="music-track" preload="auto">
+    <!-- Music track - single loop -->
+    <audio id="music-main" class="music-track" loop preload="auto">
         <source src="assets/sounds/Mata Z.wav" type="audio/wav">
-    </audio>
-    <audio id="music-2" class="music-track" preload="auto">
-        <source src="assets/sounds/Mata Z  whole Kazoo cover  (Remastered).wav" type="audio/wav">
     </audio>
     
     <!-- Audio Controls -->
@@ -278,14 +275,13 @@
         // ─────────────────────────────────────────────────────────────────────
         
         const ambientTracks = document.querySelectorAll('.ambient-track');
-        const musicTracks = Array.from(document.querySelectorAll('.music-track'));
+        const musicTrack = document.getElementById('music-main');
         const ambientSlider = document.getElementById('ambient-volume');
         const musicSlider = document.getElementById('music-volume');
         const audioToggle = document.getElementById('audio-toggle');
         
         let audioStarted = false;
         let audioMuted = true;
-        let currentMusicIndex = 0;
         
         // Set initial volumes
         function updateAmbientVolume(value) {
@@ -297,40 +293,25 @@
         
         function updateMusicVolume(value) {
             const vol = value / 100;
-            musicTracks.forEach(track => {
-                track.volume = vol;
-            });
+            if (musicTrack) musicTrack.volume = vol;
         }
-        
-        // Play music tracks sequentially (one after another)
-        function playNextMusicTrack() {
-            const track = musicTracks[currentMusicIndex];
-            track.volume = musicSlider.value / 100;
-            track.play().catch(e => console.log('Music blocked:', e));
-        }
-        
-        // Set up sequential playback - when one ends, play the next
-        musicTracks.forEach((track, index) => {
-            track.addEventListener('ended', () => {
-                currentMusicIndex = (index + 1) % musicTracks.length;
-                playNextMusicTrack();
-            });
-        });
         
         // Start all audio (must be triggered by user interaction)
         function startAudio() {
             if (audioStarted) return;
             audioStarted = true;
             
-            // Start all ambient tracks (they layer together)
+            // Start ambient tracks
             ambientTracks.forEach(track => {
                 track.volume = ambientSlider.value / 100;
                 track.play().catch(e => console.log('Ambient blocked:', e));
             });
             
-            // Start first music track only (sequential playback)
-            currentMusicIndex = 0;
-            playNextMusicTrack();
+            // Start music (single track, loops)
+            if (musicTrack) {
+                musicTrack.volume = musicSlider.value / 100;
+                musicTrack.play().catch(e => console.log('Music blocked:', e));
+            }
             
             audioMuted = false;
             audioToggle.textContent = '🔊';
@@ -346,9 +327,9 @@
             
             audioMuted = !audioMuted;
             
-            [...ambientTracks, ...musicTracks].forEach(track => {
-                track.muted = audioMuted;
-            });
+            // Mute/unmute all audio
+            ambientTracks.forEach(track => track.muted = audioMuted);
+            if (musicTrack) musicTrack.muted = audioMuted;
             
             audioToggle.textContent = audioMuted ? '🔇' : '🔊';
             audioToggle.classList.toggle('playing', !audioMuted);

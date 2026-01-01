@@ -42,8 +42,10 @@ export class SimliIntegration {
      * Handle transition completion
      */
     handleTransitionEnd({ type, character }) {
+        console.log(`[Simli] TransitionEnd received: type=${type}, character=${character?.name}`);
         if (type === 'in') {
             // Character has arrived, create widget
+            console.log('[Simli] Creating widget for', character?.name);
             this.createWidget(character);
         }
     }
@@ -80,6 +82,8 @@ export class SimliIntegration {
      * @param {Object} character - Character config
      */
     async createWidget(character) {
+        console.log('[Simli] createWidget called with:', character);
+        
         if (this.widget) {
             console.warn('[Simli] Widget exists, destroying first');
             this.destroyWidget();
@@ -87,12 +91,15 @@ export class SimliIntegration {
 
         try {
             console.log(`[Simli] Creating widget for ${character.name}...`);
+            console.log(`[Simli] Agent ID: ${character.agentId}, Face ID: ${character.faceId}`);
             
             // Show loading state
             document.body.classList.add('loading');
             
             // Fetch session token from backend
+            console.log('[Simli] Fetching token...');
             const token = await this.fetchToken(character.agentId, character.faceId);
+            console.log('[Simli] Token received:', token ? 'yes' : 'no');
             
             // Create widget element
             this.widget = document.createElement('simli-widget');

@@ -410,13 +410,13 @@ body.simli-active .animated-text-container {
 }
 
 #simli-mount simli-widget {
-    /* Face sizing - about 70% of peephole for good framing */
-    width: 85%;
-    height: 85%;
+    /* Face sizing - smaller to fit better in peephole */
+    width: 60%;
+    height: 60%;
     border-radius: 50%;
     overflow: hidden;
     
-    /* Center the face */
+    /* Center the widget */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -431,10 +431,11 @@ body.simli-active .animated-text-container {
 #simli-mount simli-widget video,
 #simli-mount simli-widget canvas {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* Ensure face is centered in frame */
-    object-position: center 30%;
+    height: auto;
+    min-height: 100%;
+    object-fit: contain;
+    /* Pull face down slightly so head is visible */
+    object-position: center top;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

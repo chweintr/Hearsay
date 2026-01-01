@@ -183,10 +183,13 @@ export class Compositor {
 
     /**
      * Show active state - someone at the door, Simli visible
+     * Background STAYS visible - Simli composites on top with blend mode
      */
     showActiveState() {
         this.showLayer('simli');
         this.hideLayer('transition');
+        // Note: background layer stays visible - mix-blend-mode: screen
+        // makes Simli's black background transparent
         
         // Add active indicator for CSS effects
         document.body.classList.add('simli-active');

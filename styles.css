@@ -349,6 +349,16 @@ body {
         var(--shadow-mid) 60%,
         var(--shadow-deep) 100%
     );
+    
+    /* Keep playing during conversation - don't hide */
+}
+
+#layer-background video {
+    /* Hallway background should fill the peephole */
+    width: 120%;
+    height: 120%;
+    object-fit: cover;
+    transform: scale(1.05);
 }
 
 #layer-transition {
@@ -359,6 +369,9 @@ body {
 #layer-simli {
     z-index: var(--z-simli);
     transition: opacity 0.4s ease;
+    
+    /* Make black pixels transparent - key for compositing face over hallway */
+    mix-blend-mode: screen;
 }
 
 #simli-mount {
@@ -370,10 +383,26 @@ body {
 }
 
 #simli-mount simli-widget {
-    width: 100%;
-    height: 100%;
+    /* Face sizing - about 70% of peephole for good framing */
+    width: 85%;
+    height: 85%;
     border-radius: 50%;
     overflow: hidden;
+    
+    /* Center the face */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Target the video element inside Simli widget */
+#simli-mount simli-widget video,
+#simli-mount simli-widget canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Ensure face is centered in frame */
+    object-position: center 30%;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

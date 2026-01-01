@@ -119,6 +119,7 @@ export class Compositor {
      * @param {string} type - 'in' or 'out'
      */
     playTransitionVideo(videoArray, type) {
+        console.log(`[Compositor] playTransitionVideo called, type: ${type}, videos:`, videoArray);
         const videoPath = randomFrom(videoArray);
         
         if (!videoPath) {
@@ -152,14 +153,17 @@ export class Compositor {
      */
     handleTransitionVideoEnd() {
         const type = this.videos.transition.dataset.transitionType;
+        console.log(`[Compositor] Transition video ended, type: ${type}`);
         
         // Hide transition layer
         this.hideLayer('transition');
         
         // Notify state machine to proceed
         if (type === 'in') {
+            console.log('[Compositor] Calling onTransitionInComplete...');
             this.stateMachine.onTransitionInComplete();
         } else if (type === 'out') {
+            console.log('[Compositor] Calling onTransitionOutComplete...');
             this.stateMachine.onTransitionOutComplete();
         }
     }

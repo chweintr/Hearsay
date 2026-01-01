@@ -31,8 +31,8 @@
     --glow-warm: rgba(201, 162, 39, 0.4);
     --glow-soft: rgba(201, 162, 39, 0.2);
     
-    /* Sizing - fill the overlay's transparent center */
-    --peephole-size: min(58vh, 58vw);
+    /* Sizing - fill the overlay's transparent center (the yellow ring) */
+    --peephole-size: min(42vh, 42vw);
     
     /* Z-index layers */
     --z-background: 0;
@@ -144,12 +144,12 @@ body {
 /* Animated text overlay - positioned above title area */
 .animated-text-container {
     position: absolute;
-    top: 8vh;
+    top: 12vh;
     left: 50%;
     transform: translateX(-50%);
-    width: 180px;
+    width: 320px;
     height: auto;
-    z-index: 3;
+    z-index: 100;  /* Above overlay */
     pointer-events: none;
 }
 
@@ -157,7 +157,7 @@ body {
     width: 100%;
     height: auto;
     mix-blend-mode: screen;  /* Black becomes transparent */
-    opacity: 0.9;
+    opacity: 1;
 }
 
 /* Hide when Simli is active */
@@ -431,11 +431,11 @@ body.simli-active .animated-text-container {
 #simli-mount simli-widget video,
 #simli-mount simli-widget canvas {
     width: 100%;
-    height: auto;
-    min-height: 100%;
-    object-fit: contain;
-    /* Pull face down slightly so head is visible */
-    object-position: center top;
+    height: 100%;
+    object-fit: cover;
+    /* Center the face properly */
+    object-position: center 25%;
+    transform: scale(0.65);  /* Zoom out to show more of face */
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

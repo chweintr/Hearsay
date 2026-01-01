@@ -81,22 +81,43 @@ async def test_simli_connection():
         results["dns_resolved"] = False
         results["dns_error"] = str(e)
     
-    # Test HTTPS connection
+    # Test HTTPS connection with relaxed SSL (for debugging)
     try:
+        import ssl
+        # Try with default SSL first
         async with httpx.AsyncClient(timeout=10.0) as client:
-            # Just test connectivity with a simple GET (might 404, that's ok)
             response = await client.get("https://api.simli.com/")
             results["https_connection"] = True
             results["https_status"] = response.status_code
     except httpx.ConnectError as e:
         results["https_connection"] = False
         results["https_error"] = f"ConnectError: {str(e)}"
+        
+        # Try again with SSL verification disabled
+        try:
+            async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
+                response = await client.get("https://api.simli.com/")
+                results["https_no_verify"] = True
+                results["https_no_verify_status"] = response.status_code
+        except Exception as e2:
+            results["https_no_verify"] = False
+            results["https_no_verify_error"] = f"{type(e2).__name__}: {str(e2)}"
+            
     except httpx.TimeoutException as e:
         results["https_connection"] = False
         results["https_error"] = f"Timeout: {str(e)}"
     except Exception as e:
         results["https_connection"] = False
         results["https_error"] = f"{type(e).__name__}: {str(e)}"
+    
+    # Also try a different known-good endpoint to verify outbound HTTPS works
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get("https://httpbin.org/get")
+            results["httpbin_works"] = True
+    except Exception as e:
+        results["httpbin_works"] = False
+        results["httpbin_error"] = str(e)
     
     return results
 

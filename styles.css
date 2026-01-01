@@ -351,22 +351,23 @@ body.simli-active .animated-text-container {
    VIDEO LAYERS
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIDEO LAYERS - Full screen, overlay.png does all the masking
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .video-layer {
     position: absolute;
-    width: var(--peephole-size);
-    height: var(--peephole-size);
-    border-radius: 50%;
-    overflow: hidden;
+    inset: 0;  /* Full screen */
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 .video-layer video {
-    width: 120%;
-    height: 120%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    transform: scale(1.05);
 }
 
 .video-layer.hidden {
@@ -376,22 +377,14 @@ body.simli-active .animated-text-container {
 
 #layer-background {
     z-index: var(--z-background);
-    background: radial-gradient(
-        ellipse at center,
-        #3d2929 0%,
-        var(--shadow-mid) 60%,
-        var(--shadow-deep) 100%
-    );
-    
-    /* Keep playing during conversation - don't hide */
+    background: var(--shadow-deep);
 }
 
 #layer-background video {
-    /* Hallway background should fill the peephole */
-    width: 120%;
-    height: 120%;
+    /* Hallway fills behind everything - overlay.png masks it */
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    transform: scale(1.05);
 }
 
 #layer-transition {
@@ -403,7 +396,7 @@ body.simli-active .animated-text-container {
     z-index: var(--z-simli);
     transition: opacity 0.4s ease;
     
-    /* Make black pixels transparent - key for compositing face over hallway */
+    /* Make black pixels transparent - Simli face composites over hallway */
     mix-blend-mode: screen;
     
     /* Ensure Simli widget is clickable */
@@ -419,11 +412,9 @@ body.simli-active .animated-text-container {
 }
 
 #simli-mount simli-widget {
-    /* Face sizing - fill the peephole opening */
-    width: 95%;
-    height: 95%;
-    border-radius: 50%;
-    overflow: hidden;
+    /* Full size - overlay.png does all masking */
+    width: 100%;
+    height: 100%;
     
     /* Center the widget */
     display: flex;
@@ -443,14 +434,13 @@ body.simli-active .animated-text-container {
     display: none !important;
 }
 
-/* Ensure Simli video is visible and styled */
+/* Simli video - full size, overlay.png does all masking */
 #simli-mount simli-widget video {
     display: block !important;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 25%;
-    transform: scale(0.65);  /* Zoom out to show more of face */
+    object-position: center center;
 }
 
 /* Hide canvas if present */
@@ -459,79 +449,17 @@ body.simli-active .animated-text-container {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PEEPHOLE FRAME
+   PEEPHOLE FRAME - HIDDEN (using overlay.png instead)
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* CSS peephole mask disabled - overlay.png does all the work now */
 #layer-peephole {
-    position: absolute;
-    inset: 0;
-    z-index: var(--z-peephole);
-    pointer-events: none;  /* Clicks pass through */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: none;
 }
 
-#layer-peephole * {
-    pointer-events: none;
-}
-
-#peephole-mask {
-    position: relative;
-    width: calc(var(--peephole-size) + 50px);
-    height: calc(var(--peephole-size) + 50px);
-    border-radius: 50%;
-    
-    background: 
-        radial-gradient(circle at center, 
-            transparent 0%,
-            transparent calc(50% - 30px),
-            var(--brass-oxidized) calc(50% - 30px),
-            var(--brass-dark) calc(50% - 25px),
-            var(--brass-mid) calc(50% - 18px),
-            var(--brass-highlight) calc(50% - 15px),
-            var(--brass-mid) calc(50% - 12px),
-            var(--brass-dark) calc(50% - 8px),
-            var(--wood-dark) calc(50% - 5px),
-            var(--shadow-deep) calc(50% - 5px)
-        );
-    
-    box-shadow: 
-        inset 0 0 80px 30px rgba(0, 0, 0, 0.9),
-        inset 0 0 30px 10px rgba(0, 0, 0, 0.6),
-        0 0 150px 80px rgba(0, 0, 0, 0.95);
-}
-
+#peephole-mask,
 #peephole-glass {
-    position: absolute;
-    inset: 25px;
-    border-radius: 50%;
-    background: radial-gradient(
-        circle at center,
-        transparent 55%,
-        rgba(0, 0, 0, 0.08) 65%,
-        rgba(0, 0, 0, 0.2) 75%,
-        rgba(0, 0, 0, 0.45) 85%,
-        rgba(0, 0, 0, 0.7) 92%,
-        rgba(0, 0, 0, 0.9) 100%
-    );
-    pointer-events: none;
-}
-
-#peephole-mask::after {
-    content: '';
-    position: absolute;
-    width: 25%;
-    height: 12%;
-    top: 18%;
-    left: 22%;
-    background: radial-gradient(
-        ellipse at center,
-        rgba(255, 255, 255, 0.12) 0%,
-        transparent 70%
-    );
-    border-radius: 50%;
-    transform: rotate(-25deg);
+    display: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

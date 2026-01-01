@@ -137,83 +137,61 @@ async def get_simli_token(
             detail="SIMLI_API_KEY not configured. Set it in Railway environment variables."
         )
     
-    simli_url = "https://api.simli.com/getSessionToken"
+    # Try multiple endpoints/approaches
+    simli_urls = [
+        "https://api.simli.com/getSessionToken",
+        "https://35.214.172.224/getSessionToken",  # Direct IP
+    ]
+    
     payload = {
         "simliAPIKey": SIMLI_API_KEY,
         "agentId": agentId,
         "faceId": faceId
     }
     
-    # Headers to avoid being blocked
+    # Headers to look like a browser
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
         "Content-Type": "application/json",
-        "Origin": "https://web-production-607f7.up.railway.app"
+        "Origin": "https://app.simli.com",
+        "Referer": "https://app.simli.com/",
+        "Host": "api.simli.com"
     }
     
-    print(f"[HEARSAY] Calling Simli API: {simli_url}")
-    print(f"[HEARSAY] Payload (key hidden): agentId={agentId}, faceId={faceId}")
+    last_error = None
     
-    try:
-        async with httpx.AsyncClient(timeout=30.0, headers=headers) as client:
-            response = await client.post(
-                simli_url,
-                json=payload
-            )
-            
-            print(f"[HEARSAY] Simli API response status: {response.status_code}")
-            
-            if response.status_code != 200:
-                print(f"[HEARSAY] Simli API error: {response.status_code}")
-                print(f"[HEARSAY] Response: {response.text}")
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Simli API error: {response.text}"
+    for simli_url in simli_urls:
+        print(f"[HEARSAY] Trying Simli API: {simli_url}")
+        print(f"[HEARSAY] Payload (key hidden): agentId={agentId}, faceId={faceId}")
+        
+        try:
+            # Use verify=False for IP-based requests
+            verify = not simli_url.startswith("https://35.")
+            async with httpx.AsyncClient(timeout=30.0, headers=headers, verify=verify) as client:
+                response = await client.post(
+                    simli_url,
+                    json=payload
                 )
-            
-            data = response.json()
-            print(f"[HEARSAY] Simli response keys: {list(data.keys())}")
-            
-            # Simli returns 'sessionToken'
-            token = data.get("sessionToken") or data.get("token") or ""
-        
-        if not token:
-            print(f"[HEARSAY] No token in response: {data}")
-            raise HTTPException(
-                status_code=500,
-                detail="No token in Simli response"
-            )
-        
-        print(f"[HEARSAY] Token obtained successfully (length: {len(token)})")
-        return {"token": token}
-        
-    except httpx.ConnectError as e:
-        print(f"[HEARSAY] Connection error: {e}")
-        raise HTTPException(
-            status_code=503,
-            detail=f"Cannot connect to Simli API: {str(e)}"
-        )
-    except httpx.TimeoutException as e:
-        print(f"[HEARSAY] Timeout error: {e}")
-        raise HTTPException(
-            status_code=504,
-            detail=f"Simli API timeout: {str(e)}"
-        )
-    except httpx.RequestError as e:
-        print(f"[HEARSAY] Request error type: {type(e).__name__}")
-        print(f"[HEARSAY] Request error: {e}")
-        raise HTTPException(
-            status_code=503,
-            detail=f"Failed to connect to Simli API: {type(e).__name__}: {str(e)}"
-        )
-    except Exception as e:
-        print(f"[HEARSAY] Unexpected error type: {type(e).__name__}")
-        print(f"[HEARSAY] Unexpected error: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Unexpected error: {type(e).__name__}: {str(e)}"
-        )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    print(f"[HEARSAY] Success from {simli_url}")
+                    token = data.get("sessionToken") or data.get("token") or ""
+                    if token:
+                        return {"token": token}
+                        
+                print(f"[HEARSAY] {simli_url} returned {response.status_code}: {response.text[:200]}")
+                last_error = f"Status {response.status_code}: {response.text[:200]}"
+                
+        except Exception as e:
+            print(f"[HEARSAY] {simli_url} failed: {type(e).__name__}: {str(e)}")
+            last_error = f"{type(e).__name__}: {str(e)}"
+            continue
+    
+    # If all URLs failed
+    raise HTTPException(status_code=503, detail=f"Cannot connect to Simli API: {last_error}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

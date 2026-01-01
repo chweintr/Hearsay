@@ -81,33 +81,27 @@ async def test_simli_connection():
         results["dns_resolved"] = False
         results["dns_error"] = str(e)
     
-    # Test HTTPS connection with proper headers (Simli may block bare requests)
+    # Test HTTPS connection - try BOTH domains
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Accept": "application/json",
         "Content-Type": "application/json"
     }
     
-    # Try the actual token endpoint, not root
-    try:
-        async with httpx.AsyncClient(timeout=15.0, headers=headers) as client:
-            # Test with a dummy POST to the actual endpoint
-            response = await client.post(
-                "https://api.simli.com/getSessionToken",
-                json={"simliAPIKey": "test", "agentId": "test", "faceId": "test"}
-            )
-            results["simli_endpoint"] = True
-            results["simli_status"] = response.status_code
-            results["simli_response"] = response.text[:200]  # First 200 chars
-    except httpx.ConnectError as e:
-        results["simli_endpoint"] = False
-        results["simli_error"] = f"ConnectError: {str(e)}"
-    except httpx.TimeoutException as e:
-        results["simli_endpoint"] = False
-        results["simli_error"] = f"Timeout: {str(e)}"
-    except Exception as e:
-        results["simli_endpoint"] = False
-        results["simli_error"] = f"{type(e).__name__}: {str(e)}"
+    # Try simli.AI first (correct domain!)
+    for domain in ["api.simli.ai", "api.simli.com"]:
+        try:
+            async with httpx.AsyncClient(timeout=15.0, headers=headers) as client:
+                response = await client.post(
+                    f"https://{domain}/getSessionToken",
+                    json={"simliAPIKey": "test", "agentId": "test", "faceId": "test"}
+                )
+                results[f"{domain}_works"] = True
+                results[f"{domain}_status"] = response.status_code
+                results[f"{domain}_response"] = response.text[:100]
+        except Exception as e:
+            results[f"{domain}_works"] = False
+            results[f"{domain}_error"] = f"{type(e).__name__}: {str(e)}"
     
     # Also try httpbin to verify outbound HTTPS works
     try:
@@ -137,14 +131,17 @@ async def get_simli_token(
             detail="SIMLI_API_KEY not configured. Set it in Railway environment variables."
         )
     
-    # Try multiple endpoints/approaches
+    # Try multiple endpoints - note: simli.AI not simli.COM!
     simli_urls = [
-        "https://api.simli.com/getSessionToken",
-        "https://35.214.172.224/getSessionToken",  # Direct IP
+        "https://api.simli.ai/getSessionToken",   # Correct domain!
+        "https://api.simli.com/getSessionToken",  # Backup
     ]
     
+    # Strip whitespace from API key
+    api_key = SIMLI_API_KEY.strip()
+    
     payload = {
-        "simliAPIKey": SIMLI_API_KEY,
+        "simliAPIKey": api_key,
         "agentId": agentId,
         "faceId": faceId
     }

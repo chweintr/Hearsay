@@ -38,8 +38,11 @@ app.add_middleware(
 
 # Configuration from environment
 SIMLI_API_KEY = os.getenv("SIMLI_API_KEY", "")
-SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.com")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 PORT = int(os.getenv("PORT", 8000))
+
+print(f"[HEARSAY] SIMLI_API_KEY configured: {bool(SIMLI_API_KEY)}")
+print(f"[HEARSAY] ELEVENLABS_API_KEY configured: {bool(ELEVENLABS_API_KEY)}")
 
 # Path to frontend files (parent directory of backend/)
 FRONTEND_DIR = Path(__file__).parent.parent
@@ -153,21 +156,32 @@ async def get_simli_token(
     # Correct endpoint: /auto/token (NOT /getSessionToken!)
     simli_url = "https://api.simli.ai/auto/token"
     
-    # Strip whitespace from API key
+    # Strip whitespace from API keys
     api_key = SIMLI_API_KEY.strip()
+    elevenlabs_key = ELEVENLABS_API_KEY.strip() if ELEVENLABS_API_KEY else ""
     
+    # Build payload with ALL required fields
     payload = {
         "simliAPIKey": api_key,
-        "expiryStamp": -1,  # No expiry
+        "agentId": agentId,      # ← CRITICAL: Agent config
+        "faceId": faceId,        # ← CRITICAL: Face to animate
+        "expiryStamp": -1,       # No expiry
         "createTranscript": True
     }
+    
+    # Add ElevenLabs TTS key if configured (REQUIRED for voice!)
+    if elevenlabs_key:
+        payload["ttsAPIKey"] = elevenlabs_key
+        print(f"[HEARSAY] Including ElevenLabs TTS key")
+    else:
+        print(f"[HEARSAY] WARNING: No ELEVENLABS_API_KEY - agent won't speak!")
     
     headers = {
         "Content-Type": "application/json"
     }
     
     print(f"[HEARSAY] Calling Simli API: {simli_url}")
-    print(f"[HEARSAY] Payload (key hidden): expiryStamp=-1, createTranscript=True")
+    print(f"[HEARSAY] Payload: agentId={agentId}, faceId={faceId}, ttsAPIKey={'yes' if elevenlabs_key else 'NO!'}")
     
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:

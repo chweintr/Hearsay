@@ -889,6 +889,88 @@ body.simli-active .animated-text-container {
     aspect-ratio: 16/9;
 }
 
+.product-tagline {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--brass-light);
+    margin: 0 0 0.5rem;
+    opacity: 0.9;
+}
+
+.product-details {
+    margin: 0.75rem 0;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.product-details.collapsed {
+    display: none;
+}
+
+.product-details h4 {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    color: var(--parchment);
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.product-contents {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.75rem;
+}
+
+.product-contents li {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.75rem;
+    color: var(--brass-light);
+    padding: 0.2rem 0;
+    padding-left: 1rem;
+    position: relative;
+}
+
+.product-contents li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--brass-dark);
+}
+
+.product-cocktails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--brass-dark);
+}
+
+.cocktail-label, .virgin-label {
+    font-size: 0.7rem;
+    color: var(--brass-mid);
+}
+
+.details-toggle {
+    background: transparent;
+    border: 1px solid var(--brass-dark);
+    color: var(--brass-light);
+    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.details-toggle:hover {
+    border-color: var(--brass-mid);
+    color: var(--parchment);
+}
+
 .product-image {
     aspect-ratio: 1;
     background: var(--shadow-deep);

@@ -391,75 +391,187 @@
         // Sensory Pack Products - 9 characters + Hotel sampler
         const storeProducts = [
             {
-                id: 'wire',
-                name: 'WIRE: "The Long Timer"',
-                price: '$35',
-                image: null,
-                description: 'Tea tin, sugar cubes, racing form guide, sandalwood scent, brass key "614". Cocktail: Hot toddy with mānuka honey & kawakawa.'
-            },
-            {
-                id: 'marisol',
-                name: 'MARISOL: "Owner\'s Daughter"',
-                price: '$35',
-                image: null,
-                description: 'Brass key (number scratched off), wax seal with Vance crest, two scents ("HER" and "THE DISGUISE"), false lashes, redacted legal document. Third generation. Complicated estate. Cocktail: Dark & Stormy.'
-            },
-            {
-                id: 'eddie',
-                name: 'EDDIE: "Night Kitchen"',
-                price: '$35',
-                image: null,
-                description: 'Mole spice blend, tamarind candies, Lotería cards, Mexican vanilla. Cocktail: Michelada mix.'
-            },
-            {
-                id: 'dotty',
-                name: 'DOTTY: "Room 308"',
-                price: '$35',
-                image: null,
-                description: 'Horehound drops in silver tin, mini gin bottle, lipstick-stained napkin, tarnished compact. Cocktail: Gin fizz powder.'
-            },
-            {
                 id: 'tane',
-                name: 'TANE: "The Young Horse"',
+                name: 'TANE — "Live Fast"',
+                tagline: 'We\'ll show you what you\'re hiding.',
                 price: '$35',
                 image: 'assets/images/Sensory Packs/Sensory_Pack_Tane_4.png',
                 featured: true,
-                description: 'Fluorescent packaging. Keith Haring energy. Energy drink powder ("MIX WITH VODKA OR REGRET"), temporary tattoos, "THE STARTING GATE" matchbook, PULSE cologne. Cocktail: Energy drink vodka shot. BONUS: Send us your face — receive a Polaroid of you at the club with Tane.'
+                description: 'Fluorescent packaging. Keith Haring-esque figures. Nightclub bathroom, 1987.',
+                contents: [
+                    'Energy drink powder ("MIX WITH VODKA OR REGRET")',
+                    'Temporary tattoo sheet — horse, "LONG ODDS", anatomical heart',
+                    '"PULSE" cologne sample — synthetic musk, citrus, overconfidence',
+                    '"THE STARTING GATE" matchbook',
+                    'Scratch-off fortune cards',
+                    'Polaroid submission card — Send your face, get a Polaroid back'
+                ],
+                cocktail: 'Energy drink vodka shot',
+                virgin: 'Energy drink straight'
+            },
+            {
+                id: 'wire',
+                name: 'WIRE — "The Sixth Floor"',
+                tagline: 'For patience. Steep until you understand.',
+                price: '$35',
+                image: null,
+                description: 'Muted earth tones. Brown paper, horse racing stamps, wax seal. Packed in dried tea leaves.',
+                contents: [
+                    'Kawakawa & mānuka honey tea blend',
+                    'Vintage sugar cubes in tin',
+                    'Racing form guide — hand-annotated',
+                    'Sandalwood & petrichor scent',
+                    'Brass key "614"',
+                    'Huia feather replica'
+                ],
+                cocktail: 'Hot Toddy with mānuka honey',
+                virgin: 'Tea-based toddy'
+            },
+            {
+                id: 'marisol',
+                name: 'MARISOL — "The Inheritance"',
+                tagline: 'What he knew. What he didn\'t tell me.',
+                price: '$35',
+                image: null,
+                description: 'Matte black, blind embossed. Burgundy wax seal with "V" for Vance.',
+                contents: [
+                    'Brass key — room number scratched off',
+                    'Wax seal kit with Vance crest',
+                    'Two scent vials: "HER" and "THE DISGUISE"',
+                    'Theatrical false lashes',
+                    'Redacted legal document',
+                    'Polaroid — figure in fourth floor window'
+                ],
+                cocktail: 'Dark & Stormy',
+                virgin: 'Ginger lime spritz'
+            },
+            {
+                id: 'eddie',
+                name: 'EDDIE — "The Night Kitchen"',
+                tagline: 'For when you can\'t sleep. Make this. Feel better.',
+                price: '$35',
+                image: null,
+                description: 'Papel picado-style tissue. Hot pink and marigold. Smells of cinnamon and chiles.',
+                contents: [
+                    'Mole spice blend in clay pot',
+                    'Tamarind candies (Pulparindo style)',
+                    'Lotería cards: La Luna, El Corazón, La Muerte',
+                    'Mexican vanilla from Papantla',
+                    'Kitchen scent — tortilla, woodsmoke, cumin',
+                    'Champurrado recipe card'
+                ],
+                cocktail: 'Michelada',
+                virgin: 'Virgin michelada'
+            },
+            {
+                id: 'dotty',
+                name: 'DOTTY — "Room 308"',
+                tagline: 'She was somebody once.',
+                price: '$35',
+                image: null,
+                description: 'Vintage wallpaper. Cabbage roses. Dusty pink silk ribbon. Smells of gin and face powder.',
+                contents: [
+                    'Horehound drops in dented silver tin',
+                    'Mini bottle labeled "MEDICINAL PURPOSES"',
+                    'Gin botanical sachet',
+                    'Lipstick-stained cocktail napkin',
+                    'Tarnished compact mirror, initialed "D.M."',
+                    'B&W photograph — beautiful woman, 1960s'
+                ],
+                cocktail: 'Gin Fizz',
+                virgin: 'Botanical lemonade fizz'
             },
             {
                 id: 'constance',
-                name: 'CONSTANCE: "Fourth Floor"',
+                name: 'CONSTANCE — "Fourth Floor"',
+                tagline: 'Observed. Noted. Filed.',
                 price: '$35',
                 image: null,
-                description: 'Pressed flowers, calling card, refined perfume, brass magnifying glass. Cocktail: Pimm\'s Cup mixer.'
+                description: 'Hunter green linen. Debossed botanicals. Smells of libraries and dried flowers.',
+                contents: [
+                    'Pressed flowers from the hotel garden',
+                    'Calling card — just her name, no contact',
+                    'Green aldehydic perfume sample',
+                    'Note: "I know why you\'re here. Do you?"',
+                    'Brass magnifying glass',
+                    'Vintage bookplate — name scratched out'
+                ],
+                cocktail: 'Pimm\'s Cup',
+                virgin: 'Cucumber mint lemonade'
             },
             {
                 id: 'priya',
-                name: 'PRIYA: "Last Call"',
+                name: 'PRIYA — "Trust Me"',
+                tagline: 'What happens at the bar stays at the bar. Mostly.',
                 price: '$35',
                 image: null,
-                description: 'Bar towel, bitters sampler, cocktail stirrer, green polka dot swatch. Cocktail: Fernet & mezcal with citrus.'
+                description: 'Dark green with white polka dots. Her dress, translated. Arranged with bartender\'s precision.',
+                contents: [
+                    'Bar towel embroidered "P.R."',
+                    'Mismatched cocktail stirrers',
+                    'Bitters sampler — numbered 1, 2, 3',
+                    'Hotel bar matchbook',
+                    'Scent: fernet, mezcal, citrus peel',
+                    'Ceramic olive (joke or keepsake, unclear)'
+                ],
+                cocktail: 'The Trust Me — fernet & mezcal',
+                virgin: 'Bitter botanical soda with grapefruit'
             },
             {
                 id: 'lenny',
-                name: 'LENNY: "The Comedian"',
+                name: 'LENNY — "The Comedian"',
+                tagline: 'Thank you, you\'ve been a beautiful audience.',
                 price: '$35',
                 image: null,
-                description: 'Comedy club matchbook, breath mints, crumpled setlist, motel soap. Cocktail: Irish coffee mix.'
+                description: 'Rumpled packaging. Coffee stain. Half-peeled club stickers. "FRAGILE" stamp.',
+                contents: [
+                    '"LAUGH TRACK LOUNGE" matchbook',
+                    'Cheap breath mints in dented tin',
+                    'Mini whiskey bottle (maybe refilled)',
+                    'Crumpled setlist — "hotel bit — too real?"',
+                    'Motel soap from "The Restwell"',
+                    'Fake business card — numbers crossed out'
+                ],
+                cocktail: 'Irish Coffee',
+                virgin: 'Just sad coffee'
             },
             {
                 id: 'caleb',
-                name: 'CALEB: "The Author"',
+                name: 'CALEB — "The Author"',
+                tagline: 'I made this. I\'m still not sure why.',
                 price: '$35',
                 image: null,
-                description: 'Polaroid, handwritten note, small paintbrush, artist studio scent. Cocktail: Bourbon neat.'
+                description: 'Kraft paper. Paint smudges. Tag reads "HANDLE WITH CURIOSITY."',
+                contents: [
+                    'Polaroid — author\'s workspace',
+                    'Handwritten note about the characters',
+                    'Used paintbrush, bristles stained',
+                    'Studio scent: linseed oil, turpentine, coffee',
+                    'Exhibition postcard',
+                    'Blank notebook for your notes'
+                ],
+                cocktail: 'Bourbon neat',
+                virgin: 'Black coffee'
             },
             {
                 id: 'hotel',
-                name: 'THE HOTEL PACK',
-                price: '$65',
+                name: 'THE HOTEL PACK — "Room 412"',
+                tagline: 'The Hallway at 3am.',
+                price: '$68',
                 image: null,
-                description: 'One item from each resident. Room 412 key tag. "Hallway at 3am" scent. Do Not Disturb sign. Note slipped under door: "We know you\'re in there."'
+                featured: true,
+                description: 'The sampler. Box looks like a hotel door — "412" numerals, tiny peephole.',
+                contents: [
+                    'Room 412 leather key tag',
+                    'Do Not Disturb sign (vintage style)',
+                    'Hotel matchbook — Est. 1943',
+                    '"Hallway at 3am" signature scent',
+                    'Annotated floor plan with handwritten notes',
+                    'Note slipped under door: "We know you\'re in there."',
+                    'ONE SAMPLE FROM EACH CHARACTER'
+                ],
+                cocktail: 'Room 412 Signature — amber, bitter, mysterious',
+                virgin: 'Bitters and soda with orange'
             }
         ];
         
@@ -467,13 +579,31 @@
         storeProducts.forEach(product => {
             const productEl = document.createElement('div');
             productEl.className = 'store-product' + (product.featured ? ' featured' : '');
+            productEl.dataset.productId = product.id;
+            
+            const contentsHtml = product.contents ? 
+                `<ul class="product-contents">${product.contents.map(item => `<li>${item}</li>`).join('')}</ul>` : '';
+            
             productEl.innerHTML = `
                 ${product.featured ? '<div class="featured-badge">✦ Available Now</div>' : ''}
                 <div class="product-image">
-                    ${product.image ? `<img src="${product.image}" alt="${product.name}">` : '<div class="product-placeholder">Coming Soon</div>'}
+                    ${product.image ? `<img src="${product.image}" alt="${product.name}">` : '<div class="product-placeholder">${product.id === "hotel" ? "The Complete Experience" : "Image Coming"}</div>'}
                 </div>
                 <h3 class="product-name">${product.name}</h3>
+                <p class="product-tagline">${product.tagline || ''}</p>
                 <p class="product-description">${product.description}</p>
+                
+                <div class="product-details collapsed">
+                    <h4>Contains:</h4>
+                    ${contentsHtml}
+                    <div class="product-cocktails">
+                        <span class="cocktail-label">🍸 ${product.cocktail}</span>
+                        <span class="virgin-label">☕ Virgin: ${product.virgin}</span>
+                    </div>
+                </div>
+                
+                <button class="details-toggle" onclick="toggleProductDetails(this)">View Contents ▼</button>
+                
                 <div class="product-footer">
                     <span class="product-price">${product.price}</span>
                     <button class="product-btn" onclick="showStoreWaitlist('${product.name}')">Add to Cart</button>
@@ -481,6 +611,14 @@
             `;
             storeGrid.appendChild(productEl);
         });
+        
+        // Toggle product details
+        window.toggleProductDetails = function(btn) {
+            const details = btn.previousElementSibling;
+            const isCollapsed = details.classList.contains('collapsed');
+            details.classList.toggle('collapsed');
+            btn.textContent = isCollapsed ? 'Hide Contents ▲' : 'View Contents ▼';
+        };
         
         storeBtn?.addEventListener('click', () => {
             storeModal?.classList.remove('hidden');

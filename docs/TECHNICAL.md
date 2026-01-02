@@ -2,7 +2,7 @@
 
 > Developer guide for HEARSAY platform and Room 412 experience.
 > 
-> **Last Updated:** January 2026
+> **Last Updated:** January 2, 2026
 
 ---
 
@@ -22,18 +22,24 @@ HEARSAY uses a simple client-server architecture:
 │  │  State   │→ │ Compositor │→ │     Simli Widget         │ │
 │  │ Machine  │  │  (videos)  │  │  (AI talking head)       │ │
 │  └──────────┘  └────────────┘  └──────────────────────────┘ │
+│                                         │                    │
+│                              ┌──────────┴──────────┐        │
+│                              │   BlackRemover.js   │        │
+│                              │ (canvas transparency)│        │
+│                              └─────────────────────┘        │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    BACKEND (FastAPI)                         │
-│         POST /api/simli-token → fetch token from Simli       │
+│      POST /api/simli-token → fetch token from Simli          │
+│      Passes: simliAPIKey, agentId, faceId, ttsAPIKey         │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                      SIMLI API                               │
-│      https://api.simli.com/getSessionToken                   │
+│            https://api.simli.ai/auto/token                   │
 │              (WebRTC, AI conversation, video)                │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -50,6 +56,7 @@ hearsay/
 ├── state-machine.js        # App state: idle → transitioning → active
 ├── compositor.js           # Video layer orchestration
 ├── simli-integration.js    # Simli widget lifecycle management
+├── black-remover.js        # Canvas-based black→transparent processor
 │
 ├── requirements.txt        # Python deps (root level for Railway detection)
 ├── Procfile                # Railway start command
@@ -84,22 +91,54 @@ hearsay/
 
 ## Visual Layer Stack (Bottom to Top)
 
-The experience uses CSS z-index layering. Order matters:
+The experience uses a shared face container for centering:
 
-| Z-Index | Layer | Content | Notes |
-|---------|-------|---------|-------|
-| 0 | `#layer-background` | Hallway video (Background_1.mp4) | Always visible in peephole |
-| 10 | `#layer-transition` | Character walkup videos | Plays during summon |
-| 20 | `#layer-simli` | Live Simli AI face | Uses `mix-blend-mode: screen` for transparent black |
-| 30 | `#layer-peephole` | CSS circular mask | Clips video to circle |
-| 40 | `#layer-door-overlay` | overlay.png | Full-screen brass peephole frame |
-| 100 | `.animated-text-container` | Animated_Text.mp4 | "A Conversation" - hidden when Simli active |
-| var(--z-ui) | UI elements | Buttons, sliders, About modal |
+| Layer | Element | Content | Notes |
+|-------|---------|---------|-------|
+| Background | `#layer-background` | Hallway video | Full screen, always visible |
+| Face Container | `#face-container` | Centered mount | 55% × 70% of viewport, holds walkup + Simli |
+| ├─ Transition | `#layer-transition` | Walkup videos | Plays during summon |
+| └─ Simli | `#layer-simli` | AI face | Canvas overlay removes black background |
+| Overlay | `#layer-door-overlay` | overlay.png | Full-screen brass peephole frame |
+| UI | Various | Buttons, sliders | Top layer |
 
-### Key CSS Variable
+### Face Container CSS
 ```css
---peephole-size: min(42vh, 42vw);  /* Size of video circle - adjust to match overlay.png */
+#face-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 55%;   /* Adjust to match overlay opening */
+    height: 70%;
+    z-index: 15;
+}
 ```
+
+---
+
+## Black Background Removal (Canvas Method)
+
+Simli outputs video with black background. We remove it using canvas processing:
+
+**File:** `black-remover.js`
+
+```javascript
+// For each video frame:
+// 1. Draw frame to canvas
+// 2. Scan all pixels
+// 3. If R, G, B all < threshold (15), set alpha to 0
+// 4. Put modified data back
+
+if (r < threshold && g < threshold && b < threshold) {
+    data[i + 3] = 0; // Make transparent
+}
+```
+
+**Why canvas instead of CSS blend modes:**
+- CSS `mix-blend-mode: screen` affects ALL dark colors (face shadows become see-through)
+- Canvas can target ONLY pure black (#000000 or near-black)
+- Face shadows stay solid
 
 ---
 
@@ -124,66 +163,47 @@ document.body.addEventListener('click', () => {
 
 ---
 
-## Simli Widget Integration (IMPORTANT)
+## Simli Widget Integration
 
-### Correct SDK URL
-```html
-<script src="https://app.simli.com/simli-widget/index.js" defer></script>
+### Correct API Endpoint
+```
+POST https://api.simli.ai/auto/token
 ```
 
-### Backend Token Request
+### Backend Token Request (CRITICAL)
 ```python
-# POST to https://api.simli.com/getSessionToken
-response = await client.post(
-    "https://api.simli.com/getSessionToken",
-    json={
-        "simliAPIKey": SIMLI_API_KEY,  # API key in body, NOT header
-        "agentId": agentId,
-        "faceId": faceId
-    }
-)
-token = response.json()["sessionToken"]
+payload = {
+    "simliAPIKey": SIMLI_API_KEY,      # API key in body
+    "agentId": agentId,                 # Character config
+    "faceId": faceId,                   # Face to animate
+    "ttsAPIKey": ELEVENLABS_API_KEY,   # REQUIRED for voice!
+    "expiryStamp": -1,
+    "createTranscript": True
+}
 ```
+
+### Environment Variables Required
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SIMLI_API_KEY` | **Yes** | From Simli dashboard |
+| `ELEVENLABS_API_KEY` | **Yes** | For TTS voice output |
+| `PORT` | Auto | Set by Railway |
 
 ### Frontend Widget Creation
 ```javascript
 const widget = document.createElement('simli-widget');
-
-// Set token attribute
 widget.setAttribute('token', sessionToken);
-
-// Set ALL attribute formats (Simli is inconsistent about which it reads)
-widget.setAttribute('agentid', agentId);
-widget.setAttribute('agent-id', agentId);
 widget.setAttribute('agentId', agentId);
-widget.setAttribute('faceid', faceId);
-widget.setAttribute('face-id', faceId);
 widget.setAttribute('faceId', faceId);
-
-// Also set as direct properties
-widget.agentId = agentId;
-widget.faceId = faceId;
-
-// Mount
 document.getElementById('simli-mount').appendChild(widget);
 
-// Auto-click Start button (Simli shows a button overlay)
+// Auto-click Start button (Simli shows internal button)
 setTimeout(() => {
-    widget.querySelectorAll('button').forEach(btn => btn.click());
+    widget.querySelectorAll('button').forEach(btn => {
+        if (!btn.textContent.includes('close')) btn.click();
+    });
 }, 500);
-```
-
-### CSS to Hide Simli UI, Show Video
-```css
-#simli-mount simli-widget button,
-#simli-mount simli-widget svg,
-#simli-mount simli-widget [class*="placeholder"] {
-    display: none !important;
-}
-
-#simli-mount simli-widget video {
-    display: block !important;
-}
 ```
 
 ---
@@ -194,14 +214,12 @@ Characters are defined in `config.js`:
 
 ```javascript
 wire: {
-    name: 'Wire',
+    name: 'Wire (Wiremu)',
     role: 'Long-Time Resident',
     agentId: '2439209e-abb8-4ccc-ab18-2bbbfc78d4f6',
     faceId: 'bc603b3f-d355-424d-b613-d7db4588cb8a',
     idleToActive: ['assets/videos/Wire_Walkup_2.mp4'],
-    activeToIdle: ['assets/videos/Wire_Walkup_2.mp4'],
-    knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
-    previewVideo: 'assets/videos/Wire_Walkup_2.mp4'
+    knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav'
 }
 ```
 
@@ -225,89 +243,71 @@ idle → transitioning-in → active → transitioning-out → idle
 
 1. `enterExperience(characterKey)` called
 2. State machine calls `summonCharacter()`
-3. `transitionStart` event emitted
-4. Compositor plays walkup video + knock sound
-5. Video ends → `onTransitionInComplete()`
-6. `transitionEnd` event emitted
-7. SimliIntegration creates widget, fetches token
-8. Simli face appears (if everything works)
+3. Compositor plays walkup video + knock sound
+4. Video ends → `onTransitionInComplete()`
+5. SimliIntegration creates widget, fetches token
+6. BlackRemover starts processing video frames
+7. Simli face appears with transparent background
 
 ---
 
-## Deployment (Railway)
-
-### Environment Variables Required
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SIMLI_API_KEY` | **Yes** | From Simli dashboard |
-| `PORT` | Auto | Set by Railway |
-
-### Health Check
-```
-GET /api/health
-Response: {"status": "ok", "service": "hearsay", "simli_configured": true}
-```
-
-If `simli_configured: false`, the API key is not set.
-
----
-
-## Debug Console
-
-```javascript
-// Access app state
-window.hearsay.stateMachine.getState()
-
-// Manually summon character
-window.hearsay.stateMachine.summonCharacter('wire')
-
-// Reset to idle
-window.hearsay.stateMachine.reset()
-
-// Check characters
-window.hearsay.characters
-```
-
----
-
-## Known Issues & Current State (Jan 2026)
+## Known Issues & Current State (Jan 2, 2026)
 
 ### Working ✓
 - Landing page with character gallery
 - Background video looping
-- Animated text overlay ("A Conversation")
+- Animated text overlay ("A Conversation") with transparent black
 - Music and ambient audio with sliders
 - Door knock sounds per character
 - About modal
-- Character walkup videos play on summon
+- Character walkup videos centered in peephole
+- **Simli token fetch working** (with agentId, faceId, ttsAPIKey)
+- **Simli voice working** (ElevenLabs TTS connected)
 
-### In Progress / Issues
-- **Simli integration**: Token fetch and widget creation flow implemented, needs testing
-- **Peephole sizing**: `--peephole-size` variable needs fine-tuning to match overlay.png
-- **Text styling**: Billiard green with pink outline for readability
+### In Progress / Needs Fixing
+- **Simli face positioning**: Face appears offset from walkup video
+- **Simli loading animation**: Dotted face placeholder visible (should be hidden)
+- **Black background removal**: Canvas processor implemented, needs testing
 
-### File Naming Rules
-- **No spaces** in filenames (use underscores)
-- **No `#` symbols** (breaks URL encoding)
-- **Use `.mp4`** for videos (not `.mov` - browser compatibility)
+### Recently Fixed
+- Added `ttsAPIKey` (ElevenLabs) to token request - enables voice
+- Created shared `#face-container` for walkup + Simli centering
+- Implemented canvas-based black removal (pure black → transparent)
+
+### What Failed / Didn't Work
+- CSS `mix-blend-mode: screen` made face shadows transparent (face looked ghostly)
+- High contrast filters didn't isolate pure black well enough
+- Multiple Simli API endpoints tried before finding `/auto/token`
 
 ---
 
-## Text Styling (Current)
+## Troubleshooting
 
-Character names use billiard green (`#1a5c3a`) with pink outline (`#e84a8a`):
+### Simli Not Talking
+1. Check `ELEVENLABS_API_KEY` in Railway env vars
+2. Check console for token fetch errors
+3. Verify agentId and faceId are correct
 
+### Simli Not Showing
+1. Check console for `[Simli] Token received: yes`
+2. Check console for `[BlackRemover] Started processing`
+3. Try clicking Connect button manually if visible
+
+### Face Position Wrong
+Adjust in CSS:
 ```css
-.character-name {
-    color: #1a5c3a;
-    text-shadow: 
-        -1px -1px 0 #e84a8a,
-        1px -1px 0 #e84a8a,
-        -1px 1px 0 #e84a8a,
-        1px 1px 0 #e84a8a;
+#face-container {
+    width: 55%;   /* Horizontal size */
+    height: 70%;  /* Vertical size */
 }
 ```
+
+---
+
+## File Naming Rules
+- **No spaces** in filenames (use underscores)
+- **No `#` symbols** (breaks URL encoding)
+- **Use `.mp4`** for videos (not `.mov` - browser compatibility)
 
 ---
 

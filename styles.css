@@ -462,33 +462,27 @@ body.simli-active .animated-text-container {
     visibility: hidden !important;
 }
 
-/* Simli video - scaled to fill peephole with face */
+/* Simli video - HIDDEN, canvas shows the processed frames */
 #simli-mount simli-widget video {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    /* Scale up - face fills the circle, cropping is fine */
+    /* BlackRemover will hide this and show canvas instead */
+    /* Don't use opacity !important - let JS control visibility */
+}
+
+/* Canvas overlay for black removal - this is what shows the face */
+#simli-canvas {
     width: 350% !important;
     height: 350% !important;
-    object-fit: cover !important;
-    object-position: center 42% !important; /* Show face, less forehead */
-    /* Center the scaled video */
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
+    object-fit: cover !important;
+    z-index: 50 !important;
 }
 
-/* Simli video - fill container, canvas overlay handles black removal */
-#simli-mount simli-widget video {
-    display: block !important;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-/* Canvas overlay for black removal */
-#simli-canvas {
+/* Backup canvas rule */
+#simli-mount #simli-canvas,
+#layer-simli #simli-canvas {
     position: absolute;
     top: 0;
     left: 0;

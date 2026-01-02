@@ -465,15 +465,16 @@ body.simli-active .animated-text-container {
     pointer-events: none !important;
 }
 
-/* Simli video - make it bigger and visible */
+/* Simli video - make it MUCH bigger and visible */
 #simli-mount simli-widget video {
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
-    width: 140% !important;
-    height: 140% !important;
+    width: 200% !important;
+    height: 200% !important;
     object-fit: cover !important;
-    transform: translateY(10%); /* Move down slightly to show more face, less forehead */
+    object-position: center 40% !important;
+    transform: scale(1.2) !important; /* Extra zoom */
 }
 
 /* Simli video - fill container, canvas overlay handles black removal */

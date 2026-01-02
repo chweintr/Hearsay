@@ -184,6 +184,9 @@ export class SimliIntegration {
             // Watch for video element to appear, then start black removal
             this.watchForVideo();
             
+            // Aggressively hide dotted face loading animation
+            this.hideSimliLoadingUI();
+            
             // Auto-click Simli's Connect/Start button after it loads
             const clickStartButton = () => {
                 console.log('[Simli] Looking for Connect/Start button...');
@@ -263,6 +266,50 @@ export class SimliIntegration {
             document.body.classList.remove('loading');
             this.handleWidgetError(error);
         }
+    }
+
+    /**
+     * Aggressively hide Simli's dotted face loading animation
+     * This searches Shadow DOM and removes/hides elements
+     */
+    hideSimliLoadingUI() {
+        const hideElements = (root) => {
+            if (!root) return;
+            
+            // Find and hide all SVGs, canvases, and loading elements
+            const selectors = 'svg, canvas, [class*="loading"], [class*="dots"], [class*="avatar"], [class*="placeholder"], [class*="face-outline"]';
+            
+            root.querySelectorAll(selectors).forEach(el => {
+                el.style.display = 'none';
+                el.style.visibility = 'hidden';
+                el.style.opacity = '0';
+            });
+            
+            // Check shadow roots
+            root.querySelectorAll('*').forEach(el => {
+                if (el.shadowRoot) {
+                    hideElements(el.shadowRoot);
+                }
+            });
+        };
+        
+        // Run immediately and on interval to catch dynamically added elements
+        const runHide = () => {
+            if (!this.widget) return;
+            hideElements(this.widget);
+            if (this.widget.shadowRoot) {
+                hideElements(this.widget.shadowRoot);
+            }
+        };
+        
+        // Run multiple times to catch elements as they load
+        runHide();
+        setTimeout(runHide, 100);
+        setTimeout(runHide, 500);
+        setTimeout(runHide, 1000);
+        setTimeout(runHide, 2000);
+        
+        console.log('[Simli] Hiding loading UI elements');
     }
 
     /**

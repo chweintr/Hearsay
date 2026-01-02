@@ -140,37 +140,67 @@ export class SimliIntegration {
             this.mountPoint.appendChild(this.widget);
             console.log(`[Simli] ${character.name} mounted`);
             
-            // Auto-click Simli's Start button after it loads
+            // Auto-click Simli's Connect/Start button after it loads
             const clickStartButton = () => {
-                console.log('[Simli] Looking for Start button...');
+                console.log('[Simli] Looking for Connect/Start button...');
                 
-                // Try regular DOM first
-                let buttons = this.widget.querySelectorAll('button');
-                console.log(`[Simli] Found ${buttons.length} buttons in light DOM`);
+                // Try to find buttons everywhere - widget, shadow DOM, iframes
+                const findAndClickButtons = (root, depth = 0) => {
+                    if (!root || depth > 3) return;
+                    
+                    // Find all buttons and clickable elements
+                    const buttons = root.querySelectorAll('button, [role="button"], .btn, [onclick]');
+                    console.log(`[Simli] Found ${buttons.length} clickables at depth ${depth}`);
+                    
+                    buttons.forEach(btn => {
+                        const text = (btn.textContent || btn.innerText || '').toLowerCase();
+                        const className = (btn.className || '').toLowerCase();
+                        console.log(`[Simli] Button: "${text}" class="${className}"`);
+                        
+                        // Click buttons that look like start/connect buttons
+                        if (text.includes('start') || text.includes('connect') || 
+                            text.includes('begin') || text.includes('call') ||
+                            className.includes('start') || className.includes('connect')) {
+                            console.log('[Simli] Clicking start/connect button!');
+                            btn.click();
+                        }
+                    });
+                    
+                    // Also just click ALL buttons (Simli might have unlabeled buttons)
+                    buttons.forEach(btn => btn.click());
+                    
+                    // Check shadow DOM
+                    if (root.shadowRoot) {
+                        findAndClickButtons(root.shadowRoot, depth + 1);
+                    }
+                    
+                    // Check child elements with shadow roots
+                    root.querySelectorAll('*').forEach(el => {
+                        if (el.shadowRoot) {
+                            findAndClickButtons(el.shadowRoot, depth + 1);
+                        }
+                    });
+                    
+                    // Check iframes
+                    root.querySelectorAll('iframe').forEach(iframe => {
+                        try {
+                            if (iframe.contentDocument) {
+                                findAndClickButtons(iframe.contentDocument, depth + 1);
+                            }
+                        } catch (e) {
+                            // Cross-origin iframe, can't access
+                        }
+                    });
+                };
                 
-                // Try Shadow DOM if widget has shadowRoot
-                if (this.widget.shadowRoot) {
-                    const shadowButtons = this.widget.shadowRoot.querySelectorAll('button');
-                    console.log(`[Simli] Found ${shadowButtons.length} buttons in shadow DOM`);
-                    buttons = [...buttons, ...shadowButtons];
-                }
-                
-                // Also try finding any clickable elements
-                const clickables = this.widget.querySelectorAll('[role="button"], [onclick], .start-button, .btn');
-                console.log(`[Simli] Found ${clickables.length} other clickables`);
-                
-                buttons.forEach(btn => {
-                    console.log('[Simli] Clicking button:', btn.textContent || btn.className);
-                    btn.click();
-                });
-                
-                clickables.forEach(el => el.click());
+                findAndClickButtons(this.widget);
             };
             
             // Try multiple times with increasing delays
-            setTimeout(clickStartButton, 500);
-            setTimeout(clickStartButton, 1500);
-            setTimeout(clickStartButton, 3000);
+            setTimeout(clickStartButton, 800);
+            setTimeout(clickStartButton, 2000);
+            setTimeout(clickStartButton, 4000);
+            setTimeout(clickStartButton, 6000);
             
         } catch (error) {
             console.error('[Simli] Widget creation failed:', error);

@@ -390,13 +390,19 @@ body.simli-active .animated-text-container {
     transition: opacity 0.15s ease;
 }
 
+/* Blending context for background + Simli (same pattern as animated text) */
+#simli-blend-context {
+    position: absolute;
+    inset: 0;
+    isolation: isolate; /* Create stacking context for blending */
+}
+
 #layer-simli {
     z-index: var(--z-simli);
     transition: opacity 0.4s ease;
     pointer-events: auto;
     
-    /* Crush dark grays to pure black, then screen blend makes only black transparent */
-    filter: contrast(1.3) brightness(1.05);
+    /* Screen blend: black becomes transparent, blends with background layer */
     mix-blend-mode: screen;
 }
 

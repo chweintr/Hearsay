@@ -60,21 +60,24 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     <div id="experience-page" class="page">
         <div id="hearsay-app">
-            <!-- Layer 0: Hallway Background - always visible behind Simli -->
-            <div id="layer-background" class="video-layer">
-                <video id="video-hallway" loop muted playsinline autoplay>
-                    <source src="assets/videos/Background_1.mp4" type="video/mp4">
-                </video>
-            </div>
+            <!-- Blending container: background + Simli share stacking context -->
+            <div id="simli-blend-context">
+                <!-- Layer 0: Hallway Background - always visible behind Simli -->
+                <div id="layer-background" class="video-layer">
+                    <video id="video-hallway" loop muted playsinline autoplay>
+                        <source src="assets/videos/Background_1.mp4" type="video/mp4">
+                    </video>
+                </div>
 
-            <!-- Layer 1: Transition Videos -->
-            <div id="layer-transition" class="video-layer hidden">
-                <video id="video-transition" muted playsinline></video>
-            </div>
+                <!-- Layer 1: Transition Videos -->
+                <div id="layer-transition" class="video-layer hidden">
+                    <video id="video-transition" muted playsinline></video>
+                </div>
 
-            <!-- Layer 2: Simli Widget Container -->
-            <div id="layer-simli" class="video-layer hidden">
-                <div id="simli-mount"></div>
+                <!-- Layer 2: Simli Widget Container - blends with background -->
+                <div id="layer-simli" class="video-layer hidden">
+                    <div id="simli-mount"></div>
+                </div>
             </div>
 
             <!-- Layer 3: Peephole Frame -->

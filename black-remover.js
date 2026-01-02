@@ -28,17 +28,16 @@ export class BlackRemover {
         
         this.video = videoElement;
         
-        // Create canvas overlay - scaled to match video
+        // Create canvas overlay - LARGER than peephole to hide square edges
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'simli-canvas';
         this.canvas.style.cssText = `
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 350%;
-            height: 350%;
-            object-fit: cover;
+            width: 85vmin;
+            height: 85vmin;
             pointer-events: none;
             z-index: 100;
         `;

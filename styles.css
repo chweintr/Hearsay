@@ -468,21 +468,22 @@ body.simli-active .animated-text-container {
     /* Don't use opacity !important - let JS control visibility */
 }
 
-/* Canvas overlay for black removal - this is what shows the face */
+/* Canvas overlay for black removal - LARGER than peephole to hide edges */
 #simli-canvas {
-    width: 350% !important;
-    height: 350% !important;
-    position: absolute !important;
+    position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    object-fit: cover !important;
-    z-index: 50 !important;
+    width: 85vmin !important;
+    height: 85vmin !important;
+    z-index: 100 !important;
+    pointer-events: none !important;
 }
 
 /* Backup canvas rule */
 #simli-mount #simli-canvas,
-#layer-simli #simli-canvas {
+#layer-simli #simli-canvas,
+#hearsay-app #simli-canvas {
     position: absolute;
     top: 0;
     left: 0;

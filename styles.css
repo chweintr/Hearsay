@@ -455,20 +455,10 @@ body.simli-active .animated-text-container {
     background: transparent !important;
 }
 
-/* Hide ALL Simli UI elements except the video */
-#simli-mount simli-widget > *:not(video),
-#simli-mount simli-widget svg,
-#simli-mount simli-widget [class*="placeholder"],
-#simli-mount simli-widget [class*="loading"],
-#simli-mount simli-widget [class*="dots"],
-#simli-mount simli-widget [class*="avatar"],
-#simli-mount simli-widget [class*="face"],
-#simli-mount simli-widget canvas:not(#simli-canvas),
-#simli-mount simli-widget div:not(:has(video)) {
+/* Hide Simli's SVG loading animation (dotted face outline) */
+#simli-mount simli-widget svg {
     display: none !important;
-    opacity: 0 !important;
     visibility: hidden !important;
-    pointer-events: none !important;
 }
 
 /* Simli video - make it FILL the peephole */

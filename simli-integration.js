@@ -122,6 +122,10 @@ export class SimliIntegration {
             // Set token
             this.widget.setAttribute('token', token);
             
+            // CRITICAL: Use transparent image to replace dotted face placeholder
+            // This is the official Simli way to hide the loading dots
+            this.widget.setAttribute('customimage', 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+            
             // Set ALL attribute formats (Simli is inconsistent)
             this.widget.setAttribute('agentid', character.agentId);
             this.widget.setAttribute('agent-id', character.agentId);
@@ -277,62 +281,62 @@ export class SimliIntegration {
     }
 
     /**
-     * Aggressively REMOVE Simli's dotted face loading animation
-     * This searches Shadow DOM and REMOVES elements entirely
+     * Hide Simli's dotted face loading animation
+     * Uses video 'playing' event as trigger
      */
     hideSimliLoadingUI() {
-        const removeElements = (root, depth = 0) => {
-            if (!root || depth > 5) return;
+        const hidePlaceholders = (root) => {
+            if (!root) return;
             
-            // Find and REMOVE all SVGs, canvases that aren't our black remover
-            const selectors = 'svg, canvas:not(#simli-canvas), [class*="loading"], [class*="dots"], [class*="avatar"], [class*="placeholder"], [class*="face"], [class*="outline"]';
-            
-            root.querySelectorAll(selectors).forEach(el => {
-                // Don't remove the video
-                if (el.tagName === 'VIDEO') return;
-                console.log(`[Simli] Removing element: ${el.tagName} class="${el.className}"`);
-                el.remove();
+            // Hide SVGs and non-video siblings
+            root.querySelectorAll('svg, canvas').forEach(el => {
+                el.style.display = 'none';
             });
+            
+            // Find video and hide its sibling containers
+            const video = root.querySelector('video');
+            if (video && video.parentElement && video.parentElement.parentElement) {
+                Array.from(video.parentElement.parentElement.children).forEach(child => {
+                    if (!child.contains(video)) {
+                        child.style.display = 'none';
+                    }
+                });
+            }
             
             // Check shadow roots
-            root.querySelectorAll('*').forEach(el => {
-                if (el.shadowRoot) {
-                    removeElements(el.shadowRoot, depth + 1);
-                }
-            });
-            
-            // Check iframes
-            root.querySelectorAll('iframe').forEach(iframe => {
-                try {
-                    if (iframe.contentDocument) {
-                        removeElements(iframe.contentDocument.body, depth + 1);
-                    }
-                } catch (e) {
-                    // Cross-origin, can't access
-                }
-            });
-        };
-        
-        // Run immediately and on interval to catch dynamically added elements
-        const runRemove = () => {
-            if (!this.widget) return;
-            removeElements(this.widget);
-            if (this.widget.shadowRoot) {
-                removeElements(this.widget.shadowRoot);
+            if (root.shadowRoot) {
+                hidePlaceholders(root.shadowRoot);
             }
         };
         
-        // Run many times to catch elements as they load
-        runRemove();
-        setTimeout(runRemove, 100);
-        setTimeout(runRemove, 300);
-        setTimeout(runRemove, 500);
-        setTimeout(runRemove, 1000);
-        setTimeout(runRemove, 1500);
-        setTimeout(runRemove, 2000);
-        setTimeout(runRemove, 3000);
+        // Poll for video to be playing
+        const checkInterval = setInterval(() => {
+            if (!this.widget) {
+                clearInterval(checkInterval);
+                return;
+            }
+            
+            const video = this.widget.querySelector('video') || 
+                          this.widget.shadowRoot?.querySelector('video');
+            
+            if (video && video.readyState >= 2) {
+                console.log('[Simli] Video ready, hiding placeholders');
+                hidePlaceholders(this.widget);
+                
+                // Also listen for playing event
+                video.addEventListener('playing', () => {
+                    console.log('[Simli] Video playing, ensuring placeholders hidden');
+                    hidePlaceholders(this.widget);
+                });
+                
+                clearInterval(checkInterval);
+            }
+        }, 200);
         
-        console.log('[Simli] Removing loading UI elements');
+        // Timeout after 10 seconds
+        setTimeout(() => clearInterval(checkInterval), 10000);
+        
+        console.log('[Simli] Monitoring for video ready state');
     }
 
     /**

@@ -402,9 +402,8 @@ body.simli-active .animated-text-container {
     transition: opacity 0.4s ease;
     pointer-events: auto;
     
-    /* NOTE: mix-blend-mode: screen makes face ghostly because face has dark shadows.
-       Keeping black background visible for now - face is solid. 
-       To truly remove black, Simli would need alpha-channel video output. */
+    /* Same technique as animated text: screen blend makes black transparent */
+    mix-blend-mode: screen;
 }
 
 #simli-mount {
@@ -416,9 +415,9 @@ body.simli-active .animated-text-container {
 }
 
 #simli-mount simli-widget {
-    /* Scale up significantly to fill peephole - face needs to fill the circle */
-    width: 300%;
-    height: 300%;
+    /* Scale up significantly to fill peephole */
+    width: 450%;
+    height: 450%;
     
     /* Center the widget */
     display: flex;
@@ -444,8 +443,11 @@ body.simli-active .animated-text-container {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 40%;  /* Show face, less forehead */
-    transform: scale(1.8);  /* Zoom in more on face */
+    object-position: center 45%;  /* Show face, less forehead */
+    transform: scale(2.2);  /* Zoom in more on face */
+    
+    /* Boost brightness to counteract screen blend making face dim */
+    filter: brightness(1.3) contrast(1.1);
 }
 
 /* Hide canvas if present */

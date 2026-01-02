@@ -25,6 +25,18 @@ export class SimliIntegration {
         stateMachine.on('stateChange', this.handleStateChange);
         stateMachine.on('transitionEnd', this.handleTransitionEnd);
         
+        // Global listener for ALL custom events (debug)
+        window.addEventListener('message', (e) => {
+            if (e.data && typeof e.data === 'object') {
+                console.log('[Simli] Window message:', e.data);
+            }
+        });
+        
+        // Check microphone permissions
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(() => console.log('[Simli] 🎤 Microphone access granted'))
+            .catch(err => console.error('[Simli] ❌ Microphone denied:', err.message));
+        
         console.log('[Simli] Integration initialized');
     }
 
@@ -119,21 +131,47 @@ export class SimliIntegration {
             this.widget.agentId = character.agentId;
             this.widget.faceId = character.faceId;
             
-            // Widget event listeners
+            // Widget event listeners - log everything for debugging
             this.widget.addEventListener('simli-ready', () => {
-                console.log(`[Simli] ${character.name} is ready to speak`);
+                console.log(`[Simli] ✅ ${character.name} is ready to speak`);
                 document.body.classList.remove('loading');
             });
             
             this.widget.addEventListener('simli-error', (e) => {
-                console.error('[Simli] Widget error:', e.detail);
+                console.error('[Simli] ❌ Widget error:', e.detail);
                 document.body.classList.remove('loading');
                 this.handleWidgetError(e.detail);
             });
             
             this.widget.addEventListener('simli-ended', () => {
                 console.log('[Simli] Session ended by server');
-                // Could auto-dismiss here if desired
+            });
+            
+            // Additional debug listeners
+            this.widget.addEventListener('simli-connected', () => {
+                console.log('[Simli] 🔗 Connected to call');
+            });
+            
+            this.widget.addEventListener('simli-speaking', () => {
+                console.log('[Simli] 🗣️ Speaking started');
+            });
+            
+            this.widget.addEventListener('simli-listening', () => {
+                console.log('[Simli] 👂 Listening for user speech');
+            });
+            
+            // Catch ALL events on the widget for debugging
+            const originalAddEventListener = this.widget.addEventListener.bind(this.widget);
+            this.widget.addEventListener = (type, listener, options) => {
+                console.log(`[Simli] Event listener added: ${type}`);
+                return originalAddEventListener(type, listener, options);
+            };
+            
+            // Log any dispatched events
+            ['click', 'change', 'input'].forEach(eventType => {
+                this.widget.addEventListener(eventType, (e) => {
+                    console.log(`[Simli] Event: ${eventType}`, e.target);
+                });
             });
             
             // Mount widget

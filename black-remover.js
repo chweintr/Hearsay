@@ -36,8 +36,8 @@ export class BlackRemover {
             top: 48%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 100vmin;
-            height: 100vmin;
+            width: 120vmin;
+            height: 120vmin;
             pointer-events: none;
             z-index: 100;
         `;

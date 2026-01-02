@@ -490,8 +490,8 @@ body.simli-active .animated-text-container {
     top: 48% !important; /* Slightly higher than center */
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    width: 100vmin !important;
-    height: 100vmin !important;
+    width: 120vmin !important;
+    height: 120vmin !important;
     z-index: 100 !important;
     pointer-events: none !important;
 }

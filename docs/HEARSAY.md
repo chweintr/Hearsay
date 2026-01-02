@@ -41,12 +41,20 @@ For now: **"experience."**
 
 ```
 HEARSAY (platform)
-├── Room 412        ← Current experience (peephole conceit)
+├── THE KNOCK       ← Current experience (peephole conceit, Room 412)
 ├── The Gallery     ← Future (portrait frames)
 ├── The Waiting Room← Future (intake window)
 ├── The Séance      ← Future (dark mirror)
 └── ...
 ```
+
+## The Locked Door Conceit
+
+User is in Room 412 and may or may not be able to leave. This is deliberately ambiguous. Characters should occasionally reference it:
+- "Have you tried your door lately?"
+- "Some guests prefer to stay in their rooms."
+
+**Interface language:** "Who would you like to invite to your door?" (Characters are invited, not selected)
 
 Each experience includes:
 

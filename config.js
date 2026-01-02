@@ -80,7 +80,7 @@ export const characters = {
     
     marisol: {
         name: 'Marisol',
-        role: 'House Detective',
+        role: "Owner's Daughter",
         agentId: 'xxx',  // TODO: Simli agent ID
         faceId: 'xxx',   // TODO: Simli face ID
         idleToActive: ['assets/videos/Marisol_Walkup.mp4'],
@@ -89,7 +89,17 @@ export const characters = {
         previewVideo: 'assets/videos/Marisol_Walkup.mp4'
     },
     
-    // Future characters for ROOM 412:
+    // THE KNOCK - Full Character Roster (8 total):
+    // 1. Wire (Wiremu) - Long Time Resident ✓ COMPLETE
+    // 2. Marisol - Owner's Daughter ✓ COMPLETE
+    // 3. Eddie - The Chef (PROMPT COMPLETE, needs Simli)
+    // 4. Dotty/Bette - The Old Woman (British, bawdy, tipsy) - PROMPT NEEDED
+    // 5. Tane/Rawiri - Wire's Brother (younger, arrogant) - PROMPT NEEDED
+    // 6. Constance/Vivian - Red-Headed Woman (aloof, cultured) - PROMPT NEEDED
+    // 7. Lenny/Sal - The Comedian (random availability!) - PROMPT NEEDED
+    // 8. Caleb - The Author (meta character) - PROMPT NEEDED
+    //
+    // Future characters:
     //
     // evelyn: {
     //     name: 'Evelyn',

@@ -395,16 +395,22 @@
                 name: 'TANE — "Live Fast"',
                 tagline: 'We\'ll show you what you\'re hiding.',
                 price: '$35',
+                images: [
+                    'assets/images/Sensory Packs/Sensory_Pack_Tane_4.png',
+                    'assets/images/Sensory Packs/Sensory_PAck_Tane.png',
+                    'assets/images/Sensory Packs/Sensory_Pack_Tane_2.png'
+                ],
                 image: 'assets/images/Sensory Packs/Sensory_Pack_Tane_4.png',
                 featured: true,
-                description: 'Fluorescent packaging. Keith Haring-esque figures. Nightclub bathroom, 1987.',
+                description: 'Fluorescent packaging. Neon orange, electric pink. Figures running, flexing, conquering. Nightclub bathroom energy.',
                 contents: [
                     'Energy drink powder ("MIX WITH VODKA OR REGRET")',
                     'Temporary tattoo sheet — horse, "LONG ODDS", anatomical heart',
-                    '"PULSE" cologne sample — synthetic musk, citrus, overconfidence',
+                    '"PULSE" cologne — synthetic musk, overconfidence',
                     '"THE STARTING GATE" matchbook',
                     'Scratch-off fortune cards',
-                    'Polaroid submission card — Send your face, get a Polaroid back'
+                    'Submission card — "Send us your face." (Trust us.)',
+                    'Polaroids from an evening you don\'t remember'
                 ],
                 cocktail: 'Energy drink vodka shot',
                 virgin: 'Energy drink straight'
@@ -584,11 +590,26 @@
             const contentsHtml = product.contents ? 
                 `<ul class="product-contents">${product.contents.map(item => `<li>${item}</li>`).join('')}</ul>` : '';
             
+            // Image gallery for products with multiple images
+            let imageHtml = '';
+            if (product.images && product.images.length > 1) {
+                imageHtml = `
+                    <div class="product-gallery">
+                        <img src="${product.images[0]}" alt="${product.name}" class="gallery-main" id="gallery-${product.id}">
+                        <div class="gallery-thumbs">
+                            ${product.images.map((img, i) => `<img src="${img}" onclick="document.getElementById('gallery-${product.id}').src='${img}'" class="${i===0?'active':''}">`).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (product.image) {
+                imageHtml = `<div class="product-image"><img src="${product.image}" alt="${product.name}"></div>`;
+            } else {
+                imageHtml = `<div class="product-image"><div class="product-placeholder">${product.id === 'hotel' ? 'The Complete Experience' : 'Image Coming'}</div></div>`;
+            }
+            
             productEl.innerHTML = `
                 ${product.featured ? '<div class="featured-badge">✦ Available Now</div>' : ''}
-                <div class="product-image">
-                    ${product.image ? `<img src="${product.image}" alt="${product.name}">` : '<div class="product-placeholder">${product.id === "hotel" ? "The Complete Experience" : "Image Coming"}</div>'}
-                </div>
+                ${imageHtml}
                 <h3 class="product-name">${product.name}</h3>
                 <p class="product-tagline">${product.tagline || ''}</p>
                 <p class="product-description">${product.description}</p>

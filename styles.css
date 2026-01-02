@@ -796,25 +796,28 @@ body.simli-active .animated-text-container {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   MENU BUTTONS
+   MENU BUTTONS - Fixed position at top corners
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .menu-buttons {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     gap: 1rem;
-    justify-content: center;
-    margin-top: 1rem;
+    z-index: 500;
 }
 
 .menu-btn {
-    background: transparent;
+    background: rgba(0, 0, 0, 0.6);
     border: 1px solid var(--brass-dark);
     color: var(--billiard-green);
     font-family: var(--font-display);
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    padding: 0.5rem 1.25rem;
+    padding: 0.4rem 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8), 0 0 8px var(--pink-outline);
@@ -834,6 +837,10 @@ body.simli-active .animated-text-container {
     max-width: 900px;
     max-height: 85vh;
     overflow-y: auto;
+    background: linear-gradient(145deg, #0a2618 0%, #1a4a32 50%, #0d3020 100%);
+    border: 2px solid var(--brass-dark);
+    border-radius: 8px;
+    padding: 2.5rem;
 }
 
 .store-tagline {
@@ -983,6 +990,41 @@ body.simli-active .animated-text-container {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Product Gallery (multiple images) */
+.product-gallery {
+    margin-bottom: 0.75rem;
+}
+
+.gallery-main {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.gallery-thumbs {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.gallery-thumbs img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0.6;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.gallery-thumbs img:hover,
+.gallery-thumbs img.active {
+    opacity: 1;
+    border-color: var(--brass-mid);
 }
 
 .product-placeholder {

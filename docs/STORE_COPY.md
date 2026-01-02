@@ -24,15 +24,18 @@ These are not required to play. But they change the experience. You'll hold some
 
 *We'll show you what you're hiding.*
 
-Fluorescent packaging. Neon orange and electric pink. Keith Haring-esque figures in black outline. The aesthetic says: nightclub bathroom, 1987, someone who thinks they're going to live forever.
+Fluorescent packaging. Neon orange and electric pink. Figures running, flexing, conquering. The aesthetic says: nightclub bathroom energy, someone who thinks they're going to live forever.
 
 **Contains:**
 - Powdered energy drink mix ("MIX WITH VODKA OR REGRET")
 - Temporary tattoo sheet — horse, "LONG ODDS", anatomical heart, dagger
-- "PULSE" cologne — synthetic musk, citrus, overconfidence
+- "PULSE" cologne — synthetic musk, overconfidence
 - "THE STARTING GATE" matchbook
-- Polaroid submission card — Send your face, get a Polaroid back
 - Scratch-off fortune cards
+- Submission card — "Send us your face." (Trust us.)
+- Polaroids from an evening you don't remember
+
+**The Mystery:** At checkout, users are prompted to submit a photo. Weeks later, they receive Polaroids showing them at a club with Tane — an evening they have no memory of. Possible clues scattered throughout. They become part of the fiction.
 
 **Cocktail:** Energy drink vodka shot
 **Virgin:** Energy drink straight

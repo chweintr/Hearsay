@@ -464,24 +464,27 @@ export class SimliIntegration {
                 console.log(`[Simli] 📐 Aspect ratio: ${(video.videoWidth / video.videoHeight).toFixed(2)}`);
                 
                 console.log('[Simli] 🎬 Video found, starting black removal');
-                // BlackRemover will hide the video and create a canvas
-                // The canvas styling is in black-remover.js
-                this.blackRemover.start(video);
                 
-                // NOW hide the walkup video - Simli is ready to show
-                const transitionLayer = document.getElementById('layer-transition');
-                const transitionVideo = document.getElementById('video-transition');
-                if (transitionVideo) {
-                    transitionVideo.pause();
-                    transitionVideo.src = '';
-                    console.log('[Simli] ✅ Walkup video stopped - Simli taking over');
-                }
-                if (transitionLayer) {
-                    transitionLayer.style.display = 'none';
-                    transitionLayer.classList.add('hidden');
-                    console.log('[Simli] ✅ Walkup layer hidden');
-                }
-                console.log('[Simli] BlackRemover started');
+                // Set callback to hide walkup ONLY when canvas has rendered frames
+                this.blackRemover.setOnReady(() => {
+                    console.log('[Simli] Canvas ready - now hiding walkup');
+                    const transitionLayer = document.getElementById('layer-transition');
+                    const transitionVideo = document.getElementById('video-transition');
+                    if (transitionVideo) {
+                        transitionVideo.pause();
+                        transitionVideo.src = '';
+                        console.log('[Simli] ✅ Walkup video stopped - Simli taking over');
+                    }
+                    if (transitionLayer) {
+                        transitionLayer.style.display = 'none';
+                        transitionLayer.classList.add('hidden');
+                        console.log('[Simli] ✅ Walkup layer hidden');
+                    }
+                });
+                
+                // Start BlackRemover - it will call onReady when canvas is rendering
+                this.blackRemover.start(video);
+                console.log('[Simli] BlackRemover started, waiting for canvas frames...');
             } else {
                 // Keep checking
                 setTimeout(checkForVideo, 500);

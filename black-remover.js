@@ -36,11 +36,14 @@ export class BlackRemover {
             top: 48%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 120vmin;
-            height: 120vmin;
+            width: 110vmin;
+            height: 110vmin;
             pointer-events: none;
             z-index: 100;
         `;
+        
+        // Track when we've rendered enough frames
+        this.framesRendered = 0;
         
         // Insert canvas in the simli-mount, not next to video
         const simliMount = document.getElementById('simli-mount');
@@ -95,10 +98,26 @@ export class BlackRemover {
             
             // Put modified data back
             this.ctx.putImageData(imageData, 0, 0);
+            
+            // Track frames rendered
+            this.framesRendered++;
+            
+            // Fire callback after 10 frames (about 0.3s at 30fps)
+            if (this.framesRendered === 10 && this.onReady) {
+                console.log('[BlackRemover] Canvas ready - 10 frames rendered');
+                this.onReady();
+            }
         }
         
         // Continue processing
         requestAnimationFrame(() => this.processFrame());
+    }
+    
+    /**
+     * Set callback for when canvas is ready to show
+     */
+    setOnReady(callback) {
+        this.onReady = callback;
     }
     
     /**

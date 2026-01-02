@@ -431,6 +431,8 @@ body.simli-active .animated-text-container {
     z-index: 2;
     transition: opacity 0.4s ease;
     pointer-events: auto;
+    /* Black background removal - screen blend makes black transparent */
+    mix-blend-mode: screen;
 }
 
 #simli-mount {
@@ -461,16 +463,16 @@ body.simli-active .animated-text-container {
     visibility: hidden !important;
 }
 
-/* Simli video - make it FILL the peephole with face */
+/* Simli video - HUGE to fill peephole with face */
 #simli-mount simli-widget video {
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
-    /* Scale way up so face fills the circle */
-    width: 300% !important;
-    height: 300% !important;
+    /* MASSIVE scale - face fills the circle, cropping is fine */
+    width: 600% !important;
+    height: 600% !important;
     object-fit: cover !important;
-    object-position: center 40% !important; /* Show face, less forehead */
+    object-position: center 42% !important; /* Show face, less forehead */
     /* Center the scaled video */
     position: absolute !important;
     top: 50% !important;

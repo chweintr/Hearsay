@@ -415,21 +415,15 @@ export class SimliIntegration {
             }
             
             if (video && video.videoWidth > 0) {
-                console.log('[Simli] 🎬 Video found, starting black removal');
-                this.blackRemover.start(video);
+                // Log the NATIVE dimensions from Simli
+                console.log(`[Simli] 📐 Native video dimensions: ${video.videoWidth}x${video.videoHeight}`);
+                console.log(`[Simli] 📐 Aspect ratio: ${(video.videoWidth / video.videoHeight).toFixed(2)}`);
                 
-                // FORCE scale the video to fill peephole
-                video.style.cssText = `
-                    width: 350% !important;
-                    height: 350% !important;
-                    object-fit: cover !important;
-                    object-position: center 42% !important;
-                    position: absolute !important;
-                    top: 50% !important;
-                    left: 50% !important;
-                    transform: translate(-50%, -50%) !important;
-                `;
-                console.log('[Simli] Applied 350% video scaling via JS');
+                console.log('[Simli] 🎬 Video found, starting black removal');
+                // BlackRemover will hide the video and create a canvas
+                // The canvas styling is in black-remover.js
+                this.blackRemover.start(video);
+                console.log('[Simli] BlackRemover started');
             } else {
                 // Keep checking
                 setTimeout(checkForVideo, 500);

@@ -194,26 +194,12 @@ export class SimliIntegration {
             }, 100);
             setTimeout(() => clearInterval(waitForShadowDOM), 5000);
             
-            // DESTROY the walkup/transition video completely
-            const transitionLayer = document.getElementById('layer-transition');
-            const transitionVideo = document.getElementById('video-transition');
-            if (transitionVideo) {
-                transitionVideo.pause();
-                transitionVideo.src = '';
-                transitionVideo.load();
-                transitionVideo.style.display = 'none';
-                console.log('[Simli] Transition video destroyed');
-            }
-            if (transitionLayer) {
-                transitionLayer.style.display = 'none';
-                transitionLayer.style.visibility = 'hidden';
-                transitionLayer.style.opacity = '0';
-                transitionLayer.classList.add('hidden');
-                transitionLayer.innerHTML = ''; // Remove all children
-                console.log('[Simli] Transition layer emptied and hidden');
-            }
+            // DON'T destroy walkup immediately - wait for Simli video to be playing
+            // The walkup video keeps showing until Simli is ready
+            console.log('[Simli] Walkup video continues while waiting for Simli stream...');
             
             // Watch for video element to appear, then start black removal
+            // This also handles hiding the walkup when Simli is ready
             this.watchForVideo();
             
             // Aggressively hide dotted face loading animation
@@ -481,6 +467,20 @@ export class SimliIntegration {
                 // BlackRemover will hide the video and create a canvas
                 // The canvas styling is in black-remover.js
                 this.blackRemover.start(video);
+                
+                // NOW hide the walkup video - Simli is ready to show
+                const transitionLayer = document.getElementById('layer-transition');
+                const transitionVideo = document.getElementById('video-transition');
+                if (transitionVideo) {
+                    transitionVideo.pause();
+                    transitionVideo.src = '';
+                    console.log('[Simli] ✅ Walkup video stopped - Simli taking over');
+                }
+                if (transitionLayer) {
+                    transitionLayer.style.display = 'none';
+                    transitionLayer.classList.add('hidden');
+                    console.log('[Simli] ✅ Walkup layer hidden');
+                }
                 console.log('[Simli] BlackRemover started');
             } else {
                 // Keep checking

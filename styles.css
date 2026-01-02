@@ -381,10 +381,15 @@ body.simli-active .animated-text-container {
 }
 
 #layer-background video {
-    /* Hallway fills behind everything - overlay.png masks it */
-    width: 100%;
-    height: 100%;
+    /* Hallway background - sized to fit peephole opening */
+    width: 70vmin;
+    height: 70vmin;
     object-fit: cover;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%; /* Circular to match peephole */
 }
 
 #layer-transition {

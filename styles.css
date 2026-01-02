@@ -425,25 +425,27 @@ body.simli-active .animated-text-container {
 }
 
 #simli-mount {
-    /* Match walkup video sizing */
-    width: 70%;
-    height: 70%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    /* Fill the layer, centering handled by layer */
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 #simli-mount simli-widget {
-    width: 100%;
-    height: 100%;
+    /* Match walkup video sizing - centered in peephole */
+    width: 70%;
+    height: 70%;
     
     /* Ensure clickable for Simli's internal buttons */
     pointer-events: auto;
     position: relative;
+    
+    /* Center content */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Don't hide Simli buttons - we need Connect button to work */

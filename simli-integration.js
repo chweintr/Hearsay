@@ -185,6 +185,15 @@ export class SimliIntegration {
             this.mountPoint.appendChild(this.widget);
             console.log(`[Simli] ${character.name} mounted`);
             
+            // Inject transparent styles into Shadow DOM when it appears
+            const waitForShadowDOM = setInterval(() => {
+                if (this.widget.shadowRoot) {
+                    this.injectShadowStyles(this.widget.shadowRoot);
+                    clearInterval(waitForShadowDOM);
+                }
+            }, 100);
+            setTimeout(() => clearInterval(waitForShadowDOM), 5000);
+            
             // DESTROY the walkup/transition video completely
             const transitionLayer = document.getElementById('layer-transition');
             const transitionVideo = document.getElementById('video-transition');
@@ -330,6 +339,37 @@ export class SimliIntegration {
     }
 
     /**
+     * Inject transparent background styles into Shadow DOM
+     */
+    injectShadowStyles(shadowRoot) {
+        if (!shadowRoot) return;
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            /* Force ALL elements transparent */
+            *, *::before, *::after {
+                background: transparent !important;
+                background-color: transparent !important;
+            }
+            
+            /* Hide the dotted face placeholder completely */
+            svg, [class*="avatar"], [class*="placeholder"], [class*="loading"], [class*="dots"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+            }
+            
+            /* The video should be hidden - canvas shows the processed frames */
+            video {
+                opacity: 0 !important;
+                visibility: hidden !important;
+            }
+        `;
+        shadowRoot.appendChild(style);
+        console.log('[Simli] Injected transparent styles into Shadow DOM');
+    }
+
+    /**
      * Hide Simli's dotted face loading animation
      * Uses video 'playing' event as trigger
      */
@@ -337,9 +377,22 @@ export class SimliIntegration {
         const hidePlaceholders = (root) => {
             if (!root) return;
             
+            // Inject styles if this is a shadow root
+            if (root.host) {
+                this.injectShadowStyles(root);
+            }
+            
             // Hide SVGs and non-video siblings
-            root.querySelectorAll('svg, canvas').forEach(el => {
+            root.querySelectorAll('svg, canvas, [class*="avatar"], [class*="placeholder"]').forEach(el => {
                 el.style.display = 'none';
+                el.style.visibility = 'hidden';
+                el.remove(); // Actually remove it
+            });
+            
+            // Force transparent on all elements
+            root.querySelectorAll('*').forEach(el => {
+                el.style.background = 'transparent';
+                el.style.backgroundColor = 'transparent';
             });
             
             // Find video and hide its sibling containers
@@ -352,10 +405,15 @@ export class SimliIntegration {
                 });
             }
             
-            // Check shadow roots
+            // Check shadow roots recursively
             if (root.shadowRoot) {
                 hidePlaceholders(root.shadowRoot);
             }
+            root.querySelectorAll('*').forEach(el => {
+                if (el.shadowRoot) {
+                    hidePlaceholders(el.shadowRoot);
+                }
+            });
         };
         
         // Poll for video to be playing

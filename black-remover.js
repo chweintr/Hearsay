@@ -28,25 +28,33 @@ export class BlackRemover {
         
         this.video = videoElement;
         
-        // Create canvas overlay
+        // Create canvas overlay - scaled to match video
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'simli-canvas';
         this.canvas.style.cssText = `
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350%;
+            height: 350%;
+            object-fit: cover;
             pointer-events: none;
-            z-index: 1;
+            z-index: 100;
         `;
         
-        // Insert canvas next to video
-        this.video.parentElement.appendChild(this.canvas);
+        // Insert canvas in the simli-mount, not next to video
+        const simliMount = document.getElementById('simli-mount');
+        if (simliMount) {
+            simliMount.appendChild(this.canvas);
+        } else {
+            this.video.parentElement.appendChild(this.canvas);
+        }
         this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
         
-        // Hide the original video
+        // Hide the original video completely
         this.video.style.opacity = '0';
+        this.video.style.visibility = 'hidden';
         
         this.isRunning = true;
         this.processFrame();

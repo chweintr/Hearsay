@@ -185,12 +185,23 @@ export class SimliIntegration {
             this.mountPoint.appendChild(this.widget);
             console.log(`[Simli] ${character.name} mounted`);
             
-            // IMMEDIATELY hide the walkup/transition layer
+            // DESTROY the walkup/transition video completely
             const transitionLayer = document.getElementById('layer-transition');
+            const transitionVideo = document.getElementById('video-transition');
+            if (transitionVideo) {
+                transitionVideo.pause();
+                transitionVideo.src = '';
+                transitionVideo.load();
+                transitionVideo.style.display = 'none';
+                console.log('[Simli] Transition video destroyed');
+            }
             if (transitionLayer) {
                 transitionLayer.style.display = 'none';
+                transitionLayer.style.visibility = 'hidden';
+                transitionLayer.style.opacity = '0';
                 transitionLayer.classList.add('hidden');
-                console.log('[Simli] Transition layer hidden immediately');
+                transitionLayer.innerHTML = ''; // Remove all children
+                console.log('[Simli] Transition layer emptied and hidden');
             }
             
             // Watch for video element to appear, then start black removal

@@ -368,9 +368,11 @@ body.simli-active .animated-text-container {
     object-fit: cover;
 }
 
-.video-layer.hidden {
+.video-layer.hidden,
+.face-layer.hidden {
     visibility: hidden;
     opacity: 0;
+    pointer-events: none;
 }
 
 #layer-background {
@@ -942,3 +944,4 @@ body.simli-active .animated-text-container {
         transition: none;
     }
 }
+

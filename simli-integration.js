@@ -287,41 +287,12 @@ export class SimliIntegration {
     }
 
     /**
-     * Hide the walkup/transition layer only when Simli video is ready
-     * Prevents black screen between walkup and Simli
+     * DEPRECATED - now handled by BlackRemover.onReady callback in watchForVideo()
      */
     hideTransitionWhenVideoReady() {
-        const transitionLayer = document.getElementById('layer-transition');
-        
-        const checkInterval = setInterval(() => {
-            if (!this.widget) {
-                clearInterval(checkInterval);
-                return;
-            }
-            
-            const video = this.widget.querySelector('video') || 
-                          this.widget.shadowRoot?.querySelector('video');
-            
-            // Only hide transition when Simli video has actual frames
-            if (video && video.readyState >= 2 && !video.paused) {
-                console.log('[Simli] Video playing, now hiding transition layer');
-                if (transitionLayer) {
-                    transitionLayer.classList.add('hidden');
-                    transitionLayer.style.display = 'none';
-                }
-                clearInterval(checkInterval);
-            }
-        }, 100);
-        
-        // Fallback: hide after 5 seconds no matter what
-        setTimeout(() => {
-            clearInterval(checkInterval);
-            if (transitionLayer) {
-                transitionLayer.classList.add('hidden');
-                transitionLayer.style.display = 'none';
-                console.log('[Simli] Fallback: hiding transition layer');
-            }
-        }, 5000);
+        // This was causing the walkup to flash and disappear
+        // Now handled by the canvas frame callback instead
+        console.log('[Simli] hideTransitionWhenVideoReady is deprecated - using canvas callback');
     }
 
     /**

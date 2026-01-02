@@ -218,7 +218,10 @@ export class Compositor {
      */
     showActiveState() {
         this.showLayer('simli');
-        this.hideLayer('transition');
+        // DON'T hide transition here! Let simli-integration.js hide it
+        // when the canvas is actually ready to show (after 10 frames)
+        // this.hideLayer('transition');  // REMOVED - was causing flash
+        
         // Note: background layer stays visible - mix-blend-mode: screen
         // makes Simli's black background transparent
         

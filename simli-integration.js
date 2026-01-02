@@ -10,12 +10,15 @@
  * The visitor is at your door. You speak. They respond.
  */
 
+import { BlackRemover } from './black-remover.js';
+
 export class SimliIntegration {
     constructor(stateMachine, config) {
         this.stateMachine = stateMachine;
         this.config = config;
         this.widget = null;
         this.mountPoint = document.getElementById('simli-mount');
+        this.blackRemover = new BlackRemover();
         
         // Bind handlers
         this.handleStateChange = this.handleStateChange.bind(this);
@@ -178,6 +181,9 @@ export class SimliIntegration {
             this.mountPoint.appendChild(this.widget);
             console.log(`[Simli] ${character.name} mounted`);
             
+            // Watch for video element to appear, then start black removal
+            this.watchForVideo();
+            
             // Auto-click Simli's Connect/Start button after it loads
             const clickStartButton = () => {
                 console.log('[Simli] Looking for Connect/Start button...');
@@ -260,12 +266,54 @@ export class SimliIntegration {
     }
 
     /**
+     * Watch for Simli video element and start black removal
+     */
+    watchForVideo() {
+        console.log('[Simli] Watching for video element...');
+        
+        const checkForVideo = () => {
+            if (!this.widget) return;
+            
+            // Look for video in widget, shadow DOM, iframes
+            let video = this.widget.querySelector('video');
+            
+            // Check shadow DOM
+            if (!video && this.widget.shadowRoot) {
+                video = this.widget.shadowRoot.querySelector('video');
+            }
+            
+            // Check nested elements with shadow roots
+            if (!video) {
+                this.widget.querySelectorAll('*').forEach(el => {
+                    if (!video && el.shadowRoot) {
+                        video = el.shadowRoot.querySelector('video');
+                    }
+                });
+            }
+            
+            if (video && video.videoWidth > 0) {
+                console.log('[Simli] 🎬 Video found, starting black removal');
+                this.blackRemover.start(video);
+            } else {
+                // Keep checking
+                setTimeout(checkForVideo, 500);
+            }
+        };
+        
+        // Start checking after a delay
+        setTimeout(checkForVideo, 1000);
+    }
+
+    /**
      * Destroy and unmount widget
      */
     destroyWidget() {
         if (!this.widget) return;
 
         console.log('[Simli] Destroying widget...');
+        
+        // Stop black removal
+        this.blackRemover.stop();
         
         try {
             // Call widget's cleanup method if available

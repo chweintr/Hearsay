@@ -215,35 +215,48 @@ body.simli-active .animated-text-container {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CHARACTER GALLERY - Radial Layout
+   CHARACTER GALLERY - Orbital Layout around peephole
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .character-gallery {
     position: absolute;
-    bottom: 8vh;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 1.5rem;
-    justify-content: center;
-    padding: 1rem;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allow clicks through to background */
     z-index: 100;
 }
 
 .character-card {
+    position: absolute;
     display: flex;
     flex-direction: column;
     align-items: center;
     cursor: pointer;
+    pointer-events: auto; /* Re-enable clicks on cards */
     transition: transform 0.3s ease, opacity 0.3s ease;
+    
+    /* Orbital positioning - each card uses --angle from JS */
+    --orbit-radius: 42vmin; /* Distance from center */
+    --angle: 0deg;
+    
+    top: 50%;
+    left: 50%;
+    transform: 
+        translate(-50%, -50%)
+        rotate(var(--angle))
+        translateY(calc(-1 * var(--orbit-radius)))
+        rotate(calc(-1 * var(--angle))); /* Counter-rotate to keep text upright */
 }
 
 .character-card.coming-soon {
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .character-card.coming-soon:hover {
-    opacity: 0.9;
+    opacity: 0.85;
 }
 
 .character-placeholder {
@@ -291,11 +304,11 @@ body.simli-active .animated-text-container {
 
 .character-circle {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     overflow: hidden;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.4rem;
 }
 
 .character-circle-border {
@@ -345,11 +358,11 @@ body.simli-active .animated-text-container {
 
 .character-name {
     font-family: 'Cinzel', serif;
-    font-size: 1.1rem;
+    font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.1em;
     color: #1a5c3a;  /* Billiard green */
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.1rem;
     text-shadow: 
         -1px -1px 0 #e84a8a,
         1px -1px 0 #e84a8a,
@@ -359,10 +372,10 @@ body.simli-active .animated-text-container {
 
 .character-role {
     font-family: 'EB Garamond', serif;
-    font-size: 0.8rem;
+    font-size: 0.55rem;
     font-style: italic;
     color: #e84a8a;  /* Pink */
-    opacity: 1;
+    opacity: 0.9;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
@@ -849,6 +862,31 @@ body.simli-active .animated-text-container {
 .store-product:hover {
     transform: translateY(-3px);
     border-color: var(--brass-mid);
+}
+
+.store-product.featured {
+    border-color: #ff6b9d;
+    background: rgba(255, 107, 157, 0.08);
+    grid-column: span 2;
+}
+
+.featured-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #ff6b9d, #ff4777);
+    color: white;
+    font-size: 0.6rem;
+    padding: 4px 12px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+}
+
+.store-product.featured .product-image {
+    aspect-ratio: 16/9;
 }
 
 .product-image {

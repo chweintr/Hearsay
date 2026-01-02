@@ -212,10 +212,11 @@
         const characterKeys = Object.keys(characters);
         const totalChars = characterKeys.length;
         
-        // Radial positioning - characters arranged in a semicircle at bottom
-        // Angles from 200° to 340° (bottom semicircle, avoiding top where title is)
-        const startAngle = 200;
-        const endAngle = 340;
+        // Orbital positioning - characters arranged around the peephole
+        // Start at 120° (lower left), go to 420° (lower right), avoiding top where title is
+        // This creates a horseshoe shape around the bottom/sides
+        const startAngle = 120;
+        const endAngle = 420; // 420 = 60° on the right side
         const angleStep = (endAngle - startAngle) / (totalChars - 1);
         
         characterKeys.forEach((key, index) => {
@@ -401,7 +402,7 @@
                 name: 'MARISOL: "Owner\'s Daughter"',
                 price: '$35',
                 image: null,
-                description: 'Brass key, wax seal kit, two scent vials, false lashes, leather notebook. Cocktail: Dark & Stormy.'
+                description: 'Brass key (number scratched off), wax seal with Vance crest, two scents ("HER" and "THE DISGUISE"), false lashes, redacted legal document. Third generation. Complicated estate. Cocktail: Dark & Stormy.'
             },
             {
                 id: 'eddie',
@@ -422,7 +423,8 @@
                 name: 'TANE: "The Young Horse"',
                 price: '$35',
                 image: 'assets/images/Sensory Packs/Sensory_Pack_Tane_4.png',
-                description: 'Fluorescent energy powder, temporary tattoos, matchbook, cologne. Cocktail: Energy drink vodka shot. Send your face, get a Polaroid.'
+                featured: true,
+                description: 'Fluorescent packaging. Keith Haring energy. Energy drink powder ("MIX WITH VODKA OR REGRET"), temporary tattoos, "THE STARTING GATE" matchbook, PULSE cologne. Cocktail: Energy drink vodka shot. BONUS: Send us your face — receive a Polaroid of you at the club with Tane.'
             },
             {
                 id: 'constance',
@@ -464,8 +466,9 @@
         // Populate store grid
         storeProducts.forEach(product => {
             const productEl = document.createElement('div');
-            productEl.className = 'store-product';
+            productEl.className = 'store-product' + (product.featured ? ' featured' : '');
             productEl.innerHTML = `
+                ${product.featured ? '<div class="featured-badge">✦ Available Now</div>' : ''}
                 <div class="product-image">
                     ${product.image ? `<img src="${product.image}" alt="${product.name}">` : '<div class="product-placeholder">Coming Soon</div>'}
                 </div>

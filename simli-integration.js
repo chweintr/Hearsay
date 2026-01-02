@@ -185,9 +185,13 @@ export class SimliIntegration {
             this.mountPoint.appendChild(this.widget);
             console.log(`[Simli] ${character.name} mounted`);
             
-            // DON'T hide transition yet - wait until Simli video is playing
-            // This prevents black screen between walkup and Simli
-            this.hideTransitionWhenVideoReady();
+            // IMMEDIATELY hide the walkup/transition layer
+            const transitionLayer = document.getElementById('layer-transition');
+            if (transitionLayer) {
+                transitionLayer.style.display = 'none';
+                transitionLayer.classList.add('hidden');
+                console.log('[Simli] Transition layer hidden immediately');
+            }
             
             // Watch for video element to appear, then start black removal
             this.watchForVideo();

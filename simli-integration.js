@@ -185,13 +185,9 @@ export class SimliIntegration {
             this.mountPoint.appendChild(this.widget);
             console.log(`[Simli] ${character.name} mounted`);
             
-            // FORCE hide the walkup/transition layer
-            const transitionLayer = document.getElementById('layer-transition');
-            if (transitionLayer) {
-                transitionLayer.classList.add('hidden');
-                transitionLayer.style.display = 'none';
-                console.log('[Simli] Forced transition layer hidden');
-            }
+            // DON'T hide transition yet - wait until Simli video is playing
+            // This prevents black screen between walkup and Simli
+            this.hideTransitionWhenVideoReady();
             
             // Watch for video element to appear, then start black removal
             this.watchForVideo();
@@ -278,6 +274,44 @@ export class SimliIntegration {
             document.body.classList.remove('loading');
             this.handleWidgetError(error);
         }
+    }
+
+    /**
+     * Hide the walkup/transition layer only when Simli video is ready
+     * Prevents black screen between walkup and Simli
+     */
+    hideTransitionWhenVideoReady() {
+        const transitionLayer = document.getElementById('layer-transition');
+        
+        const checkInterval = setInterval(() => {
+            if (!this.widget) {
+                clearInterval(checkInterval);
+                return;
+            }
+            
+            const video = this.widget.querySelector('video') || 
+                          this.widget.shadowRoot?.querySelector('video');
+            
+            // Only hide transition when Simli video has actual frames
+            if (video && video.readyState >= 2 && !video.paused) {
+                console.log('[Simli] Video playing, now hiding transition layer');
+                if (transitionLayer) {
+                    transitionLayer.classList.add('hidden');
+                    transitionLayer.style.display = 'none';
+                }
+                clearInterval(checkInterval);
+            }
+        }, 100);
+        
+        // Fallback: hide after 5 seconds no matter what
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            if (transitionLayer) {
+                transitionLayer.classList.add('hidden');
+                transitionLayer.style.display = 'none';
+                console.log('[Simli] Fallback: hiding transition layer');
+            }
+        }, 5000);
     }
 
     /**

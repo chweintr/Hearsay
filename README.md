@@ -1,119 +1,148 @@
 # HEARSAY
 
-> *"You decide what to believe."*
+> Conversational narrative experiences through AI-driven talking heads.
+
+**Current Experience: THE HOTEL**
+
+The owner died six months ago. People keep knocking on your door. You talk to them through the peephole. You decide what to believe.
 
 ---
 
-## Vision
+## Quick Start (Railway)
 
-HEARSAY is a platform for conversational fiction. You talk to characters. They talk back. What they tell you may be true, incomplete, or entirely fabricated. Your job is not to solve anything—it's to listen, ask questions, and assemble your own version of what happened.
+1. **Push to GitHub**
+2. **Create Railway project** → Connect GitHub repo
+3. **Set environment variable:**
+   ```
+   SIMLI_API_KEY=your_simli_api_key
+   ```
+4. **Deploy**
 
-This is not a game in the traditional sense. There's no score, no win state, no correct answer. Think of it as interactive oral history: a Studs Terkel interview you can redirect, or a piece of verbatim theater where you choose which witnesses to call. The experience ends when you decide it ends. The meaning is whatever you construct from the testimony you gathered.
-
-Each HEARSAY experience places you in a specific role—hotel guest, documentarian, intake coordinator—and surrounds you with characters who have their own agendas, blind spots, and versions of the truth. The AI-driven talking heads respond in real-time. The conversations are never scripted. What you hear depends on what you ask.
-
----
-
-## Platform Structure
-
-HEARSAY is a platform. Individual experiences sit underneath it like volumes in a series.
-
-| Experience | Visual Conceit | Status |
-|------------|----------------|--------|
-| **Room 412** | Brass peephole, fisheye distortion, hotel hallway | ✅ Active |
-| The Gallery | Gilt portrait frames, faces animate within paintings | 📋 Planned |
-| The Waiting Room | Intake window, plexiglass, institutional fluorescence | 📋 Planned |
-| The Séance | Dark mirror, scrying screen, faces emerging from black | 📋 Planned |
-| The Wake | Living room gathering, memorial for someone you barely knew | 📋 Planned |
-
-Each experience shares the same conversational infrastructure but creates a completely different atmosphere. The technology is invisible. The feeling is everything.
+Railway will:
+- Detect Python via `requirements.txt`
+- Run the FastAPI server via `Procfile`
+- Serve frontend files automatically
 
 ---
 
-## Room 412: The Knock
+## Project Structure
 
-**"Stories through the door."**
-
-The owner of a residential hotel died six months ago. The circumstances are unclear. The estate is in probate. You're a guest—or maybe you're not. People keep knocking on your door. Staff. Other guests. People who want something, or want to tell you something. You see them through the peephole. You decide whether to believe them.
-
-### Current Characters
-
-| Character | Role | What They Know |
-|-----------|------|----------------|
-| **Wire** | Night Porter | Everything about the building. When he started working here is unclear. |
-| **Marisol** | House Detective | A position that may or may not exist. Keeps records on everyone. |
-| *More coming...* | | |
-
-### The Experience
-
-1. You arrive at the landing page. A looping video of a hotel hallway, brass peephole, title card.
-2. You choose who answers the door.
-3. The character appears through the fisheye lens. They speak. You respond.
-4. When you're done, you send them away. Another knock comes.
-5. There is no ending. You leave when you've heard enough.
-
----
-
-## Aesthetic
-
-Baroque theatrical. Not clean, not modern, not minimalist. Think:
-
-- **Thom Browne Fall 2012** — formality decayed, beauty in wrong proportions
-- **Delicatessen (Jeunet)** — sepia absurdism, cramped spaces, faces too close
-- **Tom Waits** — stories told by unreliable drunks who might be prophets
-- **Hermanos Gutiérrez** — desert noir, time standing still
-
-The hotel exists slightly outside normal time. Characters dress for decades that don't match. The hallway carpet has seen things. The brass is tarnished but still catches light.
-
-The feeling: 2am. Someone knocking. You're not sure whether to open.
+```
+hearsay/
+├── index.html              # Main app, video layers, Simli mount
+├── styles.css              # Baroque peephole styling
+├── config.js               # Character definitions
+├── state-machine.js        # State: idle → transitioning → active
+├── compositor.js           # Video layer orchestration
+├── simli-integration.js    # Simli widget lifecycle
+├── Procfile                # Railway start command
+├── railway.json            # Railway configuration
+├── assets/
+│   ├── videos/             # Transition videos, idle loops
+│   ├── sounds/             # Knock sounds, ambient audio
+│   └── images/             # Door overlay PNG (optional)
+└── backend/
+    ├── server.py           # FastAPI token server
+    └── requirements.txt    # Python dependencies
+```
 
 ---
 
-## Roadmap
+## Characters (THE HOTEL)
 
-### Now (Jan 2026)
-- ✅ Landing page with character gallery and looping previews
-- ✅ Animated text overlay ("A Conversation")  
-- ✅ Peephole interface with brass frame overlay
-- ✅ Background hallway video layer
-- ✅ Character walkup transition videos
-- ✅ Door knock sounds (unique per character)
-- ✅ Background music + ambient audio with volume sliders
-- ✅ About modal with project description
-- ✅ Wire and Marisol characters configured
-- 🔧 Simli widget integration (API connected, testing in progress)
+### Wire (Wiremu Tūhoe)
+Night porter. Been here longer than the building, according to him. Speaks in racing idioms and slippery time references.
 
-### Next
-- 📋 Fine-tune peephole sizing to match overlay asset
-- 📋 Verify Simli face appears correctly after walkup video
-- 📋 Additional Room 412 characters (The Thursday Guest, Evelyn, Ms. Park)
-- 📋 Interstitials (envelopes under door, surveillance footage, voicemails)
-- 📋 Hint system (surfaces new threads after N conversations)
+### Marisol Vance
+House detective. Hired for unclear purposes. Keeps records on everyone, including Wire.
 
-### Future
-- 📋 Cross-character memory (what one character knows about your other conversations)
-- 📋 The Gallery experience (portrait frame conceit)
-- 📋 Sensory packs (physical objects mailed to participants)
-- 📋 Multiplayer mode (different users get different witnesses, compare notes)
+*More characters in development.*
 
 ---
 
-## Why This Exists
+## Adding Characters
 
-Most interactive narrative tries to make you the hero. HEARSAY makes you the witness.
-
-You don't save anyone. You don't solve the mystery. You listen to people who may be lying, mistaken, or telling a truth that contradicts someone else's truth. What you believe at the end is your business.
-
-The goal is to create the feeling of reading a novel made of oral histories—except you choose which chapters to read, in what order, and when to stop. The meaning isn't hidden in a puzzle. It's constructed by you, from what you chose to hear.
+1. **Create Simli agent** at [simli.com](https://simli.com) with character prompt
+2. **Add to `config.js`:**
+   ```javascript
+   newcharacter: {
+       name: 'Display Name',
+       role: 'Their Role',
+       agentId: 'simli_agent_id',
+       faceId: 'simli_face_id',
+       idleToActive: ['assets/videos/idle_to_name.mp4'],
+       activeToIdle: ['assets/videos/name_to_idle.mp4'],
+       knockSound: 'assets/sounds/knock.mp3'
+   }
+   ```
+3. **Add transition videos** to `assets/videos/`
 
 ---
 
-## Technical Documentation
+## State Flow
 
-For developers, deployment instructions, and API details, see:
-
-📄 **[docs/TECHNICAL.md](docs/TECHNICAL.md)**
+```
+idle → transitioning-in → active → transitioning-out → idle
+  │                                        │
+  │  Knock sound                           │
+  │  Transition video plays                │
+  │  Simli widget created                  │
+  │                                        │
+  └────────────────────────────────────────┘
+```
 
 ---
 
-*Private project. Not for distribution.*
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/simli-token` | POST | Generate Simli session token |
+| `/api/health` | GET | Health check for Railway |
+| `/` | GET | Serve frontend |
+
+---
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SIMLI_API_KEY` | Yes | Simli API key from dashboard |
+| `PORT` | Auto | Set by Railway |
+
+---
+
+## Visual Conceit
+
+POV through brass hotel door peephole:
+- Fisheye barrel distortion (CSS approximation + optional video bake)
+- Circular frame, heavy vignette
+- Dark baroque palette (Thom Browne, Delicatessen, Tom Waits)
+- The feeling of 2am, uncertain whether to open
+
+---
+
+## Development Notes
+
+- **No backend state** between characters (user is the state)
+- **System prompts** live in Simli dashboard, not frontend
+- **Hint system** triggers by conversation count (future)
+- **Interstitials** (envelopes, texts, footage) planned for v2
+
+---
+
+## Debug
+
+Open browser console:
+```javascript
+window.hearsay.stateMachine.getState()
+window.hearsay.stateMachine.summonCharacter('wire')
+window.hearsay.stateMachine.dismissCharacter()
+```
+
+---
+
+## License
+
+Private project. Not for distribution.
+

@@ -402,8 +402,9 @@ body.simli-active .animated-text-container {
     transition: opacity 0.4s ease;
     pointer-events: auto;
     
-    /* Screen blend: black becomes transparent, blends with background layer */
-    mix-blend-mode: screen;
+    /* NOTE: mix-blend-mode: screen makes face ghostly because face has dark shadows.
+       Keeping black background visible for now - face is solid. 
+       To truly remove black, Simli would need alpha-channel video output. */
 }
 
 #simli-mount {
@@ -415,9 +416,9 @@ body.simli-active .animated-text-container {
 }
 
 #simli-mount simli-widget {
-    /* Scale up to fill peephole - face needs to fill the circle */
-    width: 200%;
-    height: 200%;
+    /* Scale up significantly to fill peephole - face needs to fill the circle */
+    width: 300%;
+    height: 300%;
     
     /* Center the widget */
     display: flex;
@@ -430,10 +431,10 @@ body.simli-active .animated-text-container {
     z-index: 25;
 }
 
-/* Hide Simli's UI elements (buttons, placeholder face, etc) */
-#simli-mount simli-widget button,
-#simli-mount simli-widget svg,
-#simli-mount simli-widget [class*="placeholder"] {
+/* Don't hide Simli buttons - we need Connect button to work */
+/* Just hide placeholder graphics */
+#simli-mount simli-widget svg[class*="placeholder"],
+#simli-mount simli-widget [class*="placeholder"]:not(button) {
     display: none !important;
 }
 
@@ -443,8 +444,8 @@ body.simli-active .animated-text-container {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 35%;  /* Show face, less forehead */
-    transform: scale(1.5);  /* Zoom in more on face */
+    object-position: center 40%;  /* Show face, less forehead */
+    transform: scale(1.8);  /* Zoom in more on face */
 }
 
 /* Hide canvas if present */

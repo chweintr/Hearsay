@@ -134,6 +134,15 @@ export class Compositor {
         this.videos.transition.src = videoPath;
         this.videos.transition.load();
         
+        // For 'in' transitions: LOOP the walkup video until Simli is ready
+        // This prevents the awkward gap between walkup ending and Simli appearing
+        if (type === 'in') {
+            this.videos.transition.loop = true;
+            console.log('[Compositor] Walkup video set to LOOP until Simli is ready');
+        } else {
+            this.videos.transition.loop = false;
+        }
+        
         // Show transition layer
         this.showLayer('transition');
         
@@ -146,6 +155,27 @@ export class Compositor {
             // Skip to next state on error
             this.handleTransitionVideoEnd();
         });
+        
+        // For 'in' transitions, trigger state machine after first play-through
+        // but KEEP the video playing (looping) until Simli hides it
+        if (type === 'in') {
+            this.videos.transition.addEventListener('ended', () => {
+                // This won't fire because video loops, so use timeupdate instead
+            }, { once: true });
+            
+            // Use a flag to only trigger once
+            let hasTriggeredTransition = false;
+            const checkProgress = () => {
+                if (!hasTriggeredTransition && this.videos.transition.currentTime > 0.5) {
+                    // After 0.5 seconds, trigger state machine to load Simli
+                    // Video keeps playing/looping
+                    hasTriggeredTransition = true;
+                    console.log('[Compositor] Triggering Simli load while walkup loops...');
+                    this.stateMachine.onTransitionInComplete();
+                }
+            };
+            this.videos.transition.addEventListener('timeupdate', checkProgress);
+        }
     }
 
     /**
@@ -155,17 +185,14 @@ export class Compositor {
         const type = this.videos.transition.dataset.transitionType;
         console.log(`[Compositor] Transition video ended, type: ${type}`);
         
-        // Hide transition layer
-        this.hideLayer('transition');
-        
-        // Notify state machine to proceed
-        if (type === 'in') {
-            console.log('[Compositor] Calling onTransitionInComplete...');
-            this.stateMachine.onTransitionInComplete();
-        } else if (type === 'out') {
+        // For 'out' transitions, hide layer and notify
+        // For 'in' transitions, the video loops - Simli integration handles hiding
+        if (type === 'out') {
+            this.hideLayer('transition');
             console.log('[Compositor] Calling onTransitionOutComplete...');
             this.stateMachine.onTransitionOutComplete();
         }
+        // Note: 'in' transitions are handled via timeupdate in playTransitionVideo
     }
 
     /**

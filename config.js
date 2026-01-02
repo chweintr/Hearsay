@@ -73,9 +73,10 @@ export const characters = {
         agentId: '2439209e-abb8-4ccc-ab18-2bbbfc78d4f6',
         faceId: 'bc603b3f-d355-424d-b613-d7db4588cb8a',
         idleToActive: ['assets/videos/Wire_Walkup_2.mp4'],
-        activeToIdle: ['assets/videos/Wire_Walkup_2.mp4'],  // TODO: need departure video
+        activeToIdle: ['assets/videos/Wire_Walkup_2.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
-        previewVideo: 'assets/videos/Wire_Walkup_2.mp4'
+        previewVideo: 'assets/videos/Wire_Walkup_2.mp4',
+        status: 'ready'
     },
     
     marisol: {
@@ -84,34 +85,89 @@ export const characters = {
         agentId: 'xxx',  // TODO: Simli agent ID
         faceId: 'xxx',   // TODO: Simli face ID
         idleToActive: ['assets/videos/Marisol_Walkup.mp4'],
-        activeToIdle: ['assets/videos/Marisol_Walkup.mp4'],  // TODO: need departure video
+        activeToIdle: ['assets/videos/Marisol_Walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_office.wav',
-        previewVideo: 'assets/videos/Marisol_Walkup.mp4'
+        previewVideo: 'assets/videos/Marisol_Walkup.mp4',
+        status: 'ready'  // ready | coming_soon | unavailable
     },
     
-    // THE KNOCK - Full Character Roster (8 total):
-    // 1. Wire (Wiremu) - Long Time Resident ✓ COMPLETE
-    // 2. Marisol - Owner's Daughter ✓ COMPLETE
-    // 3. Eddie - The Chef (PROMPT COMPLETE, needs Simli)
-    // 4. Dotty/Bette - The Old Woman (British, bawdy, tipsy) - PROMPT NEEDED
-    // 5. Tane/Rawiri - Wire's Brother (younger, arrogant) - PROMPT NEEDED
-    // 6. Constance/Vivian - Red-Headed Woman (aloof, cultured) - PROMPT NEEDED
-    // 7. Lenny/Sal - The Comedian (random availability!) - PROMPT NEEDED
-    // 8. Caleb - The Author (meta character) - PROMPT NEEDED
-    //
-    // Future characters:
-    //
-    // evelyn: {
-    //     name: 'Evelyn',
-    //     role: 'Long-term Guest',
-    //     ...
-    // },
-    //
-    // thursday: {
-    //     name: 'The Thursday Guest',
-    //     role: 'Weekly Visitor',
-    //     knockSound: null  // He doesn't knock
-    // },
+    eddie: {
+        name: 'Eddie',
+        role: 'The Chef',
+        agentId: 'xxx',
+        faceId: 'xxx',
+        idleToActive: [],
+        activeToIdle: [],
+        knockSound: null,
+        previewVideo: null,
+        status: 'coming_soon'
+    },
+    
+    dotty: {
+        name: 'Dotty',
+        role: 'The Old Woman',
+        agentId: 'xxx',
+        faceId: 'xxx',
+        idleToActive: [],
+        activeToIdle: [],
+        knockSound: null,
+        previewVideo: null,
+        status: 'coming_soon'
+    },
+    
+    tane: {
+        name: 'Tane',
+        role: "Wire's Brother",
+        agentId: 'xxx',
+        faceId: 'xxx',
+        idleToActive: [],
+        activeToIdle: [],
+        knockSound: null,
+        previewVideo: null,
+        status: 'coming_soon'
+    },
+    
+    constance: {
+        name: 'Constance',
+        role: 'The Red-Headed Woman',
+        agentId: 'xxx',
+        faceId: 'xxx',
+        idleToActive: [],
+        activeToIdle: [],
+        knockSound: null,
+        previewVideo: null,
+        status: 'coming_soon'
+    },
+    
+    lenny: {
+        name: 'Lenny',
+        role: 'The Comedian',
+        agentId: 'xxx',
+        faceId: 'xxx',
+        idleToActive: [],
+        activeToIdle: [],
+        knockSound: null,
+        previewVideo: null,
+        status: 'coming_soon',
+        availability: 0.3,  // 30% chance he's "in town"
+        unavailableMessages: [
+            "Lenny's on tour. Try again later.",
+            "Not in tonight. Check back tomorrow.",
+            "Performing in Wellington this week."
+        ]
+    },
+    
+    caleb: {
+        name: 'Caleb',
+        role: 'The Author',
+        agentId: 'xxx',
+        faceId: 'xxx',
+        idleToActive: [],
+        activeToIdle: [],
+        knockSound: null,
+        previewVideo: null,
+        status: 'coming_soon'
+    }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

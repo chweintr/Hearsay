@@ -215,15 +215,19 @@ body.simli-active .animated-text-container {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CHARACTER GALLERY
+   CHARACTER GALLERY - Radial Layout
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .character-gallery {
+    position: absolute;
+    bottom: 8vh;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
+    gap: 1.5rem;
     justify-content: center;
     padding: 1rem;
+    z-index: 100;
 }
 
 .character-card {
@@ -231,7 +235,47 @@ body.simli-active .animated-text-container {
     flex-direction: column;
     align-items: center;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.character-card.coming-soon {
+    opacity: 0.6;
+}
+
+.character-card.coming-soon:hover {
+    opacity: 0.9;
+}
+
+.character-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, var(--shadow-mid), var(--shadow-deep));
+    border-radius: 50%;
+}
+
+.placeholder-initial {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--brass-dark);
+    opacity: 0.5;
+}
+
+.coming-soon-badge {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent-deep);
+    color: var(--cream);
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
 }
 
 .character-card:hover {
@@ -736,6 +780,207 @@ body.simli-active .animated-text-container {
 
 .modal-close:hover {
     color: var(--parchment);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MENU BUTTONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.menu-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.menu-btn {
+    background: transparent;
+    border: 1px solid var(--brass-dark);
+    color: var(--billiard-green);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.5rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8), 0 0 8px var(--pink-outline);
+}
+
+.menu-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--brass-mid);
+    color: var(--parchment);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STORE MODAL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.store-content {
+    max-width: 900px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.store-tagline {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    color: var(--brass-light);
+    margin-bottom: 2rem;
+}
+
+.store-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.store-product {
+    background: rgba(30, 25, 20, 0.8);
+    border: 1px solid var(--brass-dark);
+    border-radius: 4px;
+    padding: 1rem;
+    text-align: left;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.store-product:hover {
+    transform: translateY(-3px);
+    border-color: var(--brass-mid);
+}
+
+.product-image {
+    aspect-ratio: 1;
+    background: var(--shadow-deep);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brass-dark);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.product-name {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--parchment);
+    margin: 0 0 0.5rem;
+    letter-spacing: 0.05em;
+}
+
+.product-description {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.8rem;
+    color: var(--brass-light);
+    line-height: 1.4;
+    margin: 0 0 0.75rem;
+}
+
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.product-price {
+    font-family: var(--font-display);
+    color: var(--billiard-green);
+    font-size: 0.9rem;
+}
+
+.product-btn {
+    background: var(--accent-deep);
+    border: none;
+    color: var(--cream);
+    font-size: 0.65rem;
+    padding: 0.4rem 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.product-btn:hover {
+    background: #8a3040;
+}
+
+.store-notice {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.85rem;
+    color: var(--brass-mid);
+    margin: 2rem 0 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--brass-dark);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WAITLIST FORM
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.waitlist-form {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.waitlist-form input[type="email"] {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--brass-dark);
+    color: var(--parchment);
+    padding: 0.6rem 1rem;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.9rem;
+    width: 220px;
+}
+
+.waitlist-form input[type="email"]::placeholder {
+    color: var(--brass-dark);
+}
+
+.waitlist-form button {
+    background: var(--billiard-green);
+    border: none;
+    color: var(--cream);
+    padding: 0.6rem 1.2rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.waitlist-form button:hover {
+    background: #1a5a3a;
+}
+
+/* Coming Soon Modal */
+.coming-soon-content h2 {
+    font-family: var(--font-display);
+    color: var(--parchment);
+}
+
+.coming-soon-content p {
+    font-family: 'EB Garamond', serif;
+    color: var(--brass-light);
+    margin: 1rem 0 1.5rem;
 }
 
 .about-text {

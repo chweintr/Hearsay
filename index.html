@@ -38,7 +38,45 @@
                 <!-- Characters injected by JS -->
             </div>
             
-            <button id="about-btn" class="about-btn">About</button>
+            <div class="menu-buttons">
+                <button id="about-btn" class="menu-btn">About</button>
+                <button id="store-btn" class="menu-btn">Sensory Packs</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Coming Soon Modal -->
+    <div id="coming-soon-modal" class="modal hidden">
+        <div class="modal-content coming-soon-content">
+            <button class="modal-close" onclick="document.getElementById('coming-soon-modal').classList.add('hidden')">&times;</button>
+            <h2><span class="coming-soon-name">This character</span> is not yet available</h2>
+            <p>The hotel is still preparing their room. Leave your details and we'll let you know when they're ready to receive visitors.</p>
+            <form class="waitlist-form" onsubmit="event.preventDefault(); submitWaitlist(this);">
+                <input type="email" name="email" placeholder="your@email.com" required>
+                <button type="submit">Notify Me</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Store Modal -->
+    <div id="store-modal" class="modal hidden">
+        <div class="modal-content store-content">
+            <button class="modal-close" onclick="document.getElementById('store-modal').classList.add('hidden')">&times;</button>
+            <h2>Sensory Packs</h2>
+            <p class="store-tagline">Physical artifacts from the hotel. Things you can hold, smell, taste. The fiction made tangible.</p>
+            
+            <div class="store-grid" id="store-grid">
+                <!-- Products injected by JS -->
+            </div>
+            
+            <p class="store-notice">
+                <strong>THE KNOCK</strong> brought to you by <em>Past Presence</em> is currently in development.<br>
+                Leave your email to be notified when the hotel opens its doors.
+            </p>
+            <form class="waitlist-form" onsubmit="event.preventDefault(); submitWaitlist(this);">
+                <input type="email" name="email" placeholder="your@email.com" required>
+                <button type="submit">Join Waitlist</button>
+            </form>
         </div>
     </div>
     
@@ -171,11 +209,30 @@
         // ─────────────────────────────────────────────────────────────────────
         
         const gallery = document.getElementById('character-gallery');
+        const characterKeys = Object.keys(characters);
+        const totalChars = characterKeys.length;
         
-        Object.entries(characters).forEach(([key, character]) => {
+        // Radial positioning - characters arranged in a semicircle at bottom
+        // Angles from 200° to 340° (bottom semicircle, avoiding top where title is)
+        const startAngle = 200;
+        const endAngle = 340;
+        const angleStep = (endAngle - startAngle) / (totalChars - 1);
+        
+        characterKeys.forEach((key, index) => {
+            const character = characters[key];
             const card = document.createElement('div');
             card.className = 'character-card';
             card.dataset.character = key;
+            
+            // Add coming_soon class if not ready
+            if (character.status === 'coming_soon') {
+                card.classList.add('coming-soon');
+            }
+            
+            // Calculate radial position
+            const angle = startAngle + (index * angleStep);
+            card.style.setProperty('--angle', `${angle}deg`);
+            card.dataset.angle = angle;
             
             // Check if we have a preview video
             const videoSrc = character.previewVideo || 
@@ -188,16 +245,23 @@
                             <source src="${videoSrc}" type="video/mp4">
                         </video>
                     ` : `
-                        <div class="character-placeholder"></div>
+                        <div class="character-placeholder">
+                            <span class="placeholder-initial">${character.name.charAt(0)}</span>
+                        </div>
                     `}
                     <div class="character-circle-border"></div>
+                    ${character.status === 'coming_soon' ? '<div class="coming-soon-badge">Coming Soon</div>' : ''}
                 </div>
                 <span class="character-name">${character.name}</span>
                 <span class="character-role">${character.role}</span>
             `;
             
             card.addEventListener('click', () => {
-                enterExperience(key);
+                if (character.status === 'coming_soon') {
+                    showComingSoonModal(character.name);
+                } else {
+                    enterExperience(key);
+                }
             });
             
             // Play video on hover
@@ -208,6 +272,14 @@
             
             gallery.appendChild(card);
         });
+        
+        // Coming Soon Modal
+        function showComingSoonModal(charName) {
+            const modal = document.getElementById('coming-soon-modal');
+            const nameEl = modal.querySelector('.coming-soon-name');
+            if (nameEl) nameEl.textContent = charName;
+            modal.classList.remove('hidden');
+        }
 
         // ─────────────────────────────────────────────────────────────────────
         // CORE SYSTEMS
@@ -306,6 +378,86 @@
                 aboutModal.classList.add('hidden');
             }
         });
+
+        // ─────────────────────────────────────────────────────────────────────
+        // STORE MODAL
+        // ─────────────────────────────────────────────────────────────────────
+        
+        const storeBtn = document.getElementById('store-btn');
+        const storeModal = document.getElementById('store-modal');
+        const storeGrid = document.getElementById('store-grid');
+        
+        // Sensory Pack Products
+        const storeProducts = [
+            {
+                id: 'tane',
+                name: 'TANE: "The Young Horse"',
+                price: '$35',
+                image: 'assets/images/Sensory Packs/Sensory_Pack_Tane_4.png',
+                description: 'Fluorescent energy. Cheap cologne. Temporary tattoos. The ambition of someone who thinks they\'ll live forever.'
+            },
+            {
+                id: 'wire',
+                name: 'WIRE: "The Long Timer"',
+                price: '$35',
+                image: null,
+                description: 'Tea tin, sugar cubes, horse racing form guide. The scent of sandalwood and patience.'
+            },
+            {
+                id: 'marisol',
+                name: 'MARISOL: "Owner\'s Daughter"',
+                price: '$35',
+                image: null,
+                description: 'Room key, wax-sealed envelope, floral powder scent. Secrets in cursive.'
+            },
+            {
+                id: 'hotel',
+                name: 'THE HOTEL PACK',
+                price: '$65',
+                image: null,
+                description: 'One item from each resident. Room 412 key tag. "Hallway at 3am" scent. The complete experience.'
+            }
+        ];
+        
+        // Populate store grid
+        storeProducts.forEach(product => {
+            const productEl = document.createElement('div');
+            productEl.className = 'store-product';
+            productEl.innerHTML = `
+                <div class="product-image">
+                    ${product.image ? `<img src="${product.image}" alt="${product.name}">` : '<div class="product-placeholder">Coming Soon</div>'}
+                </div>
+                <h3 class="product-name">${product.name}</h3>
+                <p class="product-description">${product.description}</p>
+                <div class="product-footer">
+                    <span class="product-price">${product.price}</span>
+                    <button class="product-btn" onclick="showStoreWaitlist('${product.name}')">Add to Cart</button>
+                </div>
+            `;
+            storeGrid.appendChild(productEl);
+        });
+        
+        storeBtn?.addEventListener('click', () => {
+            storeModal?.classList.remove('hidden');
+        });
+        
+        storeModal?.addEventListener('click', (e) => {
+            if (e.target === storeModal) {
+                storeModal.classList.add('hidden');
+            }
+        });
+        
+        // Waitlist submission (placeholder)
+        window.submitWaitlist = function(form) {
+            const email = form.querySelector('input[name="email"]').value;
+            alert(`Thanks! We'll reach out to ${email} when the hotel opens.`);
+            form.reset();
+            document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+        };
+        
+        window.showStoreWaitlist = function(productName) {
+            alert(`THE KNOCK is gearing up. "${productName}" will be available soon. Leave your email in the form below to be notified!`);
+        };
 
         // ─────────────────────────────────────────────────────────────────────
         // AUDIO SYSTEM

@@ -397,9 +397,9 @@ body.simli-active .animated-text-container {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    /* Size to fit peephole opening */
-    width: 65%;
-    height: 80%;
+    /* Make it BIG to fill peephole */
+    width: 90%;
+    height: 90%;
     /* Stack above background */
     z-index: 15;
     /* Ensure no cropping */
@@ -465,16 +465,15 @@ body.simli-active .animated-text-container {
     pointer-events: none !important;
 }
 
-/* Simli video - make it MUCH bigger and visible */
+/* Simli video - make it FILL the peephole */
 #simli-mount simli-widget video {
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
-    width: 200% !important;
-    height: 200% !important;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover !important;
-    object-position: center 40% !important;
-    transform: scale(1.2) !important; /* Extra zoom */
+    object-position: center 35% !important; /* Show face, less forehead */
 }
 
 /* Simli video - fill container, canvas overlay handles black removal */

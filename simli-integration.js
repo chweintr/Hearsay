@@ -269,47 +269,62 @@ export class SimliIntegration {
     }
 
     /**
-     * Aggressively hide Simli's dotted face loading animation
-     * This searches Shadow DOM and removes/hides elements
+     * Aggressively REMOVE Simli's dotted face loading animation
+     * This searches Shadow DOM and REMOVES elements entirely
      */
     hideSimliLoadingUI() {
-        const hideElements = (root) => {
-            if (!root) return;
+        const removeElements = (root, depth = 0) => {
+            if (!root || depth > 5) return;
             
-            // Find and hide all SVGs, canvases, and loading elements
-            const selectors = 'svg, canvas, [class*="loading"], [class*="dots"], [class*="avatar"], [class*="placeholder"], [class*="face-outline"]';
+            // Find and REMOVE all SVGs, canvases that aren't our black remover
+            const selectors = 'svg, canvas:not(#simli-canvas), [class*="loading"], [class*="dots"], [class*="avatar"], [class*="placeholder"], [class*="face"], [class*="outline"]';
             
             root.querySelectorAll(selectors).forEach(el => {
-                el.style.display = 'none';
-                el.style.visibility = 'hidden';
-                el.style.opacity = '0';
+                // Don't remove the video
+                if (el.tagName === 'VIDEO') return;
+                console.log(`[Simli] Removing element: ${el.tagName} class="${el.className}"`);
+                el.remove();
             });
             
             // Check shadow roots
             root.querySelectorAll('*').forEach(el => {
                 if (el.shadowRoot) {
-                    hideElements(el.shadowRoot);
+                    removeElements(el.shadowRoot, depth + 1);
+                }
+            });
+            
+            // Check iframes
+            root.querySelectorAll('iframe').forEach(iframe => {
+                try {
+                    if (iframe.contentDocument) {
+                        removeElements(iframe.contentDocument.body, depth + 1);
+                    }
+                } catch (e) {
+                    // Cross-origin, can't access
                 }
             });
         };
         
         // Run immediately and on interval to catch dynamically added elements
-        const runHide = () => {
+        const runRemove = () => {
             if (!this.widget) return;
-            hideElements(this.widget);
+            removeElements(this.widget);
             if (this.widget.shadowRoot) {
-                hideElements(this.widget.shadowRoot);
+                removeElements(this.widget.shadowRoot);
             }
         };
         
-        // Run multiple times to catch elements as they load
-        runHide();
-        setTimeout(runHide, 100);
-        setTimeout(runHide, 500);
-        setTimeout(runHide, 1000);
-        setTimeout(runHide, 2000);
+        // Run many times to catch elements as they load
+        runRemove();
+        setTimeout(runRemove, 100);
+        setTimeout(runRemove, 300);
+        setTimeout(runRemove, 500);
+        setTimeout(runRemove, 1000);
+        setTimeout(runRemove, 1500);
+        setTimeout(runRemove, 2000);
+        setTimeout(runRemove, 3000);
         
-        console.log('[Simli] Hiding loading UI elements');
+        console.log('[Simli] Removing loading UI elements');
     }
 
     /**

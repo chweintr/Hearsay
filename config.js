@@ -93,7 +93,7 @@ export const characters = {
     
     eddie: {
         name: 'Eddie',
-        role: 'The Chef',
+        role: 'Night Chef',
         agentId: 'xxx',
         faceId: 'xxx',
         idleToActive: [],
@@ -105,7 +105,7 @@ export const characters = {
     
     dotty: {
         name: 'Dotty',
-        role: 'The Old Woman',
+        role: 'Room 308',
         agentId: 'xxx',
         faceId: 'xxx',
         idleToActive: [],
@@ -129,7 +129,19 @@ export const characters = {
     
     constance: {
         name: 'Constance',
-        role: 'The Red-Headed Woman',
+        role: 'Fourth Floor',
+        agentId: 'xxx',
+        faceId: 'xxx',
+        idleToActive: [],
+        activeToIdle: [],
+        knockSound: null,
+        previewVideo: null,
+        status: 'coming_soon'
+    },
+    
+    priya: {
+        name: 'Priya',
+        role: 'Bartender',
         agentId: 'xxx',
         faceId: 'xxx',
         idleToActive: [],

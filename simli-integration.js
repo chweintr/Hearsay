@@ -402,6 +402,19 @@ export class SimliIntegration {
             if (video && video.videoWidth > 0) {
                 console.log('[Simli] 🎬 Video found, starting black removal');
                 this.blackRemover.start(video);
+                
+                // FORCE scale the video to fill peephole
+                video.style.cssText = `
+                    width: 350% !important;
+                    height: 350% !important;
+                    object-fit: cover !important;
+                    object-position: center 42% !important;
+                    position: absolute !important;
+                    top: 50% !important;
+                    left: 50% !important;
+                    transform: translate(-50%, -50%) !important;
+                `;
+                console.log('[Simli] Applied 350% video scaling via JS');
             } else {
                 // Keep checking
                 setTimeout(checkForVideo, 500);

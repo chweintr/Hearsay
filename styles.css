@@ -392,6 +392,10 @@ body.simli-active .animated-text-container {
     transition: opacity 0.15s ease;
 }
 
+#layer-transition.hidden {
+    display: none !important;
+}
+
 /* Face Container: centered mount for all face elements (walkup + simli) */
 #face-container {
     position: absolute;
@@ -944,4 +948,5 @@ body.simli-active .animated-text-container {
         transition: none;
     }
 }
+
 

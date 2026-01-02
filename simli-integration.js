@@ -181,6 +181,14 @@ export class SimliIntegration {
             this.mountPoint.appendChild(this.widget);
             console.log(`[Simli] ${character.name} mounted`);
             
+            // FORCE hide the walkup/transition layer
+            const transitionLayer = document.getElementById('layer-transition');
+            if (transitionLayer) {
+                transitionLayer.classList.add('hidden');
+                transitionLayer.style.display = 'none';
+                console.log('[Simli] Forced transition layer hidden');
+            }
+            
             // Watch for video element to appear, then start black removal
             this.watchForVideo();
             

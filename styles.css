@@ -397,13 +397,13 @@ body.simli-active .animated-text-container {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    /* Size to fit peephole opening - adjust as needed */
-    width: 55%;
-    height: 70%;
+    /* Size to fit peephole opening */
+    width: 65%;
+    height: 80%;
     /* Stack above background */
     z-index: 15;
-    /* For debugging - remove later */
-    /* border: 2px solid red; */
+    /* Ensure no cropping */
+    overflow: visible;
 }
 
 .face-layer {
@@ -412,10 +412,10 @@ body.simli-active .animated-text-container {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: visible;
 }
 
-.face-layer video,
-.face-layer simli-widget {
+.face-layer video {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -434,40 +434,46 @@ body.simli-active .animated-text-container {
     align-items: center;
     justify-content: center;
     position: relative;
+    overflow: visible;
 }
 
 #simli-mount simli-widget {
-    /* Fill the container completely */
-    width: 100% !important;
-    height: 100% !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    /* Fill and center in container */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     pointer-events: auto;
-    
-    /* Override any internal positioning */
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    overflow: visible;
+    background: transparent !important;
 }
 
-/* Hide Simli's loading animation (dotted face), but keep buttons visible */
+/* Hide ALL Simli UI elements except the video */
+#simli-mount simli-widget > *:not(video),
 #simli-mount simli-widget svg,
 #simli-mount simli-widget [class*="placeholder"],
 #simli-mount simli-widget [class*="loading"],
 #simli-mount simli-widget [class*="dots"],
 #simli-mount simli-widget [class*="avatar"],
-#simli-mount simli-widget canvas:not(#simli-canvas) {
+#simli-mount simli-widget [class*="face"],
+#simli-mount simli-widget canvas:not(#simli-canvas),
+#simli-mount simli-widget div:not(:has(video)) {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
+    pointer-events: none !important;
 }
 
-/* But keep the actual video visible */
+/* Simli video - make it bigger and visible */
 #simli-mount simli-widget video {
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
+    width: 140% !important;
+    height: 140% !important;
+    object-fit: cover !important;
+    transform: translateY(10%); /* Move down slightly to show more face, less forehead */
 }
 
 /* Simli video - fill container, canvas overlay handles black removal */

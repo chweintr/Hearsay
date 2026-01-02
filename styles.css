@@ -409,9 +409,9 @@ body.simli-active .animated-text-container {
 }
 
 #simli-mount simli-widget {
-    /* Scale up to fill peephole - face was too small */
-    width: 140%;
-    height: 140%;
+    /* Scale up to fill peephole - face needs to fill the circle */
+    width: 200%;
+    height: 200%;
     
     /* Center the widget */
     display: flex;
@@ -437,8 +437,8 @@ body.simli-active .animated-text-container {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 30%;  /* Show more of face, less of top of head */
-    transform: scale(1.3);  /* Zoom in on face */
+    object-position: center 35%;  /* Show face, less forehead */
+    transform: scale(1.5);  /* Zoom in more on face */
 }
 
 /* Hide canvas if present */

@@ -153,9 +153,24 @@ export class SimliIntegration {
                     console.log(`[Simli] Found ${buttons.length} clickables at depth ${depth}`);
                     
                     buttons.forEach(btn => {
-                        const text = (btn.textContent || btn.innerText || '').toLowerCase();
+                        const text = (btn.textContent || btn.innerText || '').toLowerCase().trim();
                         const className = (btn.className || '').toLowerCase();
                         console.log(`[Simli] Button: "${text}" class="${className}"`);
+                        
+                        // DON'T click close/end/leave buttons!
+                        if (text.includes('close') || text.includes('end') || 
+                            text.includes('leave') || text.includes('disconnect') ||
+                            text.includes('stop') || className.includes('close') ||
+                            className.includes('active')) {
+                            console.log('[Simli] Skipping close/end button');
+                            return;
+                        }
+                        
+                        // DON'T click if already connecting
+                        if (text.includes('connecting')) {
+                            console.log('[Simli] Already connecting, skipping');
+                            return;
+                        }
                         
                         // Click buttons that look like start/connect buttons
                         if (text.includes('start') || text.includes('connect') || 
@@ -165,9 +180,6 @@ export class SimliIntegration {
                             btn.click();
                         }
                     });
-                    
-                    // Also just click ALL buttons (Simli might have unlabeled buttons)
-                    buttons.forEach(btn => btn.click());
                     
                     // Check shadow DOM
                     if (root.shadowRoot) {

@@ -386,66 +386,56 @@ body.simli-active .animated-text-container {
 }
 
 #layer-transition {
-    z-index: var(--z-transition);
+    z-index: 1;
     transition: opacity 0.15s ease;
 }
 
-/* Walkup video sizing - smaller to fit peephole */
-#layer-transition video {
-    width: 70%;
-    height: 70%;
-    object-fit: contain;
+/* Face Container: centered mount for all face elements (walkup + simli) */
+#face-container {
     position: absolute;
+    /* Center in viewport */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    /* Size to fit peephole opening - adjust as needed */
+    width: 55%;
+    height: 70%;
+    /* Stack above background */
+    z-index: 15;
+    /* For debugging - remove later */
+    /* border: 2px solid red; */
 }
 
-/* Blending context for background + Simli (same pattern as animated text) */
-#simli-blend-context {
+.face-layer {
     position: absolute;
     inset: 0;
-    isolation: isolate; /* Create stacking context for blending */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.face-layer video,
+.face-layer simli-widget {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 #layer-simli {
-    z-index: var(--z-simli);
+    z-index: 2;
     transition: opacity 0.4s ease;
     pointer-events: auto;
-    
-    /* Black removal handled by canvas processor - no CSS blend needed */
 }
 
 #simli-mount {
     width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#simli-mount {
-    /* Fill the layer, centering handled by layer */
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 #simli-mount simli-widget {
-    /* Match walkup video sizing - centered in peephole */
-    width: 70%;
-    height: 70%;
-    
-    /* Ensure clickable for Simli's internal buttons */
+    width: 100%;
+    height: 100%;
     pointer-events: auto;
-    position: relative;
-    
-    /* Center content */
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 /* Don't hide Simli buttons - we need Connect button to work */

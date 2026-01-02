@@ -462,10 +462,21 @@ body.simli-active .animated-text-container {
     visibility: hidden !important;
 }
 
+/* Simli widget and ALL containers - fully transparent backgrounds */
+#simli-mount,
+#simli-mount simli-widget,
+#simli-mount simli-widget *,
+#layer-simli,
+#layer-simli * {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
 /* Simli video - HIDDEN, canvas shows the processed frames */
 #simli-mount simli-widget video {
     /* BlackRemover will hide this and show canvas instead */
-    /* Don't use opacity !important - let JS control visibility */
+    opacity: 0 !important;
+    visibility: hidden !important;
 }
 
 /* Canvas overlay for black removal - LARGER than peephole to hide edges */
@@ -474,8 +485,8 @@ body.simli-active .animated-text-container {
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    width: 85vmin !important;
-    height: 85vmin !important;
+    width: 100vmin !important;
+    height: 100vmin !important;
     z-index: 100 !important;
     pointer-events: none !important;
 }

@@ -75,7 +75,8 @@ async def get_simli_token(
                 },
                 json={
                     "agentId": agentId,
-                    "faceId": faceId
+                    "faceId": faceId,
+                    "createTranscript": True  # Enable transcript capture for writing engine
                 },
                 timeout=30.0
             )
@@ -89,9 +90,15 @@ async def get_simli_token(
                 )
             
             data = response.json()
+            print(f"[HEARSAY] Simli response for {agentId}: {data}")
             
-            # Simli may return token as 'sessionToken' or 'token'
-            token = data.get("sessionToken") or data.get("token") or ""
+            # Simli may return token as 'sessionToken', 'session_token', or 'token'
+            token = data.get("sessionToken") or data.get("session_token") or data.get("token") or ""
+            
+            # Also capture transcript URL if returned
+            transcript_url = data.get("transcriptUrl") or data.get("transcript_url")
+            if transcript_url:
+                print(f"[HEARSAY] Transcript URL: {transcript_url}")
             
             if not token:
                 print(f"[HEARSAY] No token in response: {data}")

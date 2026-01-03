@@ -186,6 +186,17 @@ export const characters = {
         knockSound: null,
         previewVideo: null,
         status: 'coming_soon'
+    },
+    rufus: {
+        name: 'Rufus',
+        role: 'The Clown',
+        agentId: 'xxx',  // TODO: Simli agent ID
+        faceId: 'xxx',   // TODO: Simli face ID
+        idleToActive: ['assets/videos/Rufus_Walkup.mp4'],
+        activeToIdle: ['assets/videos/Rufus_Walkup.mp4'],
+        knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
+        previewVideo: 'assets/videos/Rufus_Walkup.mp4',
+        status: 'coming_soon'  // Change to 'ready' when Simli IDs available
     }
 };
 

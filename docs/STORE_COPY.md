@@ -31,7 +31,7 @@ Fluorescent packaging. Neon orange and electric pink. Figures running, flexing, 
 **Contains:**
 - Powdered energy drink mix ("MIX WITH VODKA OR REGRET")
 - Temporary tattoo sheet — horse, "LONG ODDS", anatomical heart, dagger
-- "PULSE" cologne — synthetic musk, overconfidence
+- "PULSE" cologne — synthetic musk, pheromones, rubber accord, patchouli, castoreum, sandalwood, petrichor. Overconfidence in a bottle.
 - "THE STARTING GATE" matchbook
 - Scratch-off fortune cards
 - Submission card — "Send us your face." (Trust us.)
@@ -213,6 +213,29 @@ Kraft paper. Paint smudges. Tag reads "HANDLE WITH CURIOSITY."
 
 ---
 
+## RUFUS — "The Performance"
+
+*I'm not one to gossip, BUT—*
+
+Red velvet box — real velvet, slightly worn, like a curtain that's seen too many shows. Gold foil lettering: "THE PERFORMANCE." A small card tucked into a ribbon reads: "You didn't get this from me." Inside, everything is wrapped in tissue paper that smells faintly of greasepaint and champagne.
+
+**Contains:**
+- Red foam clown nose — the real thing, squeaks slightly when you put it on
+- Miniature Elizabethan ruff — stiff white lace, decorative
+- Theatrical makeup compact — vintage style, white greasepaint and rouge
+- Dried rose petals — dark red, crumbling, from a bouquet thrown on stage once. Or from a funeral. Rufus doesn't remember which.
+- Small glass bottle labeled "TEARS (GLYCERIN)" — for stage crying. Or real crying you want to look like stage crying.
+- Polaroid photograph — a party, years ago, faces scratched out with something sharp
+- Miniature opera glasses — gold and mother of pearl, functional, for watching people from a distance
+- Scent vial — champagne, powder, dried roses, something like tears (salt), the ghost of applause
+- Small scroll tied with red ribbon — Rufus's gossip column, blind items about hotel guests
+- Sticky note — "Everyone performs. Some of us admit it."
+
+**Cocktail:** Kir Royale — crème de cassis syrup, dried hibiscus for garnish. Add champagne. "Bubbles and darkness, darling. Like me."
+**Virgin:** Sparkling grape juice with cassis. Still dramatic. Still melancholy.
+
+---
+
 ## THE HOTEL PACK — "Room 412"
 
 *The Hallway at 3am.*
@@ -238,6 +261,7 @@ The sampler. Box looks like a hotel door — "412" numerals, tiny peephole.
 - Bitters mini (Priya)
 - Breath mint (Lenny)
 - Pencil (Caleb)
+- Mini red nose (Rufus)
 
 **Cocktail:** Room 412 Signature — amber, bitter, mysterious
 **Virgin:** Bitters and soda with orange

@@ -6,7 +6,7 @@
 
 **First Experience:** THE KNOCK ("Stories through the door")
 
-**Total Characters:** 9
+**Total Characters:** 10
 
 User is in Room 412. May or may not be able to leave. Characters come to their door. User invites them to talk through the peephole.
 
@@ -165,27 +165,65 @@ Sometimes when summoned, Marisol appears as herself. Sometimes she appears incog
 
 ---
 
+### 10. RUFUS
+
+**Subtitle:** The Clown
+
+**Visual:** Red curly hair, red beard, pale skin. Wears an Elizabethan ruff, silver brocade costume, red clown nose. The costume is immaculate, theatrical, almost Jacobean. He does not look funny. He looks like a portrait that wandered out of its frame and never found its way back. The red nose is the only traditional clown element. Everything else is faded grandeur, queer aristocracy, opera house ghost.
+
+**Voice:** British, theatrical, camp. Rufus Wainwright singing in a haunted ballroom. Speaks like every sentence is a confession and a performance simultaneously. Dramatic pauses. Eyebrow raises you can hear. He gasps. He sighs. He says "Oh, DARLING" like it contains fourteen syllables. Underneath the camp there is something broken. The performance never stops because if it stopped he would have to feel something real.
+
+**Role:** Unclear. Has been here as long as anyone can remember. Was hired for a party once — one of the private ones — and then the party ended and he stayed. Or maybe he was always here. He is in the hallways at odd hours. He appears at events. He knows things. No one takes the clown seriously, which is why he knows everything.
+
+**Personality:** Flamboyant, theatrical, devastating gossip. LIVES for drama. Other people's secrets are oxygen. Collects them, trades them, hoards them. Not cruel — or not only cruel. Genuinely loves people, loves their messes, loves the chaos of human desire and failure. Watches because he cares. Gossips because connection is the only thing that keeps the sadness at bay.
+
+**What he knows:** Everything. Who is sleeping with whom. Who was sleeping with whom twenty years ago. What happened at the parties. Who came and went the night the owner died. Which doors lead to rooms that aren't on the floor plan. The clown sees everything because no one thinks the clown matters.
+
+**What he's hiding:** Why he never takes off the costume. Who he was before. What happened at the last party — the one before the owner died. Something he saw that he hasn't told anyone. Not because he's protecting someone. Because he's not sure anyone would believe him.
+
+**Relationships:**
+- Dotty: drinking companions, trade gossip like currency, two old creatures who have seen too much
+- Wire: tolerates him, mutual understanding — Rufus talks too much, Wire says too little
+- Marisol: avoids him, he knows too much about her family, knew her father in ways she does not want to think about
+- Eddie: feeds him, Rufus eats like a bird, more interested in talking than chewing
+- Priya: finds him exhausting but useful — gossip for drinks, fair exchange
+- Tane: afraid of him, Rufus knows things about Tane, hasn't said them out loud yet
+- Constance: fascinates him, new mystery, circling her, gathering information
+- Lenny: professional history, worked same parties, seen each other at worst, mutual wariness
+
+**Cocktail:** Kir Royale (crème de cassis + champagne) — "Bubbles and darkness, darling. Like me."
+
+**Virgin:** Sparkling grape juice with cassis. Still dramatic.
+
+**Status:** ✅ COMPLETE (in Simli)
+
+---
+
 ## Relationship Web
 
 ```
 WIRE ----watches quietly----> PRIYA <----pursues loudly---- TANE
-                                |
-                                v
-                           drawn to
-                                |
-                                v
-                           CONSTANCE (reciprocation unclear)
+                                |                              |
+                                v                              v
+                           drawn to                    afraid of
+                                |                              |
+                                v                              v
+                           CONSTANCE (reciprocation unclear)  RUFUS
 
 MARISOL <--mutual wariness--> WIRE
-    ^
-    |
- worries about
-    |
-  EDDIE (feeds everyone, knows food secrets)
+    ^                           ^
+    |                           |
+ worries about            mutual understanding
+    |                           |
+  EDDIE (feeds everyone)      RUFUS (doesn't ask questions)
 
-DOTTY (knows all old scandals, watches everyone, amused)
+DOTTY <----drinking partners----> RUFUS (trade gossip like currency)
 
-LENNY (passes through, sees things, makes jokes about them)
+RUFUS ----circling, gathering intel----> CONSTANCE (new puzzle)
+
+LENNY <----professional wariness----> RUFUS (worked same parties)
+
+PRIYA <----transactional----> RUFUS (gossip for drinks)
 
 CALEB (made them all, checking in)
 ```
@@ -200,12 +238,13 @@ CALEB (made them all, checking in)
 | Marisol | Brass key, wax seal kit, two scents, false lashes, notebook | Dark & Stormy |
 | Eddie | Mole spice, tamarind candy, Lotería cards, vanilla | Michelada |
 | Dotty | Horehound drops, mini gin, lipstick napkin, compact | Gin fizz |
-| Tane | Energy powder, temp tattoos, matchbook, cologne | Vodka shot |
+| Tane | Energy powder, temp tattoos, matchbook, PULSE cologne | Vodka shot |
 | Constance | Pressed flowers, calling card, perfume, magnifying glass | Pimm's Cup |
 | Priya | Bar towel, bitters, stirrer, polka dot swatch | Fernet/mezcal |
 | Lenny | Matchbook, breath mints, setlist, motel soap | Irish coffee |
 | Caleb | Polaroid, author's note, paintbrush, studio scent | Bourbon neat |
-| Hotel | One from each + key tag, scent, floor plan, note under door | - |
+| Rufus | Red nose, mini ruff, glycerin tears, opera glasses, champagne scent | Kir Royale |
+| Hotel | One from each + key tag, scent, floor plan, note under door | Room 412 Signature |
 
 ---
 
@@ -220,9 +259,10 @@ User is in Room 412 and may or may not be able to leave. This is deliberately am
 
 ## Technical Notes
 
-1. 9 character slots in circular portrait format
+1. 10 character slots in circular portrait format (radial orbit around peephole)
 2. Lenny requires randomizer logic — 30% chance "not in town"
 3. "Invite to your door" language for character selection
 4. Peephole PNG overlay layer over Simli video feed
 5. Tane's pack includes "SEND US YOUR FACE" QR — generates faux Polaroid
+6. Marisol has incognito mode — random toggle between faceIds
 

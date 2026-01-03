@@ -291,6 +291,7 @@ idle → transitioning-in → active → transitioning-out → idle
 | Priya | — | — | Coming Soon |
 | Lenny | — | — | Coming Soon |
 | Caleb | — | — | Coming Soon |
+| Rufus | — | — | Coming Soon |
 
 ### In Progress / Needs Fixing
 - Walkup→Simli transition: small visual gap during loading

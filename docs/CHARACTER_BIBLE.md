@@ -46,6 +46,9 @@ User is in Room 412. May or may not be able to leave. Characters come to their d
 
 **Status:** ✅ COMPLETE (in Simli)
 
+**Special Mechanic — Incognito Mode:**
+Sometimes when summoned, Marisol appears as herself. Sometimes she appears incognito (different appearance, possibly different demeanor). User never knows which version they'll get. Implemented via random toggle between faceIds. Initially 2 variants; could expand based on budget.
+
 ---
 
 ### 3. EDDIE

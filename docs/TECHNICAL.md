@@ -296,6 +296,9 @@ idle → transitioning-in → active → transitioning-out → idle
 - Walkup→Simli transition: small visual gap during loading
 - Additional character Simli IDs needed (7 remaining)
 
+### Planned Features
+- **Marisol Incognito Mode:** Random toggle between Marisol's regular appearance and an "incognito" version (different faceId). Initially 2 variants, could expand based on budget. User never knows which Marisol they'll get.
+
 ### Recently Completed (Jan 3)
 - Added Marisol's Simli IDs
 - Radial character menu (horseshoe orbit)

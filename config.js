@@ -84,6 +84,13 @@ export const characters = {
         role: "Owner's Daughter",
         agentId: '24105503-dbf2-48ec-9d14-b800f8ebedde',
         faceId: '28851337-4976-4692-b5c5-3c2825c8d522',
+        // Incognito mode: random toggle between appearances
+        // When incognito faceId is ready, add here and set randomizeFace: true
+        faceVariants: [
+            { id: '28851337-4976-4692-b5c5-3c2825c8d522', label: 'default' }
+            // { id: 'xxx', label: 'incognito' }  // TODO: Add incognito faceId
+        ],
+        randomizeFace: false,  // Set true when incognito variant ready
         idleToActive: ['assets/videos/Marisol_Walkup.mp4'],
         activeToIdle: ['assets/videos/Marisol_Walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_office.wav',

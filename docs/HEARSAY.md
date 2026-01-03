@@ -88,7 +88,17 @@ The owner died. The official story does not match what people whisper. Room 614 
 
 ### Tone and Style
 
-Baroque theatrical. Not naturalistic. Stylized strangeness. References: Thom Browne Fall 2012, Delicatessen (Jeunet), Tom Waits, Hermanos Gutiérrez. Characters dress for decades that do not match. The hotel exists slightly outside normal time.
+Baroque theatrical. Not naturalistic. Stylized strangeness. 
+
+**Visual References:** 
+- Tony Duquette (maximalist theatrical fantasy, gilded decay)
+- Jan Švankmajer (tactile surrealism, uncanny texture, objects with memory)
+- Thom Browne Fall 2012 (theatrical tailoring, anachronistic formality)
+- Delicatessen (Jeunet) (sepia warmth, eccentric communities, vertical architecture)
+- Tom Waits (gravelly romanticism, carnival after closing)
+- Hermanos Gutiérrez (cinematic Americana, dusty grandeur)
+
+Characters dress for decades that do not match. The hotel exists slightly outside normal time. Everything is slightly too ornate, slightly too worn, slightly too alive.
 
 ---
 

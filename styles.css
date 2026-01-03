@@ -114,12 +114,13 @@ body {
 
 .landing-content {
     position: relative;
-    z-index: 1;
+    z-index: 10; /* Above animated-text video layer */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
     text-align: center;
+    isolation: isolate; /* Prevent blend mode bleed from background */
     padding: 2rem;
     padding-bottom: 4rem;
     width: 100%;
@@ -227,6 +228,7 @@ body.simli-active .animated-text-container {
     height: 100%;
     pointer-events: none; /* Allow clicks through to background */
     z-index: 100;
+    isolation: isolate; /* Break out of animated-text blend mode */
 }
 
 .character-card {

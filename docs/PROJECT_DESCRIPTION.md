@@ -1,128 +1,116 @@
-# HEARSAY: Conversational Fiction Platform
+# HEARSAY
 
-> **A platform for narrative experiences delivered through AI-driven conversation.**
-> 
-> *What you hear depends on who you ask.*
+**A conversational fiction platform**
 
 ---
 
-## One-Paragraph Summary
+## Project Statement
 
-HEARSAY is a platform for conversational narrative experiences delivered through AI talking heads. Users speak directly with characters who remember, contradict, confide, and lie. There are no puzzles to solve, no correct answers, no win states. The user is not a player—they are a witness, an editor, an interpreter. Each conversation becomes source material for a personalized literary artifact: a narrativized account of what was said, what was implied, and what might have happened in the spaces between. The first experience, **THE KNOCK**, places users in a residential hotel where they receive visitors through a door peephole—a brass circle of paranoid intimacy where everyone has a story and no two stories agree.
+HEARSAY is an interactive narrative platform that uses real-time AI conversation as its primary medium. Users speak directly with fictional characters through voice—characters who listen, respond, remember, and sometimes lie. The experience sits at the intersection of literature, theatre, game design, and conversational AI, creating a form of fiction that can only exist through dialogue.
 
----
-
-## Extended Description
-
-### The Problem We're Addressing
-
-Interactive narrative has been stuck in two modes: branching stories (choose your path) and puzzle games (solve to progress). Both treat story as something the user *navigates* rather than something they *construct*. Meanwhile, AI conversation tools remain utilitarian—chatbots, assistants, companions—divorced from the literary and theatrical traditions that have always made conversation meaningful.
-
-### Our Approach
-
-HEARSAY treats conversation as the primary medium of fiction. Users don't read or watch—they speak and listen. They ask questions and receive answers that may or may not be true. They build relationships with characters who have agendas, histories, and secrets they may never fully reveal.
-
-The platform combines:
-- **AI talking heads** (via Simli) that speak, react, and remember
-- **Literary character design** with voices drawn from specific authors, idioms, and speech patterns
-- **Unreliable narration** as a core mechanic—characters contradict each other by design
-- **Physical sensory extensions** (scent, taste, touch) that make the fiction tangible
-- **Automated literary transformation** that converts conversation transcripts into narrativized prose
-
-### The First Experience: THE KNOCK
-
-The user is a guest at a residential hotel. The owner died six months ago under unclear circumstances. The estate is in probate. People keep knocking on your door—staff, other guests, people who want something or want to tell you something. You talk to them through the peephole. You decide what to believe.
-
-The visual conceit: POV through a brass hotel door peephole. Fisheye barrel distortion. Circular frame, heavy vignette. The user is inside, in darkness. The visitor is outside, in the hallway, face warped by the lens. Paranoid intimacy. The feeling of 2am, uncertain whether to open.
-
-**Ten characters** with interconnected stories, contradictory accounts, and secrets that implicate each other. The user assembles meaning from fragments. There is no solution—only interpretation.
+Unlike choose-your-own-adventure structures or puzzle-based interactive fiction, HEARSAY offers no correct paths, no solutions, no win states. Users construct meaning through conversation itself: by deciding which questions to ask, which answers to believe, and which contradictions to pursue. The result is a deeply personal engagement with narrative—one where interpretation replaces progression and listening replaces solving.
 
 ---
 
-## Visual and Tonal References
+## The First Experience: THE KNOCK
 
-The aesthetic draws from:
-- **Tony Duquette** — maximalist theatrical fantasy, gilded decay, rooms as stages
-- **Jan Švankmajer** — tactile surrealism, objects with memory, uncanny textures
-- **Thom Browne Fall 2012** — theatrical tailoring, anachronistic formality
-- **Delicatessen (Jeunet)** — sepia warmth, eccentric vertical communities
-- **Tom Waits** — gravelly romanticism, carnival after closing time
-- **Hermanos Gutiérrez** — cinematic Americana, dusty grandeur
+The debut experience places users in a residential hotel. The owner died six months ago under unclear circumstances. Through a door peephole—a circular frame of paranoid intimacy—users receive visitors: staff members, long-term guests, people with information and agendas. Each character offers a version of events. No two versions agree.
 
-The hotel exists slightly outside normal time. Everything is slightly too ornate, slightly too worn, slightly too alive.
+Ten fully-realized characters populate the hotel, each with:
+- Distinct voice, vocabulary, and speech patterns
+- Personal history and hidden motivations  
+- Relationships and conflicts with other characters
+- Secrets they protect and information they trade
 
----
-
-## Technical Innovation
-
-### Conversation as Literature
-Unlike chatbots or AI companions, HEARSAY characters are designed as literary constructs. Each character prompt references specific authors, speech patterns, regional idioms, and idiosyncratic verbal tics. Wire speaks like a Richard Brautigan narrator who grew up in Rotorua. Marisol speaks like a Patricia Highsmith character who wandered into a Tom Waits song. The AI is not simulating general intelligence—it is performing a voice.
-
-### The Writing Engine
-Conversation transcripts are captured and transformed into narrativized prose by a second AI system. This is not summarization—it is literary transformation. Dialog becomes scene. Pauses become subtext. The user receives a personalized chapter of a novel that only they could have written, by having the conversations only they had.
-
-### Sensory Extension
-Optional physical packs extend the fiction into the real world: scent vials (the lobby after hours, a room closed too long), unusual candies (violet pastilles, horehound drops), paper ephemera (matchbooks, handwritten notes), small objects (a key, a button, a swatch of fabric). The user holds evidence. Smells the place. Fiction gains weight.
+The visual presentation uses fisheye distortion to simulate the peephole perspective, creating an atmosphere of surveillance, uncertainty, and threshold—the feeling of 2am, uncertain whether to open the door.
 
 ---
 
-## What This Is Not
+## Technical Architecture
 
-- **Not a murder mystery.** The user is not identifying a killer.
-- **Not an escape room.** Nothing to solve, no code to crack.
-- **Not a branching narrative.** The user does not choose paths—they converse.
-- **Not a game.** No score, no optimization, no win state.
+The platform integrates multiple AI and media systems:
 
-This is closer to reading a novel made of oral histories, except the user decides which chapters to read, in what order, and when to stop. The meaning is not hidden. It is constructed, by the user, from what they heard.
+**Conversational AI Layer**
+- Real-time voice-to-voice interaction via Simli SDK
+- Custom character prompts with literary voice design
+- Session state management and conversation memory
 
----
+**Visual Composition System**
+- Multi-layer video compositing with dynamic transparency
+- Transition animations between character states
+- Canvas-based real-time video processing
 
-## Platform Potential
+**Narrative Generation Pipeline**
+- Automated transcript capture from each session
+- AI-powered transformation of dialogue into narrativized prose
+- Personal literary artifacts generated from user conversations
 
-HEARSAY is designed as a platform, not a single experience. Different "volumes" use different visual conceits:
+**Sensory Extension System**
+- Physical object packs that extend fiction into material form
+- Scent, taste, and tactile elements keyed to characters
+- Ephemera design (matchbooks, handwritten notes, photographs)
 
-| Experience | Visual Frame | Premise |
-|------------|--------------|---------|
-| **The Knock** | Peephole, fisheye, brass ring | Hotel, owner's death, unreliable witnesses |
-| The Portrait Gallery | Gilt frames, faces animate within paintings | Art collection, provenance disputes |
-| The Waiting Room | Intake window, plexiglass | Bureaucratic limbo, no one remembers how long |
-| The Séance | Dark mirror, scrying screen | Gathering testimony from the dead |
-| The Confessional | Lattice screen, partial obscurity | Anonymous confidences, overlapping sins |
-
-The technology is the same. The feeling is different.
-
----
-
-## Team & Status
-
-**Creator:** [Your name/studio]
-
-**Current Status:** 
-- Functional prototype deployed (THE KNOCK)
-- 10 characters designed, 3 fully voiced in Simli
-- Sensory pack designs complete
-- Bar menu with character-specific cocktails
-- Transcript-to-narrative pipeline implemented
-- Seeking: production funding, gallery/festival presentation, publishing partnerships
+The complete system comprises approximately 15,000 lines of custom code across frontend application, backend services, state management, AI integration, and documentation—built without frameworks to maintain precise control over the experience.
 
 ---
 
-## Why This Matters
+## Position in the Field
 
-We are in a moment when AI threatens to flatten language into slop—generic, safe, on-distribution. HEARSAY demonstrates the opposite possibility: AI as a medium for literary voice, for unreliable narration, for the kind of specificity that makes fiction feel alive.
+HEARSAY occupies a distinctive position among several adjacent fields:
 
-Conversation has always been how humans construct reality together. HEARSAY makes that construction visible, playable, and personal.
+**As Literature:** Characters are designed with the specificity of literary fiction—idiosyncratic voices, unreliable narration, meaning constructed through what is said and unsaid. The writing engine transforms conversation into prose, producing personalized literary artifacts.
+
+**As Theatre:** Each encounter is a performance. Characters respond in the moment. The user is both audience and interlocutor—the conversation cannot happen without them, and it will never happen exactly the same way twice.
+
+**As Game:** The experience has mechanics (whom to summon, what to ask, when to dismiss) without having objectives. It rewards curiosity and attention rather than optimization. It is playable without being winnable.
+
+**As Art Installation:** The sensory packs, the visual treatment, and the peephole frame create an aesthetic environment. Future iterations may include physical installation, site-specific presentation, or gallery exhibition.
+
+**As Research:** The project investigates AI as a medium for literary voice rather than general intelligence; conversation as a form of meaning-making; and the possibilities for personalized narrative generation at the intersection of user participation and automated authorship.
+
+---
+
+## Current Status
+
+**Completed:**
+- Functional web application deployed and publicly accessible
+- Three characters fully integrated with voice AI
+- Seven additional characters designed and documented
+- Sensory pack contents and descriptions for all characters
+- Bar menu with character-specific cocktails and stories
+- Transcript capture and storage pipeline
+- Complete technical and creative documentation
+
+**In Development:**
+- Remaining character voice integration
+- Narrative generation engine (transcript → prose)
+- Physical sensory pack production
+- Additional visual polish and performance optimization
+
+**Seeking:**
+- Production funding for completion and expansion
+- Festival, gallery, or venue presentation opportunities
+- Publishing partnerships for physical and literary components
+- Research collaboration on conversational narrative and AI authorship
+
+---
+
+## About
+
+HEARSAY is created by [Name/Studio].
+
+The project is developed in collaboration with Simli (conversational AI), with additional support from [supporters if applicable].
+
+For inquiries: [contact information]
+
+---
+
+## Summary
+
+HEARSAY demonstrates that AI conversation can be a literary medium—specific, authored, unreliable in productive ways. It treats dialogue not as interface but as fiction, and users not as players but as interpreters. The platform creates space for a kind of storytelling that requires speaking and listening, where meaning emerges from the accumulation of partial truths and the silences between them.
 
 *What you hear depends on who you ask.*
-*What you believe is up to you.*
 
 ---
 
-## Contact
-
-[Your contact information]
-
----
-
-*Last updated: January 2026*
-
+*January 2026*

@@ -74,6 +74,16 @@
                 </div>
             </div>
             
+            <!-- BAR MENU - Free cocktail recipes -->
+            <div class="bar-menu-section">
+                <h2>🍸 The Bar Menu</h2>
+                <p class="bar-tagline">What the residents drink. Recipes on the house.</p>
+                <div class="bar-menu-grid" id="bar-menu-grid">
+                    <!-- Cocktails injected by JS -->
+                </div>
+                <button class="bar-toggle" id="bar-toggle" onclick="toggleBarMenu()">Show Full Bar Menu ▼</button>
+            </div>
+            
             <h2>Sensory Packs</h2>
             <p class="store-tagline">Physical artifacts from the hotel. Things you can hold, smell, taste. The fiction made tangible.</p>
             
@@ -624,6 +634,118 @@
                 virgin: 'Bitters and soda with orange'
             }
         ];
+        
+        // BAR MENU - Elaborate cocktail descriptions (free to view)
+        const barMenuDrinks = [
+            {
+                character: 'WIRE',
+                drink: 'The Sixth Floor Toddy',
+                recipe: 'Mānuka honey, good whiskey (he has opinions), kawakawa leaf, hot water.',
+                story: 'What Wire drinks when the hallways get too quiet. The honey is from home. The whiskey is from somewhere that closed a long time ago. He drinks it slow, like he does everything.',
+                virgin: 'Same, minus the whiskey. Still warms you the same way, he says.',
+                mood: '🌙'
+            },
+            {
+                character: 'MARISOL',
+                drink: 'The Dark & Stormy',
+                recipe: 'Dark rum, ginger beer, lime wedge. Serve in the glass your father used.',
+                story: 'Marisol orders it like a challenge. Dark and stormy — like the inheritance, like the hotel, like her. She learned to make it from her father before she learned everything else.',
+                virgin: 'Ginger lime spritz. Sharp enough to cut through any conversation.',
+                mood: '⚡'
+            },
+            {
+                character: 'EDDIE',
+                drink: 'The Night Kitchen Michelada',
+                recipe: 'Beer, lime, hot sauce (the kind that hurts), Worcestershire, salt rim.',
+                story: 'Eddie makes this at 3am when he catches you in the kitchen. "Hair of the dog that\'s about to bite you." He learned it from his grandmother. Or he made that up. Hard to tell with Eddie.',
+                virgin: 'Spicy tomato juice with everything but the beer. Still wakes you up.',
+                mood: '🌶️'
+            },
+            {
+                character: 'DOTTY',
+                drink: 'The Gin Fizz',
+                recipe: 'Gin, lemon, sugar, cream, egg white, soda. Shake until your arm remembers 1962.',
+                story: 'Dotty taught three bartenders how to make this properly. None of them still work here. She drinks it in the afternoon, never at night. At night she drinks something else, but that\'s not on the menu.',
+                virgin: 'Botanical lemonade fizz. Pretty enough. Not the same.',
+                mood: '💋'
+            },
+            {
+                character: 'TANE',
+                drink: 'The Starting Gate',
+                recipe: 'Vodka, energy drink, whatever you\'re running from. Serve it now, ask questions never.',
+                story: 'Tane doesn\'t sip. Tane shoots. This is the pre-game before the game before the thing you\'re going to regret. He\'ll match you one for one. He\'ll win.',
+                virgin: 'Energy drink straight. Same chaos, less excuse.',
+                mood: '🔥'
+            },
+            {
+                character: 'CONSTANCE',
+                drink: 'The Pimm\'s Cup',
+                recipe: 'Pimm\'s, cucumber, lemon, ginger ale. Garnish with precision.',
+                story: 'Constance drinks Pimm\'s because it\'s civilized. Because you can drink it in the garden and still observe. She takes notes on what other people order. She has a system.',
+                virgin: 'Cucumber mint lemonade. Refreshing and deeply judgmental.',
+                mood: '📋'
+            },
+            {
+                character: 'PRIYA',
+                drink: 'The Trust Me',
+                recipe: 'Fernet, mezcal, citrus. Amaro to taste. She won\'t tell you the proportions.',
+                story: 'The bartender\'s bartender drink. Priya makes it different every time. You don\'t order it — you just ask her what you need, and this is what you get. She\'s usually right.',
+                virgin: 'Bitter botanical soda with grapefruit. For when you need to stay sharp.',
+                mood: '🍋'
+            },
+            {
+                character: 'LENNY',
+                drink: 'The Irish Goodbye',
+                recipe: 'Hot coffee, Irish whiskey, brown sugar, cream floated on top.',
+                story: 'Lenny orders this after every set. The good ones and the bad ones. He holds the cup with both hands. "At least the coffee never heckles," he says, every time. Every single time.',
+                virgin: 'Just sad coffee. He\'ll tell you the joke about that too.',
+                mood: '☕'
+            },
+            {
+                character: 'CALEB',
+                drink: 'The Bourbon Neat',
+                recipe: 'Bourbon. Glass. That\'s it.',
+                story: 'The author drinks what writers drink in movies. He knows it\'s a cliché. He wrote a short story about the cliché once. It wasn\'t good. He still orders it.',
+                virgin: 'Black coffee. He\'ll take notes on how you take yours.',
+                mood: '📝'
+            },
+            {
+                character: 'RUFUS',
+                drink: 'The Kir Royale',
+                recipe: 'Crème de cassis, champagne. Bubbles and darkness.',
+                story: '"Bubbles and darkness, darling. Like me." Rufus raises his glass to everyone and no one. He never finishes the first one. There\'s always a second one waiting.',
+                virgin: 'Sparkling grape with cassis. Still dramatic. Still Rufus.',
+                mood: '🎭'
+            }
+        ];
+        
+        // Populate bar menu
+        const barMenuGrid = document.getElementById('bar-menu-grid');
+        barMenuDrinks.forEach(drink => {
+            const drinkEl = document.createElement('div');
+            drinkEl.className = 'bar-drink-card';
+            drinkEl.innerHTML = `
+                <div class="drink-header">
+                    <span class="drink-mood">${drink.mood}</span>
+                    <span class="drink-character">${drink.character}</span>
+                </div>
+                <h4 class="drink-name">${drink.drink}</h4>
+                <p class="drink-recipe">${drink.recipe}</p>
+                <p class="drink-story">${drink.story}</p>
+                <p class="drink-virgin"><strong>Virgin:</strong> ${drink.virgin}</p>
+            `;
+            barMenuGrid.appendChild(drinkEl);
+        });
+        
+        // Toggle bar menu visibility
+        window.toggleBarMenu = function() {
+            const grid = document.getElementById('bar-menu-grid');
+            const toggle = document.getElementById('bar-toggle');
+            grid.classList.toggle('expanded');
+            toggle.textContent = grid.classList.contains('expanded') 
+                ? 'Hide Bar Menu ▲' 
+                : 'Show Full Bar Menu ▼';
+        };
         
         // Populate store grid
         storeProducts.forEach(product => {

@@ -300,6 +300,14 @@ idle → transitioning-in → active → transitioning-out → idle
 ### Planned Features
 - **Marisol Incognito Mode:** Random toggle between Marisol's regular appearance and an "incognito" version (different faceId). Initially 2 variants, could expand based on budget. User never knows which Marisol they'll get.
 
+- **Writing Engine (Transcript → Narrative Pipeline):**
+  - Capture full conversation transcripts (Simli's `createTranscript: true`)
+  - Feed to Writing Agent (Claude Opus 4.5 or Kimi K2)
+  - Transform dialog into narrativized chapters (1500-2500 words)
+  - Custom `.skill` file for author's voice/style
+  - Output: email, user journal, PDF, collective novel contribution
+  - See `docs/HEARSAY.md` for full vision
+
 ### Recently Completed (Jan 3)
 - Added Marisol's Simli IDs
 - Radial character menu (horseshoe orbit)
@@ -312,6 +320,130 @@ idle → transitioning-in → active → transitioning-out → idle
 - CSS `mix-blend-mode: screen` made face shadows transparent (face looked ghostly)
 - High contrast filters didn't isolate pure black well enough
 - Multiple Simli API endpoints tried before finding `/auto/token`
+
+---
+
+## Writing Engine Implementation
+
+### Overview
+
+Transform conversation transcripts into narrativized literary chapters. Not summarization—fiction generation using dialog as raw material.
+
+### Architecture
+
+```
+Session → Transcript Capture → Writing Agent → Chapter Delivery
+```
+
+### Step 1: Transcript Capture
+
+**Current Setup:**
+- Already passing `createTranscript: true` in Simli token request
+- Simli should return transcript data at session end
+
+**TODO: Add transcript webhook**
+```python
+# backend/server.py - new endpoint
+@app.post("/api/session-end")
+async def session_end(session_id: str, transcript: str, character_id: str):
+    # Store transcript
+    # Trigger chapter generation (async)
+    pass
+```
+
+**Session Boundaries:**
+- User clicks "End Conversation" button
+- Inactivity timeout (5 min silence)
+- Browser close (navigator.sendBeacon for reliability)
+
+### Step 2: Writing Agent
+
+**Model Options:**
+| Model | Cost | Quality | Notes |
+|-------|------|---------|-------|
+| Claude Opus 4.5 | $$$ | Excellent | Supports .skills, best for literary output |
+| Kimi K2 | $ | Good | Cheaper, test/scale option |
+| Claude Sonnet | $$ | Very Good | Balance of cost/quality |
+
+**Custom Voice (.skill file):**
+```
+// writing-style.skill
+{
+  "name": "HEARSAY Author Voice",
+  "samples": [
+    "excerpt from author's published work...",
+    "another excerpt...",
+    // 5-10 style samples
+  ],
+  "guidelines": {
+    "pov": "second person, present tense",
+    "tone": "literary noir, baroque, melancholic",
+    "avoid": ["said", "walked", "looked"],
+    "prefer": ["murmured", "drifted", "noticed"]
+  }
+}
+```
+
+**New Endpoint:**
+```python
+@app.post("/api/generate-chapter")
+async def generate_chapter(
+    transcript: str,
+    character_id: str,
+    session_metadata: dict
+):
+    prompt = build_writing_prompt(transcript, character_id, session_metadata)
+    
+    # Call Claude API
+    response = await anthropic.messages.create(
+        model="claude-sonnet-4-20250514",  # or opus
+        max_tokens=4000,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    return {"chapter": response.content[0].text}
+```
+
+### Step 3: Chapter Delivery
+
+**Options (implement in order of priority):**
+
+1. **Console/Debug** (MVP)
+   - Log generated chapter to console
+   - Manual copy/paste
+
+2. **Email Delivery**
+   - Resend or SendGrid integration
+   - User provides email at session end
+   - Chapter arrives in inbox
+
+3. **User Journal**
+   - Personal page on site
+   - All chapters collected
+   - Requires user accounts (optional: email-as-ID)
+
+4. **Collective Novel**
+   - Anonymized chapters contributed to shared document
+   - Curated by author
+   - Published as "The Hotel Manuscript"
+
+### Environment Variables Needed
+
+```env
+# Add to Railway
+ANTHROPIC_API_KEY=sk-ant-...
+RESEND_API_KEY=re_...  # for email delivery
+```
+
+### File Structure (Planned)
+
+```
+backend/
+├── server.py              # Existing
+├── writing_engine.py      # NEW: Chapter generation logic
+├── transcript_store.py    # NEW: Session/transcript storage
+└── email_delivery.py      # NEW: Chapter delivery
+```
 
 ---
 

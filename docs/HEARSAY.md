@@ -221,6 +221,180 @@ Time-released, not content-conditional. After N conversations, a hint surfaces. 
 
 ---
 
+## The Writing Engine (Transcript → Narrative Pipeline)
+
+### Vision
+
+Every conversation becomes raw material for literature. The user's session—who they spoke to, what they asked, what they learned—is captured and fed to a Writing Agent that transforms it into a narrativized chapter. This is NOT a summary. This is not Otter.ai. This is a fiction-generation engine that uses the actual dialog as the spine of a new literary artifact.
+
+The output reads like a chapter from a novel set in the hotel. It leans heavily on the through-the-door conversations but embellishes beyond them: what happened in the hallway before the knock, what the character did after they walked away, what the user was thinking but didn't say. The dialog is the skeleton. The Writing Agent adds the flesh.
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         USER SESSION                                 │
+│  Entry → Character 1 dialog → Character 2 dialog → ... → Exit       │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    TRANSCRIPT CAPTURE                                │
+│  Simli's createTranscript: true → session_transcript returned       │
+│  OR: LiveKit webhook → captures both sides of conversation          │
+│  Trigger: session end (exit, timeout, explicit "end" action)        │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    WRITING AGENT                                     │
+│  Model: Claude Opus 4.5 (or Kimi K2 for cost optimization)          │
+│  Custom .skill file: author's voice, tone, style samples            │
+│  Input: raw transcript + character bible + session metadata          │
+│  Output: narrativized chapter (1000-3000 words)                     │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    CHAPTER DELIVERY                                  │
+│  Email to user (optional)                                           │
+│  Personal "journal" page on site                                    │
+│  PDF/EPUB export                                                    │
+│  Contribute to collective novel (anonymized, opt-in)                │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Transcript Capture
+
+**Option A: Simli's Built-in Transcription**
+- When fetching token, include `createTranscript: true`
+- Simli returns transcript at session end
+- Limitation: may only capture character speech, not user speech
+
+**Option B: LiveKit Direct Integration**
+- Bypass Simli's abstraction, connect directly to LiveKit room
+- Full control over audio streams, both sides captured
+- More complex, more powerful
+
+**Option C: Browser-Side Capture**
+- Use Web Audio API to capture microphone input
+- Combine with Simli's character responses
+- Client-side assembly of full dialog
+
+**Session Boundary Detection:**
+- User clicks "End Conversation" or "Leave Room"
+- Inactivity timeout (5 minutes of silence)
+- User closes browser/tab (beacon API for reliable capture)
+- User clicks "Begin Writing" (explicit trigger)
+
+### Writing Agent Architecture
+
+**Model Candidates:**
+- **Claude Opus 4.5** — Best for literary quality, supports .skills for custom voice
+- **Kimi K2** — Cheaper, good for iteration/testing, may lack nuance
+- **Hybrid** — Prototype with Claude, scale with Kimi, A/B test quality
+
+**Custom Writing Skill (.skill file):**
+Contains:
+- Author's style samples (prose excerpts, 5-10 examples)
+- Vocabulary preferences (words to use, words to avoid)
+- Narrative conventions (POV, tense, sentence rhythm)
+- Embellishment guidelines (how far beyond the door to imagine)
+- Character voice references (so Writing Agent can voice them consistently)
+
+**Prompt Structure:**
+```
+You are a literary fiction writer working in the style of [author references].
+
+You have received a transcript of a conversation that took place through a hotel door peephole. The user is in Room 412. They cannot leave. A character approached their door and they spoke.
+
+Your task: Transform this transcript into a chapter of literary fiction.
+
+RULES:
+1. Use the actual dialog as the spine. Do not summarize. Include the words spoken.
+2. Embellish beyond the door: What was the character doing before they knocked? What did they do after they walked away? What was the user thinking but didn't say?
+3. Add sensory detail: The hallway carpet, the brass peephole, the distorted fisheye view.
+4. Maintain the character's voice as established in their bible.
+5. The user is never named. They are "you" or described obliquely.
+6. Length: 1500-2500 words.
+7. End with the character departing, or the user choosing to stop listening.
+
+TRANSCRIPT:
+[raw dialog here]
+
+CHARACTER CONTEXT:
+[relevant character bible excerpt]
+
+SESSION METADATA:
+- Duration: X minutes
+- Time of day (in-fiction): [derived from system]
+- Previous characters spoken to this session: [list]
+```
+
+### What the Writing Agent Adds
+
+The transcript is the skeleton. The Writing Agent adds:
+
+- **Pre-knock scene:** The character in the hallway before approaching. Their hesitation. Their purpose.
+- **User's interiority:** What the user might have been thinking. Their paranoia, curiosity, suspicion.
+- **Sensory texture:** The smell of the hallway, the quality of light through the peephole, the muffled sounds from other rooms.
+- **Post-conversation beat:** The character walking away. The user's silence after. The weight of what was said.
+- **Thematic resonance:** Drawing connections to hotel lore, to other characters, to the larger mystery.
+
+### Output Formats
+
+**Immediate (per-conversation):**
+- "Chapter" emailed to user
+- Appears in user's personal "journal" on site
+- Can be downloaded as PDF
+
+**Cumulative (per-session):**
+- Multiple conversations woven into single chapter
+- Transitions between characters handled narratively
+
+**Collective (opt-in):**
+- Anonymized chapters contribute to "The Hotel Manuscript"
+- A collective novel written by all users
+- Curated/edited by author or AI
+
+### Technical Implementation Steps
+
+1. **Enable Simli Transcription**
+   - Already passing `createTranscript: true` in token request
+   - Add webhook/callback to receive transcript at session end
+   - Store in database (or simple file for MVP)
+
+2. **Session Management**
+   - Define session boundaries (entry to explicit end, or timeout)
+   - Track which characters were spoken to
+   - Capture session metadata (duration, order, timestamps)
+
+3. **Writing Agent Endpoint**
+   - New backend route: `POST /api/generate-chapter`
+   - Accepts: transcript, character_id, session_metadata
+   - Calls Claude/Kimi API with custom prompt
+   - Returns: narrativized chapter
+
+4. **Custom Voice Training**
+   - Create .skill file with author style samples
+   - Test output quality, iterate on prompt
+   - Potentially fine-tune on author's existing work
+
+5. **Delivery System**
+   - Email integration (SendGrid, Resend, etc.)
+   - User accounts (optional, could be email-only)
+   - Chapter storage and retrieval
+
+### Open Questions
+
+- **User consent:** Do we capture all conversations by default? Opt-in only?
+- **Privacy:** Are transcripts stored permanently? Deleted after chapter generation?
+- **Editing:** Can users edit their chapters before publishing to collective?
+- **Timing:** Generate chapter immediately on session end, or batch nightly?
+- **Multi-session:** Does each visit create a new chapter, or do we merge visits into an evolving narrative?
+
+---
+
 ## Development Principles
 
 1. **Flexibility over formula.** Some experiences may resolve. Some never will. The platform accommodates both.

@@ -2,7 +2,7 @@
 
 > Developer guide for HEARSAY platform and Room 412 experience.
 > 
-> **Last Updated:** January 2, 2026
+> **Last Updated:** January 3, 2026
 
 ---
 
@@ -219,7 +219,17 @@ wire: {
     agentId: '2439209e-abb8-4ccc-ab18-2bbbfc78d4f6',
     faceId: 'bc603b3f-d355-424d-b613-d7db4588cb8a',
     idleToActive: ['assets/videos/Wire_Walkup_2.mp4'],
-    knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav'
+    knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
+    status: 'ready'  // ready | coming_soon | unavailable
+},
+marisol: {
+    name: 'Marisol',
+    role: "Owner's Daughter",
+    agentId: '24105503-dbf2-48ec-9d14-b800f8ebedde',
+    faceId: '28851337-4976-4692-b5c5-3c2825c8d522',
+    idleToActive: ['assets/videos/Marisol_Walkup.mp4'],
+    knockSound: 'assets/sounds/door_knocks/knock_office.wav',
+    status: 'ready'
 }
 ```
 
@@ -251,30 +261,50 @@ idle → transitioning-in → active → transitioning-out → idle
 
 ---
 
-## Known Issues & Current State (Jan 2, 2026)
+## Known Issues & Current State (Jan 3, 2026)
 
 ### Working ✓
-- Landing page with character gallery
-- Background video looping
+- Landing page with **radial character gallery** (9 characters orbit peephole)
+- Background video looping with 5-second pause on first frame
 - Animated text overlay ("A Conversation") with transparent black
-- Music and ambient audio with sliders
+- Music and ambient audio with volume sliders
 - Door knock sounds per character
 - About modal
+- **Wire (Wiremu)** — fully working Simli integration
+- **Marisol** — fully working Simli integration  
 - Character walkup videos centered in peephole
 - **Simli token fetch working** (with agentId, faceId, ttsAPIKey)
 - **Simli voice working** (ElevenLabs TTS connected)
+- **BlackRemover canvas** — removes pure black backgrounds
+- **Store modal** with 10 sensory packs (individual + Hotel Pack)
+- Character hover: simple scale effect (1.1x)
+
+### Ready Characters
+| Character | agentId | faceId | Status |
+|-----------|---------|--------|--------|
+| Wire (Wiremu) | `2439209e-abb8-4ccc-ab18-2bbbfc78d4f6` | `bc603b3f-d355-424d-b613-d7db4588cb8a` | ✅ Ready |
+| Marisol | `24105503-dbf2-48ec-9d14-b800f8ebedde` | `28851337-4976-4692-b5c5-3c2825c8d522` | ✅ Ready |
+| Eddie | — | — | Coming Soon |
+| Dotty | — | — | Coming Soon |
+| Tane | — | — | Coming Soon |
+| Constance | — | — | Coming Soon |
+| Priya | — | — | Coming Soon |
+| Lenny | — | — | Coming Soon |
+| Caleb | — | — | Coming Soon |
 
 ### In Progress / Needs Fixing
-- **Simli face positioning**: Face appears offset from walkup video
-- **Simli loading animation**: Dotted face placeholder visible (should be hidden)
-- **Black background removal**: Canvas processor implemented, needs testing
+- Walkup→Simli transition: small visual gap during loading
+- Additional character Simli IDs needed (7 remaining)
 
-### Recently Fixed
-- Added `ttsAPIKey` (ElevenLabs) to token request - enables voice
-- Created shared `#face-container` for walkup + Simli centering
-- Implemented canvas-based black removal (pure black → transparent)
+### Recently Completed (Jan 3)
+- Added Marisol's Simli IDs
+- Radial character menu (horseshoe orbit)
+- Store modal with all 10 sensory pack products
+- Sticky notes added to all packs (handwriting ambiguity)
+- Character hover: simplified to scale effect
+- Updated all documentation
 
-### What Failed / Didn't Work
+### What Failed / Didn't Work (Reference)
 - CSS `mix-blend-mode: screen` made face shadows transparent (face looked ghostly)
 - High contrast filters didn't isolate pure black well enough
 - Multiple Simli API endpoints tried before finding `/auto/token`

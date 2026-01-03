@@ -6,6 +6,8 @@ Each pack contains items connected to a character from The Knock. Things they mi
 
 These are not required to play. But they change the experience. You'll hold something real while you listen to someone who isn't.
 
+**Every pack includes a sticky note.** Handwriting varies. Some look like your own. Some don't. We're not sure who wrote them — the previous occupant of Room 412, maybe. Or maybe you did, before you forgot.
+
 *All items are physical. All characters are not.*
 
 ---
@@ -34,6 +36,7 @@ Fluorescent packaging. Neon orange and electric pink. Figures running, flexing, 
 - Scratch-off fortune cards
 - Submission card — "Send us your face." (Trust us.)
 - Polaroids from an evening you don't remember
+- Sticky note — handwriting not yours
 
 **The Mystery:** At checkout, users are prompted to submit a photo. Weeks later, they receive Polaroids showing them at a club with Tane — an evening they have no memory of. Possible clues scattered throughout. They become part of the fiction.
 
@@ -56,6 +59,7 @@ Muted earth tones. Brown paper, horse racing stamps, amber wax seal. Packed in d
 - Brass key "614"
 - Huia feather replica
 - Hand-written note: "The building will tell you when you're ready. —W"
+- Sticky note — "He knows more than he says"
 
 **Cocktail:** Hot Toddy with mānuka honey
 **Virgin:** Tea-based toddy
@@ -76,6 +80,7 @@ Matte black, blind embossed with hotel architecture. Burgundy wax seal with "V" 
 - Redacted legal document
 - Polaroid — figure in fourth floor window
 - Leather notebook — first page: "What he knew. What he didn't tell me."
+- Sticky note — "Don't trust the daughter"
 
 **Cocktail:** Dark & Stormy
 **Virgin:** Ginger lime spritz
@@ -96,6 +101,7 @@ Papel picado-style tissue. Hot pink and marigold. Smells of cinnamon and chiles.
 - Kitchen scent — tortilla, woodsmoke, cumin
 - Champurrado recipe card
 - Embroidered patch: "COCINA NOCTURNA"
+- Sticky note — "He saw something that night"
 
 **Cocktail:** Michelada
 **Virgin:** Virgin michelada
@@ -116,6 +122,7 @@ Vintage wallpaper. Cabbage roses. Dusty pink silk ribbon. Smells of gin and face
 - Tarnished compact mirror, initialed "D.M."
 - B&W photograph — beautiful woman, 1960s
 - Single silk stocking, laddered
+- Sticky note — "She remembers everything"
 
 **Cocktail:** Gin Fizz
 **Virgin:** Botanical lemonade fizz
@@ -136,6 +143,7 @@ Hunter green linen. Debossed botanicals. Smells of libraries and dried flowers.
 - Brass magnifying glass
 - Vintage bookplate — name scratched out
 - Pimm's Cup recipe card
+- Sticky note — "Fourth floor. After midnight."
 
 **Cocktail:** Pimm's Cup
 **Virgin:** Cucumber mint lemonade
@@ -156,6 +164,7 @@ Dark green with white polka dots. Her dress, translated. Arranged with bartender
 - Scent: fernet, mezcal, citrus peel
 - Cocktail recipe on bar napkin
 - Ceramic olive (joke or keepsake, unclear)
+- Sticky note — "Ask about the tab"
 
 **Cocktail:** The Trust Me — fernet & mezcal
 **Virgin:** Bitter botanical soda with grapefruit
@@ -176,6 +185,7 @@ Rumpled packaging. Coffee stain. Half-peeled club stickers. "FRAGILE" stamp.
 - Motel soap from "The Restwell"
 - Fake business card — numbers crossed out
 - Joke on paper: "A guy walks into a hotel and never leaves."
+- Sticky note — "His jokes aren't jokes"
 
 **Cocktail:** Irish Coffee
 **Virgin:** Just sad coffee
@@ -196,6 +206,7 @@ Kraft paper. Paint smudges. Tag reads "HANDLE WITH CURIOSITY."
 - Exhibition postcard
 - Blank notebook for your notes
 - QR code: "Tell me what you think. I'm listening."
+- Sticky note — "Who wrote this?"
 
 **Cocktail:** Bourbon neat
 **Virgin:** Black coffee
@@ -215,6 +226,7 @@ The sampler. Box looks like a hotel door — "412" numerals, tiny peephole.
 - "Hallway at 3am" signature scent
 - Annotated floor plan with handwritten notes
 - Note slipped under door: "We know you're in there."
+- Stack of sticky notes — some in your handwriting, some not
 
 **Character Samples (one from each):**
 - Sugar cube (Wire)

@@ -305,8 +305,8 @@ body.simli-active .animated-text-container {
 
 .character-circle {
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     overflow: hidden;
     margin-bottom: 0.4rem;
@@ -803,32 +803,35 @@ body.simli-active .animated-text-container {
 
 .menu-buttons {
     position: fixed;
-    top: 1.5rem;
+    top: 1rem;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
     z-index: 500;
 }
 
 .menu-btn {
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid var(--brass-dark);
-    color: var(--billiard-green);
+    background: rgba(0, 0, 0, 0.85);
+    border: 2px solid var(--brass-mid);
+    color: var(--parchment);
     font-family: var(--font-display);
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    padding: 0.4rem 1rem;
+    padding: 0.7rem 1.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8), 0 0 8px var(--pink-outline);
+    text-shadow: 0 0 10px var(--pink-outline), 0 0 20px rgba(232, 74, 138, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .menu-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--brass-mid);
-    color: var(--parchment);
+    background: rgba(26, 92, 58, 0.9);
+    border-color: var(--brass-light);
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -843,6 +846,49 @@ body.simli-active .animated-text-container {
     border: 2px solid var(--brass-dark);
     border-radius: 8px;
     padding: 2.5rem;
+    position: relative;
+}
+
+/* Store Audio Controls */
+.store-audio-controls {
+    position: absolute;
+    top: 1rem;
+    right: 3.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--brass-dark);
+}
+
+.audio-toggle-mini {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.volume-sliders-mini {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--parchment-dark);
+}
+
+.volume-sliders-mini label {
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.volume-sliders-mini input[type="range"] {
+    width: 60px;
+    height: 4px;
+    accent-color: var(--brass-mid);
 }
 
 .store-tagline {
@@ -1320,12 +1366,12 @@ body.simli-active .animated-text-container {
     }
     
     .character-circle {
-        width: 90px;
-        height: 90px;
+        width: 110px;
+        height: 110px;
     }
     
     .character-name {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
     }
     
     .experience-title {
@@ -1343,8 +1389,8 @@ body.simli-active .animated-text-container {
     }
     
     .character-circle {
-        width: 80px;
-        height: 80px;
+        width: 90px;
+        height: 90px;
     }
 }
 

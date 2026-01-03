@@ -62,6 +62,18 @@
     <div id="store-modal" class="modal hidden">
         <div class="modal-content store-content">
             <button class="modal-close" onclick="document.getElementById('store-modal').classList.add('hidden')">&times;</button>
+            
+            <!-- Audio Controls in Store -->
+            <div class="store-audio-controls">
+                <button id="store-audio-toggle" class="audio-toggle-mini">🔊</button>
+                <div class="volume-sliders-mini">
+                    <label>Ambient</label>
+                    <input type="range" id="store-ambient-volume" min="0" max="100" value="65">
+                    <label>Music</label>
+                    <input type="range" id="store-music-volume" min="0" max="100" value="15">
+                </div>
+            </div>
+            
             <h2>Sensory Packs</h2>
             <p class="store-tagline">Physical artifacts from the hotel. Things you can hold, smell, taste. The fiction made tangible.</p>
             
@@ -742,6 +754,37 @@
         audioToggle.addEventListener('click', toggleAudio);
         ambientSlider.addEventListener('input', (e) => updateAmbientVolume(e.target.value));
         musicSlider.addEventListener('input', (e) => updateMusicVolume(e.target.value));
+        
+        // Store modal volume controls (sync with main controls)
+        const storeAmbientSlider = document.getElementById('store-ambient-volume');
+        const storeMusicSlider = document.getElementById('store-music-volume');
+        const storeAudioToggle = document.getElementById('store-audio-toggle');
+        
+        if (storeAmbientSlider) {
+            storeAmbientSlider.addEventListener('input', (e) => {
+                updateAmbientVolume(e.target.value);
+                ambientSlider.value = e.target.value;  // Sync main slider
+            });
+        }
+        if (storeMusicSlider) {
+            storeMusicSlider.addEventListener('input', (e) => {
+                updateMusicVolume(e.target.value);
+                musicSlider.value = e.target.value;  // Sync main slider
+            });
+        }
+        if (storeAudioToggle) {
+            storeAudioToggle.addEventListener('click', () => {
+                toggleAudio();
+                storeAudioToggle.textContent = audioMuted ? '🔇' : '🔊';
+            });
+        }
+        
+        // Sync store sliders when store modal opens
+        document.getElementById('store-btn')?.addEventListener('click', () => {
+            if (storeAmbientSlider) storeAmbientSlider.value = ambientSlider.value;
+            if (storeMusicSlider) storeMusicSlider.value = musicSlider.value;
+            if (storeAudioToggle) storeAudioToggle.textContent = audioMuted ? '🔇' : '🔊';
+        });
         
         // Start audio on first click anywhere on page
         document.body.addEventListener('click', () => {

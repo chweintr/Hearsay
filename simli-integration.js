@@ -20,6 +20,10 @@ export class SimliIntegration {
         this.mountPoint = document.getElementById('simli-mount');
         this.blackRemover = new BlackRemover();
         
+        // Session tracking for transcripts
+        this.currentSessionId = null;
+        this.currentCharacter = null;
+        
         // Bind handlers
         this.handleStateChange = this.handleStateChange.bind(this);
         this.handleTransitionEnd = this.handleTransitionEnd.bind(this);
@@ -69,7 +73,7 @@ export class SimliIntegration {
      * Fetch session token from Railway backend
      * @param {string} agentId - Simli agent ID
      * @param {string} faceId - Simli face ID
-     * @returns {Promise<string>} Session token
+     * @returns {Promise<{token: string, sessionId: string}>} Session token and ID
      */
     async fetchToken(agentId, faceId) {
         try {
@@ -84,11 +88,68 @@ export class SimliIntegration {
             }
             
             const data = await response.json();
-            return data.token;
+            
+            // Store sessionId for transcript retrieval later
+            if (data.sessionId) {
+                this.currentSessionId = data.sessionId;
+                console.log(`[Simli] 📋 Session ID saved: ${this.currentSessionId}`);
+            }
+            
+            return { token: data.token, sessionId: data.sessionId };
             
         } catch (error) {
             console.error('[Simli] Token fetch error:', error);
             throw error;
+        }
+    }
+    
+    /**
+     * Retrieve transcript for completed session
+     * Call this after the conversation ends (triggered by widget destroy)
+     * @param {string} sessionId - Session ID from token creation
+     * @returns {Promise<Object>} Transcript data
+     */
+    async fetchTranscript(sessionId) {
+        const sid = sessionId || this.currentSessionId;
+        if (!sid) {
+            console.warn('[Simli] No session ID available for transcript');
+            return null;
+        }
+        
+        console.log(`[Simli] 📜 Fetching transcript for session: ${sid}`);
+        
+        try {
+            const response = await fetch(`/api/simli-transcript/${sid}`);
+            const data = await response.json();
+            
+            if (data.status === 'pending') {
+                console.log('[Simli] Transcript not ready yet, retrying in 3s...');
+                // Retry after delay
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                return this.fetchTranscript(sid);
+            }
+            
+            if (data.status === 'complete') {
+                console.log('[Simli] ✅ Transcript retrieved!', data);
+                
+                // Dispatch event for other parts of the app
+                window.dispatchEvent(new CustomEvent('hearsay-transcript', {
+                    detail: {
+                        sessionId: sid,
+                        character: this.currentCharacter?.name,
+                        transcript: data.transcript
+                    }
+                }));
+                
+                return data;
+            }
+            
+            console.warn('[Simli] Unexpected transcript response:', data);
+            return data;
+            
+        } catch (error) {
+            console.error('[Simli] Transcript fetch error:', error);
+            return null;
         }
     }
 
@@ -108,13 +169,17 @@ export class SimliIntegration {
             console.log(`[Simli] Creating widget for ${character.name}...`);
             console.log(`[Simli] Agent ID: ${character.agentId}, Face ID: ${character.faceId}`);
             
+            // Store current character for transcript metadata
+            this.currentCharacter = character;
+            
             // Show loading state
             document.body.classList.add('loading');
             
             // Fetch session token from backend
             console.log('[Simli] Fetching token...');
-            const token = await this.fetchToken(character.agentId, character.faceId);
+            const { token, sessionId } = await this.fetchToken(character.agentId, character.faceId);
             console.log('[Simli] Token received:', token ? 'yes' : 'no');
+            console.log('[Simli] Session ID:', sessionId || 'none');
             
             // Create widget element
             this.widget = document.createElement('simli-widget');
@@ -477,6 +542,10 @@ export class SimliIntegration {
         // Stop black removal
         this.blackRemover.stop();
         
+        // Save session ID before cleanup
+        const sessionId = this.currentSessionId;
+        const character = this.currentCharacter;
+        
         try {
             // Call widget's cleanup method if available
             if (typeof this.widget.destroy === 'function') {
@@ -494,6 +563,77 @@ export class SimliIntegration {
             // Force remove anyway
             this.widget?.remove();
             this.widget = null;
+        }
+        
+        // Fetch transcript after session ends (async, with delay to let Simli process)
+        if (sessionId) {
+            console.log(`[Simli] 📜 Will fetch transcript for ${character?.name} session in 5s...`);
+            setTimeout(async () => {
+                const transcript = await this.fetchTranscript(sessionId);
+                if (transcript) {
+                    console.log('[Simli] Transcript saved for Writing Engine:', transcript);
+                    // TODO: Store transcript in local storage or send to backend
+                    this.storeTranscript(sessionId, character, transcript);
+                }
+            }, 5000);
+        }
+        
+        // Clear session tracking
+        this.currentSessionId = null;
+        this.currentCharacter = null;
+    }
+    
+    /**
+     * Store transcript for later retrieval by Writing Engine
+     * For now, stores in localStorage. Can be upgraded to backend storage.
+     */
+    storeTranscript(sessionId, character, transcriptData) {
+        try {
+            const key = `hearsay_transcript_${sessionId}`;
+            const record = {
+                sessionId,
+                character: character?.name || 'Unknown',
+                characterId: character?.id || null,
+                timestamp: new Date().toISOString(),
+                transcript: transcriptData.transcript
+            };
+            
+            localStorage.setItem(key, JSON.stringify(record));
+            
+            // Also maintain an index of all transcripts
+            const indexKey = 'hearsay_transcript_index';
+            const index = JSON.parse(localStorage.getItem(indexKey) || '[]');
+            index.push({
+                sessionId,
+                character: character?.name,
+                timestamp: record.timestamp
+            });
+            localStorage.setItem(indexKey, JSON.stringify(index));
+            
+            console.log(`[Simli] 💾 Transcript stored: ${key}`);
+            
+        } catch (error) {
+            console.error('[Simli] Error storing transcript:', error);
+        }
+    }
+    
+    /**
+     * Get all stored transcripts
+     * @returns {Array} Array of transcript records
+     */
+    getAllTranscripts() {
+        try {
+            const indexKey = 'hearsay_transcript_index';
+            const index = JSON.parse(localStorage.getItem(indexKey) || '[]');
+            
+            return index.map(item => {
+                const key = `hearsay_transcript_${item.sessionId}`;
+                return JSON.parse(localStorage.getItem(key) || 'null');
+            }).filter(Boolean);
+            
+        } catch (error) {
+            console.error('[Simli] Error retrieving transcripts:', error);
+            return [];
         }
     }
 

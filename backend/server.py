@@ -1,11 +1,12 @@
 """
 HEARSAY Backend - Simli Token Server
 ─────────────────────────────────────────────────────────────────────────────
-Railway-deployable FastAPI server for Simli token generation.
+Railway-deployable FastAPI server for Simli token generation and transcript retrieval.
 
 Endpoints:
-    POST /api/simli-token?agentId=xxx&faceId=xxx
-    GET  /api/health
+    POST /api/simli-token?agentId=xxx&faceId=xxx  → Get session token + sessionId
+    GET  /api/simli-transcript/{session_id}       → Retrieve transcript after session
+    GET  /api/health                               → Health check
     GET  / (serves frontend)
 
 Environment Variables (set in Railway):
@@ -95,10 +96,10 @@ async def get_simli_token(
             # Simli may return token as 'sessionToken', 'session_token', or 'token'
             token = data.get("sessionToken") or data.get("session_token") or data.get("token") or ""
             
-            # Also capture transcript URL if returned
-            transcript_url = data.get("transcriptUrl") or data.get("transcript_url")
-            if transcript_url:
-                print(f"[HEARSAY] Transcript URL: {transcript_url}")
+            # Capture sessionId for transcript retrieval later
+            session_id = data.get("sessionId") or data.get("session_id") or ""
+            if session_id:
+                print(f"[HEARSAY] Session ID (for transcript): {session_id}")
             
             if not token:
                 print(f"[HEARSAY] No token in response: {data}")
@@ -107,13 +108,88 @@ async def get_simli_token(
                     detail="No token in Simli response"
                 )
             
-            return {"token": token}
+            # Return both token and sessionId (frontend needs sessionId for transcript retrieval)
+            return {
+                "token": token,
+                "sessionId": session_id  # Store this to retrieve transcript later
+            }
             
     except httpx.RequestError as e:
         print(f"[HEARSAY] Request error: {e}")
         raise HTTPException(
             status_code=503,
             detail=f"Failed to connect to Simli API: {str(e)}"
+        )
+
+
+@app.get("/api/simli-transcript/{session_id}")
+async def get_transcript(session_id: str):
+    """
+    Retrieve transcript for a completed Simli session.
+    Call this after the conversation ends (not during).
+    
+    The transcript is used by the Writing Engine to narrativize conversations.
+    """
+    
+    if not SIMLI_API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="SIMLI_API_KEY not configured"
+        )
+    
+    if not session_id:
+        raise HTTPException(
+            status_code=400,
+            detail="session_id is required"
+        )
+    
+    print(f"[HEARSAY] Fetching transcript for session: {session_id}")
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://api.simli.ai/auto/transcript/{session_id}",
+                headers={
+                    "api-key": SIMLI_API_KEY.strip(),
+                    "Content-Type": "application/json"
+                },
+                timeout=30.0
+            )
+            
+            print(f"[HEARSAY] Transcript response status: {response.status_code}")
+            
+            if response.status_code == 404:
+                # Transcript may not be ready yet, or session doesn't exist
+                return JSONResponse(
+                    status_code=202,  # Accepted - try again later
+                    content={
+                        "status": "pending",
+                        "message": "Transcript not yet available. Try again in a few seconds.",
+                        "sessionId": session_id
+                    }
+                )
+            
+            if response.status_code != 200:
+                print(f"[HEARSAY] Transcript error: {response.text}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Simli transcript error: {response.text}"
+                )
+            
+            data = response.json()
+            print(f"[HEARSAY] Transcript retrieved successfully for {session_id}")
+            
+            return {
+                "status": "complete",
+                "sessionId": session_id,
+                "transcript": data
+            }
+            
+    except httpx.RequestError as e:
+        print(f"[HEARSAY] Transcript request error: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Failed to retrieve transcript: {str(e)}"
         )
 
 

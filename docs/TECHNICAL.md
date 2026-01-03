@@ -27,20 +27,27 @@ HEARSAY uses a simple client-server architecture:
 │                              │   BlackRemover.js   │        │
 │                              │ (canvas transparency)│        │
 │                              └─────────────────────┘        │
+│                                         │                    │
+│                              ┌──────────┴──────────┐        │
+│                              │   localStorage      │        │
+│                              │  (transcripts)      │        │
+│                              └─────────────────────┘        │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    BACKEND (FastAPI)                         │
-│      POST /api/simli-token → fetch token from Simli          │
-│      Passes: simliAPIKey, agentId, faceId, ttsAPIKey         │
+│   POST /api/simli-token    → get token + sessionId           │
+│   GET  /api/simli-transcript/{id} → retrieve transcript      │
+│      Passes: simliAPIKey, agentId, faceId, createTranscript  │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                      SIMLI API                               │
-│            https://api.simli.ai/auto/token                   │
-│              (WebRTC, AI conversation, video)                │
+│        POST https://api.simli.ai/v1/sessions                 │
+│        GET  https://api.simli.ai/auto/transcript/{id}        │
+│            (WebRTC, AI conversation, video, transcripts)     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -332,28 +339,45 @@ Transform conversation transcripts into narrativized literary chapters. Not summ
 ### Architecture
 
 ```
-Session → Transcript Capture → Writing Agent → Chapter Delivery
+Session → Transcript Capture → Local Storage → Writing Agent → Chapter Delivery
 ```
 
-### Step 1: Transcript Capture
+### Step 1: Transcript Capture ✅ IMPLEMENTED
 
-**Current Setup:**
-- Already passing `createTranscript: true` in Simli token request
-- Simli should return transcript data at session end
+**Backend Endpoints:**
+```
+POST /api/simli-token?agentId=xxx&faceId=xxx
+    → Returns: { token, sessionId }
+    → Enables createTranscript: true
 
-**TODO: Add transcript webhook**
-```python
-# backend/server.py - new endpoint
-@app.post("/api/session-end")
-async def session_end(session_id: str, transcript: str, character_id: str):
-    # Store transcript
-    # Trigger chapter generation (async)
-    pass
+GET /api/simli-transcript/{session_id}
+    → Polls Simli for transcript after session ends
+    → Returns: { status, sessionId, transcript }
+```
+
+**Frontend Flow (simli-integration.js):**
+1. `fetchToken()` stores `sessionId` when creating session
+2. `destroyWidget()` waits 5s then calls `fetchTranscript()`
+3. `storeTranscript()` saves to localStorage
+4. Dispatches `hearsay-transcript` custom event for other components
+
+**Transcript Storage:**
+```javascript
+// localStorage keys
+hearsay_transcript_index     // Array of { sessionId, character, timestamp }
+hearsay_transcript_{id}      // Full transcript record per session
+```
+
+**Retrieve All Transcripts:**
+```javascript
+const simli = /* SimliIntegration instance */;
+const allTranscripts = simli.getAllTranscripts();
 ```
 
 **Session Boundaries:**
-- User clicks "End Conversation" button
-- Inactivity timeout (5 min silence)
+- User clicks "Send Away" button (triggers destroyWidget)
+- User clicks "← Back" button
+- Inactivity timeout (future: 5 min silence)
 - Browser close (navigator.sendBeacon for reliability)
 
 ### Step 2: Writing Agent

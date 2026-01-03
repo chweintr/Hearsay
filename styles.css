@@ -291,15 +291,16 @@ body.simli-active .animated-text-container {
     white-space: nowrap;
 }
 
-.character-card:hover {
-    transform: translateY(-8px);
+/* Hover: just scale up the circle, don't move the card (orbital positioning) */
+.character-card:hover .character-circle {
+    transform: scale(1.15);
 }
 
 .character-card:hover .character-circle-border {
     border-color: var(--brass-mid);
     box-shadow: 
-        0 0 20px var(--glow-warm),
-        inset 0 0 20px rgba(0, 0, 0, 0.5);
+        0 0 15px var(--glow-warm),
+        inset 0 0 15px rgba(0, 0, 0, 0.4);
 }
 
 .character-circle {
@@ -309,6 +310,7 @@ body.simli-active .animated-text-container {
     border-radius: 50%;
     overflow: hidden;
     margin-bottom: 0.4rem;
+    transition: transform 0.2s ease;
 }
 
 .character-circle-border {

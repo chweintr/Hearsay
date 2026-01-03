@@ -82,13 +82,13 @@ export const characters = {
     marisol: {
         name: 'Marisol',
         role: "Owner's Daughter",
-        agentId: 'xxx',  // TODO: Simli agent ID
-        faceId: 'xxx',   // TODO: Simli face ID
+        agentId: '24105503-dbf2-48ec-9d14-b800f8ebedde',
+        faceId: '28851337-4976-4692-b5c5-3c2825c8d522',
         idleToActive: ['assets/videos/Marisol_Walkup.mp4'],
         activeToIdle: ['assets/videos/Marisol_Walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_office.wav',
         previewVideo: 'assets/videos/Marisol_Walkup.mp4',
-        status: 'ready'  // ready | coming_soon | unavailable
+        status: 'ready'
     },
     
     eddie: {

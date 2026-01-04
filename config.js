@@ -125,13 +125,13 @@ export const characters = {
     tane: {
         name: 'Tane',
         role: "Wire's Brother",
-        agentId: 'xxx',
-        faceId: 'xxx',
+        agentId: 'ca858324-9e89-42ae-9139-50e84a1ff4b1',
+        faceId: '7e095ab0-626e-41e6-876b-e79403658524',
         idleToActive: ['assets/videos/Tane_Walkup.mp4'],
-        activeToIdle: [],
-        knockSound: null,
+        activeToIdle: ['assets/videos/Tane_Walkup.mp4'],
+        knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
         previewVideo: 'assets/videos/Tane_Walkup.mp4',
-        status: 'coming_soon'
+        status: 'ready'
     },
     
     constance: {

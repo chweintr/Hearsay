@@ -190,13 +190,13 @@ export const characters = {
     rufus: {
         name: 'Rufus',
         role: 'The Clown',
-        agentId: 'xxx',  // TODO: Simli agent ID
-        faceId: 'xxx',   // TODO: Simli face ID
+        agentId: '7eca1b0-5bcf-4f4b-99f6-48840ab6817e',
+        faceId: '297c78be-6d0c-404c-8468-928c87b248c4',
         idleToActive: ['assets/videos/Rufus_Walkup.mp4'],
         activeToIdle: ['assets/videos/Rufus_Walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
         previewVideo: 'assets/videos/Rufus_Walkup.mp4',
-        status: 'coming_soon'  // Change to 'ready' when Simli IDs available
+        status: 'ready'
     }
 };
 

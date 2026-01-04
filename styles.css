@@ -869,6 +869,30 @@ body.simli-active .animated-text-container {
     position: relative;
 }
 
+/* Store Header with Heraldic Crest */
+.store-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--brass-dark);
+}
+
+.store-crest {
+    width: 120px;
+    height: auto;
+    margin-bottom: 1rem;
+    filter: sepia(0.3) brightness(1.1);
+}
+
+.store-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--brass-light);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin: 0;
+}
+
 /* Store Audio Controls - Bottom right to match main page */
 .store-audio-controls {
     position: fixed;

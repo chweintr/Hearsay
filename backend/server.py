@@ -76,8 +76,7 @@ async def get_simli_token(
                 },
                 json={
                     "agentId": agentId,
-                    "faceId": faceId,
-                    "createTranscript": True  # Enable transcript capture for writing engine
+                    "faceId": faceId
                 },
                 timeout=30.0
             )

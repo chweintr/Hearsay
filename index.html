@@ -464,10 +464,12 @@
                     'assets/images/Sensory Packs/Sensory_Pack_Tane_2.png'
                 ],
                 image: 'assets/images/Sensory Packs/Sensory_Tane_Vertical.jpeg',
+                storeVideo: 'assets/videos/Tane_Store.mp4',
                 featured: true,
                 description: 'The box glows like a bad idea at 2am. Open it and remember what ambition smelled like before it learned consequences.',
                 contents: [
                     'Energy drink powder ("MIX WITH VODKA OR REGRET")',
+                    '"GOLDEN TEACHER" bubblegum — tastes like enlightenment, chew responsibly',
                     'Temporary tattoo sheet — horse, "LONG ODDS", anatomical heart',
                     '"PULSE" cologne — synthetic musk, pheromones, rubber accord, patchouli, castoreum, sandalwood, petrichor',
                     '"THE STARTING GATE" matchbook',
@@ -832,9 +834,21 @@
                 imageHtml = `<div class="product-image"><div class="product-placeholder">${product.id === 'hotel' ? 'The Complete Experience' : 'Image Coming'}</div></div>`;
             }
             
+            // Character video for product
+            const videoHtml = product.storeVideo ? `
+                <div class="product-character-video">
+                    <video autoplay loop muted playsinline>
+                        <source src="${product.storeVideo}" type="video/mp4">
+                    </video>
+                </div>
+            ` : '';
+            
             productEl.innerHTML = `
                 ${product.featured ? '<div class="featured-badge">✦ Available Now</div>' : ''}
-                ${imageHtml}
+                <div class="product-media">
+                    ${imageHtml}
+                    ${videoHtml}
+                </div>
                 <h3 class="product-name">${product.name}</h3>
                 <p class="product-tagline">${product.tagline || ''}</p>
                 <p class="product-description">${product.description}</p>

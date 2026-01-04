@@ -435,9 +435,12 @@ body.simli-active .animated-text-container {
     object-fit: cover;
     filter: saturate(0.7) contrast(1.1);
     transition: filter 0.3s ease;
-    /* Ensure video doesn't inherit blend modes and has solid background */
-    mix-blend-mode: normal;
-    background: #1a1512;
+    /* AGGRESSIVE fix for alpha-channel videos */
+    mix-blend-mode: normal !important;
+    background-color: #1a1512 !important;
+    /* Fallback: composite over solid color */
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 
 .character-card:hover .character-preview {
@@ -1354,6 +1357,47 @@ body.simli-active .animated-text-container {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+}
+
+/* Product Media Container - image + character video side by side */
+.product-media {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.product-media .product-image,
+.product-media .product-gallery {
+    flex: 2;
+    margin-bottom: 0;
+}
+
+.product-character-video {
+    flex: 1;
+    min-width: 120px;
+    max-width: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1a1512;
+    position: relative;
+}
+
+.product-character-video::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #1a1512;
+    z-index: 0;
+}
+
+.product-character-video video {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #1a1512;
+    mix-blend-mode: normal;
 }
 
 .product-name {

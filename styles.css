@@ -1072,6 +1072,7 @@ body.simli-active .animated-text-container {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
     margin: 2rem 0;
+    padding-top: 1rem; /* Space for featured badge */
 }
 
 .store-product {

@@ -190,7 +190,7 @@ export const characters = {
     rufus: {
         name: 'Rufus',
         role: 'The Clown',
-        agentId: '7eca1b0-5bcf-4f4b-99f6-48840ab6817e',
+        agentId: '97eca1b0-5bcf-4f4b-99f6-48840ab6817e',
         faceId: '297c78be-6d0c-404c-8468-928c87b248c4',
         idleToActive: ['assets/videos/Rufus_Walkup.mp4'],
         activeToIdle: ['assets/videos/Rufus_Walkup.mp4'],

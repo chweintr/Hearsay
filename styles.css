@@ -1316,6 +1316,129 @@ body.simli-active .animated-text-container {
     background: #8a3040;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   BAR GUIDE SECTION
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.bar-guide-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--brass-dark);
+}
+
+.bar-guide-section h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--pink-accent);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.bar-tagline {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    color: var(--brass-light);
+    margin-bottom: 1.5rem;
+}
+
+.bar-guide-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.bar-drink-card {
+    background: rgba(20, 15, 10, 0.9);
+    border: 1px solid var(--brass-dark);
+    border-left: 4px solid var(--pink-accent);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.drink-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.drink-emoji {
+    font-size: 1.5rem;
+}
+
+.drink-character {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--brass-mid);
+}
+
+.drink-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    color: var(--parchment-light);
+    margin: 0 0 1rem;
+}
+
+.drink-ingredients {
+    margin-bottom: 1rem;
+}
+
+.drink-ingredients strong {
+    color: var(--brass-light);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.drink-ingredients ul {
+    margin: 0.5rem 0 0 1.25rem;
+    padding: 0;
+}
+
+.drink-ingredients li {
+    font-size: 0.85rem;
+    color: var(--parchment-mid);
+    margin-bottom: 0.25rem;
+}
+
+.drink-instructions {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.drink-instructions strong {
+    color: var(--brass-light);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.drink-instructions p {
+    font-size: 0.9rem;
+    color: var(--parchment-mid);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.drink-story {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.85rem;
+    color: var(--brass-mid);
+    margin-bottom: 0.75rem;
+}
+
+.drink-virgin {
+    font-size: 0.8rem;
+    color: var(--brass-mid);
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .store-notice {
     font-family: 'EB Garamond', serif;
     font-size: 0.85rem;

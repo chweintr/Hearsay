@@ -87,6 +87,15 @@
                 <!-- Products injected by JS -->
             </div>
             
+            <!-- BAR GUIDE - Full mixing instructions -->
+            <div class="bar-guide-section">
+                <h2>🍸 The Bar Guide</h2>
+                <p class="bar-tagline">What the residents drink. Mix at home while you talk to them.</p>
+                <div class="bar-guide-grid" id="bar-guide-grid">
+                    <!-- Drinks injected by JS -->
+                </div>
+            </div>
+            
             <p class="store-notice">
                 <strong>THE KNOCK</strong> brought to you by <em>Past Presence</em> is currently in development.<br>
                 Leave your email to be notified when the hotel opens its doors.
@@ -634,6 +643,127 @@
                 virgin: 'Bitters and soda with orange'
             }
         ];
+        
+        // BAR GUIDE - Full drink recipes with mixing instructions
+        const barGuideDrinks = [
+            {
+                character: 'WIRE',
+                drink: 'The Sixth Floor Toddy',
+                emoji: '🌙',
+                ingredients: ['Mānuka honey', 'Good whiskey (he has opinions)', 'Kawakawa leaf', 'Hot water'],
+                instructions: 'Warm your glass first. Add a generous spoonful of mānuka honey. Pour whiskey over—Wire prefers something with age. Bruise the kawakawa leaf and drop it in. Top with hot (not boiling) water. Stir slowly. Drink slower.',
+                story: 'What Wire drinks when the hallways get too quiet. The honey is from home. The whiskey is from somewhere that closed a long time ago.',
+                virgin: 'Same, minus the whiskey. Still warms you the same way, he says.'
+            },
+            {
+                character: 'MARISOL',
+                drink: 'The Dark & Stormy',
+                emoji: '⚡',
+                ingredients: ['Dark rum', 'Ginger beer', 'Lime wedge', 'Your father\'s glass (optional)'],
+                instructions: 'Fill a highball glass with ice. Pour 2oz dark rum. Top with ginger beer—the spicier the better. Squeeze lime over the top and drop it in. Don\'t stir. Let the storm settle itself.',
+                story: 'Marisol orders it like a challenge. Dark and stormy—like the inheritance, like the hotel, like her.',
+                virgin: 'Ginger lime spritz. Sharp enough to cut through any conversation.'
+            },
+            {
+                character: 'EDDIE',
+                drink: 'The Night Kitchen Michelada',
+                emoji: '🌶️',
+                ingredients: ['Beer (Mexican lager)', 'Lime juice', 'Hot sauce (the kind that hurts)', 'Worcestershire', 'Salt rim'],
+                instructions: 'Rim your glass with salt and chili powder. Add ice. Squeeze half a lime. Dash Worcestershire and hot sauce—more than you think. Pour beer slowly. Stir once. Taste. Add more hot sauce.',
+                story: 'Eddie makes this at 3am when he catches you in the kitchen. "Hair of the dog that\'s about to bite you."',
+                virgin: 'Spicy tomato juice with everything but the beer. Still wakes you up.'
+            },
+            {
+                character: 'DOTTY',
+                drink: 'The Gin Fizz',
+                emoji: '💋',
+                ingredients: ['Gin', 'Lemon juice', 'Simple syrup', 'Heavy cream', 'Egg white', 'Soda water'],
+                instructions: 'Dry shake (no ice) gin, lemon, syrup, cream, and egg white for 30 seconds. Your arm should hurt. Add ice, shake again. Strain into a chilled glass. Top with soda. Wait for it to rise. Admire.',
+                story: 'Dotty taught three bartenders how to make this properly. None of them still work here.',
+                virgin: 'Botanical lemonade fizz. Pretty enough. Not the same.'
+            },
+            {
+                character: 'TANE',
+                drink: 'The Starting Gate',
+                emoji: '🔥',
+                ingredients: ['Vodka', 'Energy drink', 'Whatever you\'re running from'],
+                instructions: 'Pour. Shoot. Don\'t think about it. Repeat if you dare. Tane will match you one for one. Tane will win.',
+                story: 'This is the pre-game before the game before the thing you\'re going to regret.',
+                virgin: 'Energy drink straight. Same chaos, less excuse.'
+            },
+            {
+                character: 'CONSTANCE',
+                drink: 'The Pimm\'s Cup',
+                emoji: '📋',
+                ingredients: ['Pimm\'s No. 1', 'Cucumber', 'Lemon', 'Strawberry', 'Mint', 'Ginger ale'],
+                instructions: 'Fill a tall glass with ice. Add 2oz Pimm\'s. Top with ginger ale. Garnish with cucumber, lemon wheel, strawberry, and mint—arranged precisely. Take notes on what others ordered.',
+                story: 'Constance drinks Pimm\'s because it\'s civilized. Because you can drink it in the garden and still observe.',
+                virgin: 'Cucumber mint lemonade. Refreshing and deeply judgmental.'
+            },
+            {
+                character: 'PRIYA',
+                drink: 'The Trust Me',
+                emoji: '🍋',
+                ingredients: ['Fernet', 'Mezcal', 'Fresh citrus', 'Amaro (to taste)', 'Proportions: classified'],
+                instructions: 'She won\'t tell you. You don\'t order this—you ask Priya what you need, and this is what you get. Trust her.',
+                story: 'The bartender\'s bartender drink. Different every time. She\'s usually right.',
+                virgin: 'Bitter botanical soda with grapefruit. For when you need to stay sharp.'
+            },
+            {
+                character: 'LENNY',
+                drink: 'The Irish Goodbye',
+                emoji: '☕',
+                ingredients: ['Hot coffee', 'Irish whiskey', 'Brown sugar', 'Heavy cream'],
+                instructions: 'Brew strong coffee. Add 1oz whiskey and a spoonful of brown sugar. Stir until dissolved. Float cream on top by pouring over the back of a spoon. Hold with both hands. Sigh.',
+                story: 'Lenny orders this after every set. "At least the coffee never heckles," he says. Every time.',
+                virgin: 'Just sad coffee. He\'ll tell you the joke about that too.'
+            },
+            {
+                character: 'CALEB',
+                drink: 'The Bourbon Neat',
+                emoji: '📝',
+                ingredients: ['Bourbon', 'Glass', 'That\'s it'],
+                instructions: 'Pour bourbon into glass. That\'s it. The author drinks what writers drink in movies.',
+                story: 'He knows it\'s a cliché. He wrote a short story about the cliché once. It wasn\'t good. He still orders it.',
+                virgin: 'Black coffee. He\'ll take notes on how you take yours.'
+            },
+            {
+                character: 'RUFUS',
+                drink: 'The Kir Royale',
+                emoji: '🎭',
+                ingredients: ['Crème de cassis', 'Champagne (or sparkling wine)', 'Drama'],
+                instructions: 'Add ½oz crème de cassis to a champagne flute. Top with cold champagne. Watch the color rise. Raise your glass to everyone and no one. Never finish the first one.',
+                story: '"Bubbles and darkness, darling. Like me."',
+                virgin: 'Sparkling grape with cassis. Still dramatic. Still Rufus.'
+            }
+        ];
+        
+        // Populate bar guide
+        const barGuideGrid = document.getElementById('bar-guide-grid');
+        if (barGuideGrid) {
+            barGuideDrinks.forEach(drink => {
+                const drinkEl = document.createElement('div');
+                drinkEl.className = 'bar-drink-card';
+                drinkEl.innerHTML = `
+                    <div class="drink-header">
+                        <span class="drink-emoji">${drink.emoji}</span>
+                        <span class="drink-character">${drink.character}</span>
+                    </div>
+                    <h3 class="drink-name">${drink.drink}</h3>
+                    <div class="drink-ingredients">
+                        <strong>You'll need:</strong>
+                        <ul>${drink.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+                    </div>
+                    <div class="drink-instructions">
+                        <strong>How to make it:</strong>
+                        <p>${drink.instructions}</p>
+                    </div>
+                    <p class="drink-story"><em>${drink.story}</em></p>
+                    <p class="drink-virgin"><strong>Virgin version:</strong> ${drink.virgin}</p>
+                `;
+                barGuideGrid.appendChild(drinkEl);
+            });
+        }
         
         // Populate store grid
         storeProducts.forEach(product => {

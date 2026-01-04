@@ -1165,12 +1165,29 @@ body.simli-active .animated-text-container {
 .product-cocktails {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--brass-dark);
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border-left: 3px solid var(--pink-accent);
 }
 
-.cocktail-label, .virgin-label {
+.product-cocktails::before {
+    content: '🍸 Signature Drink';
+    font-family: 'Playfair Display', serif;
+    font-size: 0.8rem;
+    color: var(--pink-accent);
+    margin-bottom: 0.25rem;
+}
+
+.cocktail-label {
+    font-size: 0.75rem;
+    color: var(--parchment-mid);
+    font-style: italic;
+}
+
+.virgin-label {
     font-size: 0.7rem;
     color: var(--brass-mid);
 }

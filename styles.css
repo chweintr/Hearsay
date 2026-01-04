@@ -1068,18 +1068,19 @@ body.simli-active .animated-text-container {
 }
 
 .store-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
     margin: 2rem 0;
     padding-top: 1rem; /* Space for featured badge */
 }
 
 .store-product {
+    position: relative;
     background: rgba(30, 25, 20, 0.8);
     border: 1px solid var(--brass-dark);
-    border-radius: 4px;
-    padding: 1rem;
+    border-radius: 8px;
+    padding: 1.5rem;
     text-align: left;
     transition: transform 0.2s ease, border-color 0.2s ease;
 }
@@ -1092,7 +1093,6 @@ body.simli-active .animated-text-container {
 .store-product.featured {
     border-color: #ff6b9d;
     background: rgba(255, 107, 157, 0.08);
-    grid-column: span 2;
 }
 
 .featured-badge {
@@ -1110,9 +1110,7 @@ body.simli-active .animated-text-container {
     white-space: nowrap;
 }
 
-.store-product.featured .product-image {
-    aspect-ratio: 16/9;
-}
+/* All product images are now large format */
 
 .product-tagline {
     font-family: 'EB Garamond', serif;
@@ -1214,11 +1212,11 @@ body.simli-active .animated-text-container {
 }
 
 .product-image {
-    aspect-ratio: 1;
+    aspect-ratio: 16/9;
     background: var(--shadow-deep);
-    border-radius: 3px;
+    border-radius: 6px;
     overflow: hidden;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .product-image img {
@@ -1234,10 +1232,10 @@ body.simli-active .animated-text-container {
 
 .gallery-main {
     width: 100%;
-    aspect-ratio: 1;
+    aspect-ratio: 16/9;
     object-fit: cover;
-    border-radius: 4px;
-    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
 }
 
 .gallery-thumbs {

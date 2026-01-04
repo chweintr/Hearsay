@@ -239,6 +239,8 @@ body.simli-active .animated-text-container {
     cursor: pointer;
     pointer-events: auto; /* Re-enable clicks on cards */
     transition: transform 0.3s ease, opacity 0.3s ease;
+    /* Prevent blend mode inheritance from animated text */
+    mix-blend-mode: normal;
     
     /* Orbital positioning - each card uses --angle from JS */
     --orbit-radius: 42vmin; /* Distance from center */
@@ -313,7 +315,11 @@ body.simli-active .animated-text-container {
     overflow: hidden;
     margin-bottom: 0.4rem;
     transition: transform 0.2s ease;
-    background: linear-gradient(145deg, #1a1512 0%, #2a2420 50%, #0d0b09 100%);
+    /* Solid opaque background - NOT transparent */
+    background: #1a1512;
+    /* Prevent any blend mode inheritance */
+    mix-blend-mode: normal;
+    isolation: isolate;
 }
 
 .character-circle-border {
@@ -334,6 +340,8 @@ body.simli-active .animated-text-container {
     object-fit: cover;
     filter: saturate(0.7) contrast(1.1);
     transition: filter 0.3s ease;
+    /* Solid background behind video for transparent walkups (Rufus) */
+    background: linear-gradient(145deg, #1a1512 0%, #2a2420 50%, #0d0b09 100%);
 }
 
 .character-card:hover .character-preview {

@@ -122,10 +122,10 @@ body {
 }
 
 .entry-crest {
-    max-width: min(80vw, 500px);
-    max-height: 50vh;
+    max-width: min(90vw, 700px);
+    max-height: 65vh;
     object-fit: contain;
-    filter: drop-shadow(0 0 30px rgba(139, 90, 43, 0.3));
+    filter: drop-shadow(0 0 40px rgba(139, 90, 43, 0.4));
     animation: crestGlow 4s ease-in-out infinite alternate;
 }
 

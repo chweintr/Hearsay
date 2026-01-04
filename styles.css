@@ -351,6 +351,9 @@ body.simli-active .animated-text-container {
     object-fit: cover;
     filter: saturate(0.7) contrast(1.1);
     transition: filter 0.3s ease;
+    /* Ensure video doesn't inherit blend modes and has solid background */
+    mix-blend-mode: normal;
+    background: #1a1512;
 }
 
 .character-card:hover .character-preview {

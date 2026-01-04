@@ -39,7 +39,7 @@ app.add_middleware(
 
 # Configuration from environment
 SIMLI_API_KEY = os.getenv("SIMLI_API_KEY", "")
-SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.ai/v1")
+SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.ai")
 PORT = int(os.getenv("PORT", 8000))
 
 # Path to frontend files (parent directory of backend/)
@@ -69,7 +69,7 @@ async def get_simli_token(
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{SIMLI_API_URL}/sessions",
+                f"{SIMLI_API_URL}/auto/token",
                 headers={
                     "Authorization": f"Bearer {SIMLI_API_KEY}",
                     "Content-Type": "application/json"

@@ -127,10 +127,10 @@ export const characters = {
         role: "Wire's Brother",
         agentId: 'xxx',
         faceId: 'xxx',
-        idleToActive: [],
+        idleToActive: ['assets/videos/Tane_Walkup.mp4'],
         activeToIdle: [],
         knockSound: null,
-        previewVideo: null,
+        previewVideo: 'assets/videos/Tane_Walkup.mp4',
         status: 'coming_soon'
     },
     

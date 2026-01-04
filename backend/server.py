@@ -75,6 +75,7 @@ async def get_simli_token(
                     "Content-Type": "application/json"
                 },
                 json={
+                    "simliAPIKey": SIMLI_API_KEY,
                     "agentId": agentId,
                     "faceId": faceId
                 },

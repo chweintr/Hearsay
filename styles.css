@@ -322,6 +322,15 @@ body.simli-active .animated-text-container {
     isolation: isolate;
 }
 
+/* Solid backdrop layer behind video for alpha-channel videos (Rufus) */
+.character-circle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #1a1512;
+    z-index: 0;
+}
+
 .character-circle-border {
     position: absolute;
     inset: 0;
@@ -335,13 +344,13 @@ body.simli-active .animated-text-container {
 }
 
 .character-preview {
+    position: relative;
+    z-index: 1; /* Above the ::before backdrop */
     width: 100%;
     height: 100%;
     object-fit: cover;
     filter: saturate(0.7) contrast(1.1);
     transition: filter 0.3s ease;
-    /* Solid background behind video for transparent walkups (Rufus) */
-    background: linear-gradient(145deg, #1a1512 0%, #2a2420 50%, #0d0b09 100%);
 }
 
 .character-card:hover .character-preview {

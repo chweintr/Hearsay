@@ -40,10 +40,10 @@ The platform integrates multiple AI and media systems:
 - Transition animations between character states
 - Canvas-based real-time video processing
 
-**Narrative Generation Pipeline**
-- Automated transcript capture from each session
-- AI-powered transformation of dialogue into narrativized prose
-- Personal literary artifacts generated from user conversations
+**Narrative Harvest Pipeline**
+- Dialogue harvest from each session captures raw conversation
+- AI-powered transformation of harvested dialogue into narrativized prose
+- Personal literary artifacts generated from what users said and heard
 
 **Sensory Extension System**
 - Physical object packs that extend fiction into material form

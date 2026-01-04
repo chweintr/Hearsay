@@ -307,10 +307,10 @@ idle → transitioning-in → active → transitioning-out → idle
 ### Planned Features
 - **Marisol Incognito Mode:** Random toggle between Marisol's regular appearance and an "incognito" version (different faceId). Initially 2 variants, could expand based on budget. User never knows which Marisol they'll get.
 
-- **Writing Engine (Transcript → Narrative Pipeline):**
-  - Capture full conversation transcripts (Simli's `createTranscript: true`)
-  - Feed to Writing Agent (Claude Opus 4.5 or Kimi K2)
-  - Transform dialog into narrativized chapters (1500-2500 words)
+- **Writing Engine (Dialogue Harvest → Narrative Pipeline):**
+  - Harvest full conversation transcripts from sessions (Simli's `createTranscript: true`)
+  - Feed harvested dialogue to Writing Agent (Claude Opus 4.5 or Kimi K2)
+  - Transform raw dialogue into narrativized chapters (1500-2500 words)
   - Custom `.skill` file for author's voice/style
   - Output: email, user journal, PDF, collective novel contribution
   - See `docs/HEARSAY.md` for full vision
@@ -334,7 +334,7 @@ idle → transitioning-in → active → transitioning-out → idle
 
 ### Overview
 
-Transform conversation transcripts into narrativized literary chapters. Not summarization—fiction generation using dialog as raw material.
+The Writing Engine harvests dialogue from user sessions and transforms raw conversation into narrativized literary chapters. Not summarization—fiction generation using harvested dialogue as raw material.
 
 ### Architecture
 

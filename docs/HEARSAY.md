@@ -231,7 +231,7 @@ Time-released, not content-conditional. After N conversations, a hint surfaces. 
 
 ---
 
-## The Writing Engine (Transcript → Narrative Pipeline)
+## The Writing Engine (Dialogue Harvest → Narrative Pipeline)
 
 ### Vision
 
@@ -343,7 +343,7 @@ SESSION METADATA:
 
 ### What the Writing Agent Adds
 
-The transcript is the skeleton. The Writing Agent adds:
+The harvested dialogue is the skeleton. The Writing Agent adds:
 
 - **Pre-knock scene:** The character in the hallway before approaching. Their hesitation. Their purpose.
 - **User's interiority:** What the user might have been thinking. Their paranoia, curiosity, suspicion.

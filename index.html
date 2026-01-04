@@ -16,9 +16,20 @@
 </head>
 <body>
     <!-- ═══════════════════════════════════════════════════════════════════════
+         ENTRY PAGE - Heraldic Gateway
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="entry-page" class="page active">
+        <div class="entry-background"></div>
+        <div class="entry-content">
+            <img src="assets/images/herlaldic.png" alt="Hotel Crest" class="entry-crest">
+            <button id="enter-btn" class="enter-button">Enter</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
          LANDING PAGE - Character Selection
          ═══════════════════════════════════════════════════════════════════════ -->
-    <div id="landing-page" class="page active">
+    <div id="landing-page" class="page hidden">
         <!-- Video stack - both videos in same container for blend mode to work -->
         <div class="video-blend-stack">
             <video id="landing-video" class="landing-bg-video" autoplay muted playsinline>
@@ -218,18 +229,43 @@
         // PAGE MANAGEMENT
         // ─────────────────────────────────────────────────────────────────────
         
+        const entryPage = document.getElementById('entry-page');
         const landingPage = document.getElementById('landing-page');
         const experiencePage = document.getElementById('experience-page');
+        const enterBtn = document.getElementById('enter-btn');
+        
+        function showEntry() {
+            entryPage.classList.add('active');
+            landingPage.classList.remove('active');
+            experiencePage.classList.remove('active');
+        }
         
         function showLanding() {
+            entryPage.classList.remove('active');
             landingPage.classList.add('active');
             experiencePage.classList.remove('active');
         }
         
         function showExperience() {
+            entryPage.classList.remove('active');
             landingPage.classList.remove('active');
             experiencePage.classList.add('active');
         }
+        
+        // Entry page → Landing page transition
+        enterBtn?.addEventListener('click', () => {
+            // Fade out entry, fade in landing
+            entryPage.classList.add('fading-out');
+            setTimeout(() => {
+                showLanding();
+                entryPage.classList.remove('fading-out');
+                // Start audio when entering (user interaction)
+                const ambient = document.getElementById('ambient-audio');
+                const music = document.getElementById('music-audio');
+                ambient?.play().catch(() => {});
+                music?.play().catch(() => {});
+            }, 800);
+        });
 
         // ─────────────────────────────────────────────────────────────────────
         // CHARACTER GALLERY

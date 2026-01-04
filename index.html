@@ -514,6 +514,7 @@
                     'Wax seal kit with Vance crest',
                     'Two scent vials: "HER" and "THE DISGUISE"',
                     'Theatrical false lashes',
+                    'False mustache — the incognito kind',
                     'Redacted legal document',
                     'Polaroid — figure in fourth floor window',
                     'Sticky note — "Don\'t trust the daughter"'
@@ -776,6 +777,7 @@
         
         // Populate bar guide
         const barGuideGrid = document.getElementById('bar-guide-grid');
+        console.log('[Store] Bar guide grid found:', !!barGuideGrid, 'Drinks:', barGuideDrinks.length);
         if (barGuideGrid) {
             barGuideDrinks.forEach(drink => {
                 const drinkEl = document.createElement('div');
@@ -799,6 +801,9 @@
                 `;
                 barGuideGrid.appendChild(drinkEl);
             });
+            console.log('[Store] Bar guide populated with', barGuideGrid.children.length, 'drinks');
+        } else {
+            console.error('[Store] Bar guide grid NOT found!');
         }
         
         // Populate store grid

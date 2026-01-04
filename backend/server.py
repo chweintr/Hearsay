@@ -77,7 +77,9 @@ async def get_simli_token(
                 json={
                     "simliAPIKey": SIMLI_API_KEY,
                     "agentId": agentId,
-                    "faceId": faceId
+                    "faceId": faceId,
+                    "expiryStamp": -1,
+                    "createTranscript": True
                 },
                 timeout=30.0
             )

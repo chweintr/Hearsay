@@ -39,7 +39,7 @@ app.add_middleware(
 
 # Configuration from environment
 SIMLI_API_KEY = os.getenv("SIMLI_API_KEY", "")
-SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.com")
+SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.ai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 PORT = int(os.getenv("PORT", 8000))

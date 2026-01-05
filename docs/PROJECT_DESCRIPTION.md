@@ -12,6 +12,16 @@ Unlike choose-your-own-adventure structures or puzzle-based interactive fiction,
 
 ---
 
+## Origins
+
+HEARSAY evolved from dessert stories I created for my children—interactive detective tales where they were the protagonists, not the audience. These stories centered around three detective characters who owned a gelateria, battling rivals who owned a competing confectionery and constantly tried to steal their exotic recipes and rare ingredients. Each character would procure different elements throughout the story—one finding the chocolate, another the specialized sugar, a third the unique jam or flavoring. The narratives would culminate with real dessert I'd reveal—sometimes truly exotic, sometimes ordinary ingredients like cut-up twigs and Turkish delight made extraordinary by the story's frame.
+
+What made these stories work was positioning my children as the heroes of their own adventures, not passive listeners. Years earlier, directing theater at summer camp, I'd learned how familiar spaces could be mythologized through narrative overlay—the dining hall became a courtroom, the lake an ocean crossing.
+
+HEARSAY combines these insights: users become protagonists in their own investigations, physical objects carry narrative weight beyond their material form, and meaning emerges through conversation rather than consumption. The platform treats dialogue not as interface but as literature, creating space for stories that require active listening and interpretation.
+
+---
+
 ## The First Experience: THE KNOCK
 
 The debut experience places users in a residential hotel. The owner died six months ago under unclear circumstances. Through a door peephole—a circular frame of paranoid intimacy—users receive visitors: staff members, long-term guests, people with information and agendas. Each character offers a version of events. No two versions agree.

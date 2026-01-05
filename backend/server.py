@@ -69,27 +69,22 @@ async def get_simli_token(
         )
     
     try:
-        # Use /auto/token endpoint per Simli docs
+        # Use /auto/token endpoint - SIMPLE approach per Manus
+        # agentId and faceId go on the WIDGET, not in the token request!
         async with httpx.AsyncClient() as client:
             
-            # Clean API keys - remove any whitespace/newlines that may have been copied incorrectly
+            # Clean API key
             simli_key = SIMLI_API_KEY.strip().replace('\n', '').replace(' ', '')
-            elevenlabs_key = ELEVENLABS_API_KEY.strip().replace('\n', '').replace(' ', '') if ELEVENLABS_API_KEY else ""
             
-            # Build request payload per Simli docs
+            # Simple payload - only simliAPIKey and expiryStamp
+            # LLM and TTS keys are stored IN the agent config in Simli dashboard
             payload = {
                 "simliAPIKey": simli_key,
-                "agentId": agentId,
-                "faceId": faceId,
-                "expiryStamp": -1
+                "expiryStamp": -1,
+                "createTranscript": True
             }
             
-            # Add TTS key if configured
-            if elevenlabs_key:
-                payload["ttsAPIKey"] = elevenlabs_key
-                print(f"[HEARSAY] Including ElevenLabs API key (length: {len(elevenlabs_key)})")
-            
-            print(f"[HEARSAY] Calling /auto/token for agent {agentId}")
+            print(f"[HEARSAY] Calling /auto/token (agentId={agentId} goes on widget, not here)")
             
             response = await client.post(
                 f"{SIMLI_API_URL}/auto/token",

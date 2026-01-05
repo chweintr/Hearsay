@@ -39,7 +39,7 @@ app.add_middleware(
 
 # Configuration from environment
 SIMLI_API_KEY = os.getenv("SIMLI_API_KEY", "")
-SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.ai")
+SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.com")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 PORT = int(os.getenv("PORT", 8000))
@@ -74,19 +74,17 @@ async def get_simli_token(
             # Clean API key
             simli_key = SIMLI_API_KEY.strip().replace('\n', '').replace('\r', '').replace(' ', '')
             
-            # Include agentId and faceId to link token to specific agent configuration
+            # Simple payload per Simli docs
             payload = {
                 "simliAPIKey": simli_key,
                 "agentId": agentId,
-                "faceId": faceId,
-                "expiryStamp": -1,
-                "createTranscript": True
+                "faceId": faceId
             }
             
-            print(f"[HEARSAY] Calling /auto/token with agentId={agentId}, faceId={faceId}")
+            print(f"[HEARSAY] Calling /getSessionToken for agent {agentId}")
             
             response = await client.post(
-                f"{SIMLI_API_URL}/auto/token",
+                f"{SIMLI_API_URL}/getSessionToken",
                 headers={
                     "Content-Type": "application/json"
                 },

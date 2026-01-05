@@ -286,57 +286,62 @@ export class SimliIntegration {
             // Aggressively hide dotted face loading animation
             this.hideSimliLoadingUI();
             
-            // Call startSession() directly on the widget instead of clicking buttons
-            const tryStartSession = () => {
-                console.log('[Simli] Checking widget state:', {
-                    widgetExists: !!this.widget,
-                    hasStartSession: this.widget ? typeof this.widget.startSession : 'N/A',
-                    token: this.widget?.getAttribute('token')?.substring(0, 20) + '...',
-                    agentId: this.widget?.getAttribute('agentid'),
-                    shadowRoot: !!this.widget?.shadowRoot
-                });
+            // Auto-click Start/Connect buttons in the widget (per Simli docs)
+            const clickWidgetButtons = () => {
+                console.log('[Simli] Looking for Start/Connect buttons to click...');
                 
-                if (this.widget && typeof this.widget.startSession === 'function') {
-                    console.log('[Simli] ✅ Calling widget.startSession() directly');
+                const findAndClickButtons = (root) => {
+                    if (!root) return;
                     
-                    // Monitor for the session API call
-                    const originalXHROpen = XMLHttpRequest.prototype.open;
-                    XMLHttpRequest.prototype.open = function(method, url) {
-                        if (url.includes('simli.ai/session')) {
-                            console.log('[Simli] 🌐 Session API call:', method, url);
-                            this.addEventListener('load', function() {
-                                console.log('[Simli] 🌐 Session API response:', this.status, this.responseText.substring(0, 200));
-                            });
-                            this.addEventListener('error', function() {
-                                console.error('[Simli] ❌ Session API error');
-                            });
+                    // Check shadow DOM
+                    if (root.shadowRoot) {
+                        findAndClickButtons(root.shadowRoot);
+                    }
+                    
+                    // Find all buttons
+                    const buttons = root.querySelectorAll('button');
+                    buttons.forEach(btn => {
+                        const text = (btn.textContent || '').toLowerCase();
+                        console.log(`[Simli] Found button: "${text}"`);
+                        
+                        // Click Connect or Start buttons, skip Close/End
+                        if (text.includes('connect') || text.includes('start')) {
+                            console.log('[Simli] 🖱️ Clicking:', text);
+                            btn.click();
                         }
-                        return originalXHROpen.apply(this, arguments);
-                    };
+                    });
                     
-                    this.widget.startSession();
-                    return true;
-                } else {
-                    console.log('[Simli] Widget or startSession not ready yet...');
-                    return false;
+                    // Check children with shadow roots
+                    root.querySelectorAll('*').forEach(el => {
+                        if (el.shadowRoot) {
+                            findAndClickButtons(el.shadowRoot);
+                        }
+                    });
+                };
+                
+                if (this.widget) {
+                    findAndClickButtons(this.widget);
                 }
             };
             
-            // Try to start session with retries
-            const startWithRetry = (attempts = 0) => {
-                if (attempts > 10) {
-                    console.error('[Simli] Failed to start session after 10 attempts');
-                    return;
+            // Try both: startSession() method AND clicking buttons
+            const tryStartSession = () => {
+                if (!this.widget) return;
+                
+                // Method 1: Direct API call
+                if (typeof this.widget.startSession === 'function') {
+                    console.log('[Simli] ✅ Calling widget.startSession()');
+                    this.widget.startSession();
                 }
                 
-                if (!tryStartSession()) {
-                    // Retry with increasing delay
-                    setTimeout(() => startWithRetry(attempts + 1), 500 + (attempts * 200));
-                }
+                // Method 2: Click buttons (some versions need this)
+                clickWidgetButtons();
             };
             
-            // Start after widget has had time to initialize
-            setTimeout(() => startWithRetry(), 800);
+            // Auto-start after widget loads
+            setTimeout(tryStartSession, 500);
+            setTimeout(tryStartSession, 1500);
+            setTimeout(tryStartSession, 3000);
             
         } catch (error) {
             console.error('[Simli] Widget creation failed:', error);

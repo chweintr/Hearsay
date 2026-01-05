@@ -84,7 +84,7 @@ async def get_simli_token(
             print(f"[HEARSAY] Calling /getSessionToken for agent {agentId}")
             
             response = await client.post(
-                f"{SIMLI_API_URL}/getSessionToken",
+                f"{SIMLI_API_URL}/auto/token",
                 headers={
                     "Content-Type": "application/json"
                 },

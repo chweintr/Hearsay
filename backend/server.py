@@ -73,9 +73,14 @@ async def get_simli_token(
         # This ensures the widget has all credentials needed for audio
         async with httpx.AsyncClient() as client:
             
-            # Build request payload
+            # Clean API keys - remove any whitespace/newlines that may have been copied incorrectly
+            simli_key = SIMLI_API_KEY.strip().replace('\n', '').replace(' ', '')
+            openai_key = OPENAI_API_KEY.strip().replace('\n', '').replace(' ', '') if OPENAI_API_KEY else ""
+            elevenlabs_key = ELEVENLABS_API_KEY.strip().replace('\n', '').replace(' ', '') if ELEVENLABS_API_KEY else ""
+            
+            # Build request payload - Simli wants "apiKey" not "simliAPIKey"!
             payload = {
-                "simliAPIKey": SIMLI_API_KEY,
+                "apiKey": simli_key,  # Changed from simliAPIKey to apiKey
                 "agentId": agentId,
                 "faceId": faceId,
                 "expiryStamp": -1,
@@ -83,15 +88,15 @@ async def get_simli_token(
             }
             
             # Add LLM and TTS keys if configured (required for audio to work!)
-            if OPENAI_API_KEY:
-                payload["llmAPIKey"] = OPENAI_API_KEY
-                print(f"[HEARSAY] Including OpenAI API key")
+            if openai_key:
+                payload["llmAPIKey"] = openai_key
+                print(f"[HEARSAY] Including OpenAI API key (length: {len(openai_key)})")
             else:
                 print(f"[HEARSAY] WARNING: OPENAI_API_KEY not configured!")
                 
-            if ELEVENLABS_API_KEY:
-                payload["ttsAPIKey"] = ELEVENLABS_API_KEY
-                print(f"[HEARSAY] Including ElevenLabs API key")
+            if elevenlabs_key:
+                payload["ttsAPIKey"] = elevenlabs_key
+                print(f"[HEARSAY] Including ElevenLabs API key (length: {len(elevenlabs_key)})")
             else:
                 print(f"[HEARSAY] WARNING: ELEVENLABS_API_KEY not configured!")
             

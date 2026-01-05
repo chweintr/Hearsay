@@ -59,7 +59,7 @@ async def get_simli_token(
 ):
     """
     Generate a session token for the Simli widget.
-    Proxies to Simli API, keeping the API key server-side.
+    Uses /auto/token - LLM/TTS keys are configured in each agent in Simli dashboard.
     """
     
     if not SIMLI_API_KEY:
@@ -69,22 +69,19 @@ async def get_simli_token(
         )
     
     try:
-        # Use /auto/token endpoint - SIMPLE approach per Manus
-        # agentId and faceId go on the WIDGET, not in the token request!
         async with httpx.AsyncClient() as client:
             
             # Clean API key
-            simli_key = SIMLI_API_KEY.strip().replace('\n', '').replace(' ', '')
+            simli_key = SIMLI_API_KEY.strip().replace('\n', '').replace('\r', '').replace(' ', '')
             
-            # Simple payload - only simliAPIKey and expiryStamp
-            # LLM and TTS keys are stored IN the agent config in Simli dashboard
+            # Simple payload - agents have their own keys configured in Simli dashboard
             payload = {
                 "simliAPIKey": simli_key,
                 "expiryStamp": -1,
                 "createTranscript": True
             }
             
-            print(f"[HEARSAY] Calling /auto/token (agentId={agentId} goes on widget, not here)")
+            print(f"[HEARSAY] Calling /auto/token for agent {agentId}")
             
             response = await client.post(
                 f"{SIMLI_API_URL}/auto/token",

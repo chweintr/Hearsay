@@ -380,9 +380,16 @@ export class SimliIntegration {
                 opacity: 0 !important;
                 visibility: hidden !important;
             }
+            
+            /* CRITICAL: Ensure audio element is NOT hidden */
+            audio {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
         `;
         shadowRoot.appendChild(style);
-        console.log('[Simli] Injected transparent styles into Shadow DOM');
+        console.log('[Simli] Injected transparent styles into Shadow DOM (audio preserved)');
     }
 
     /**
@@ -411,14 +418,26 @@ export class SimliIntegration {
                 el.style.backgroundColor = 'transparent';
             });
             
-            // Find video and hide its sibling containers
+            // Find video and hide its sibling containers - BUT PRESERVE AUDIO!
             const video = root.querySelector('video');
+            const audio = root.querySelector('audio');
             if (video && video.parentElement && video.parentElement.parentElement) {
                 Array.from(video.parentElement.parentElement.children).forEach(child => {
-                    if (!child.contains(video)) {
+                    // Don't hide if it contains video OR audio
+                    const containsVideo = child.contains(video);
+                    const containsAudio = audio && child.contains(audio);
+                    if (!containsVideo && !containsAudio) {
                         child.style.display = 'none';
                     }
                 });
+            }
+            
+            // Ensure audio element is visible and not muted
+            if (audio) {
+                audio.style.display = 'block';
+                audio.muted = false;
+                audio.volume = 1.0;
+                console.log('[Simli] 🔊 Audio element found and preserved');
             }
             
             // Check shadow roots recursively

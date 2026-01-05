@@ -69,43 +69,31 @@ async def get_simli_token(
         )
     
     try:
-        # Use /auto/start/configurable to explicitly provide LLM and TTS keys
-        # This ensures the widget has all credentials needed for audio
+        # Use /auto/token endpoint per Simli docs
         async with httpx.AsyncClient() as client:
             
             # Clean API keys - remove any whitespace/newlines that may have been copied incorrectly
             simli_key = SIMLI_API_KEY.strip().replace('\n', '').replace(' ', '')
-            openai_key = OPENAI_API_KEY.strip().replace('\n', '').replace(' ', '') if OPENAI_API_KEY else ""
             elevenlabs_key = ELEVENLABS_API_KEY.strip().replace('\n', '').replace(' ', '') if ELEVENLABS_API_KEY else ""
             
-            # Build request payload - Simli wants "apiKey" not "simliAPIKey"!
+            # Build request payload per Simli docs
             payload = {
-                "apiKey": simli_key,  # Changed from simliAPIKey to apiKey
+                "simliAPIKey": simli_key,
                 "agentId": agentId,
                 "faceId": faceId,
-                "expiryStamp": -1,
-                "createTranscript": True
+                "expiryStamp": -1
             }
             
-            # Add LLM and TTS keys if configured (required for audio to work!)
-            if openai_key:
-                payload["llmAPIKey"] = openai_key
-                print(f"[HEARSAY] Including OpenAI API key (length: {len(openai_key)})")
-            else:
-                print(f"[HEARSAY] WARNING: OPENAI_API_KEY not configured!")
-                
+            # Add TTS key if configured
             if elevenlabs_key:
                 payload["ttsAPIKey"] = elevenlabs_key
                 print(f"[HEARSAY] Including ElevenLabs API key (length: {len(elevenlabs_key)})")
-            else:
-                print(f"[HEARSAY] WARNING: ELEVENLABS_API_KEY not configured!")
             
-            print(f"[HEARSAY] Calling /auto/start/configurable with keys: simli={bool(SIMLI_API_KEY)}, llm={bool(OPENAI_API_KEY)}, tts={bool(ELEVENLABS_API_KEY)}")
+            print(f"[HEARSAY] Calling /auto/token for agent {agentId}")
             
             response = await client.post(
-                f"{SIMLI_API_URL}/auto/start/configurable",
+                f"{SIMLI_API_URL}/auto/token",
                 headers={
-                    "Authorization": f"Bearer {SIMLI_API_KEY}",
                     "Content-Type": "application/json"
                 },
                 json=payload,

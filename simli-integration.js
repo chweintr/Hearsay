@@ -88,11 +88,16 @@ export class SimliIntegration {
             }
             
             const data = await response.json();
+            console.log('[Simli] Token response:', JSON.stringify(data));
             
             // Store sessionId for transcript retrieval later
             if (data.sessionId) {
                 this.currentSessionId = data.sessionId;
                 console.log(`[Simli] 📋 Session ID saved: ${this.currentSessionId}`);
+            }
+            
+            if (!data.token) {
+                console.error('[Simli] ❌ No token in response!', data);
             }
             
             return { token: data.token, sessionId: data.sessionId };
@@ -184,8 +189,13 @@ export class SimliIntegration {
             // Create widget element
             this.widget = document.createElement('simli-widget');
             
-            // Set token
+            // Set token - try multiple attribute names
+            console.log('[Simli] Setting token on widget:', token?.substring(0, 50) + '...');
             this.widget.setAttribute('token', token);
+            this.widget.setAttribute('session-token', token);
+            this.widget.setAttribute('sessionToken', token);
+            this.widget.token = token;
+            this.widget.sessionToken = token;
             
             // CRITICAL: Use transparent image to replace dotted face placeholder
             // This is the official Simli way to hide the loading dots
@@ -202,6 +212,12 @@ export class SimliIntegration {
             // Also set as direct properties
             this.widget.agentId = character.agentId;
             this.widget.faceId = character.faceId;
+            
+            console.log('[Simli] Widget attributes set:', {
+                token: this.widget.getAttribute('token')?.substring(0, 30) + '...',
+                agentId: this.widget.getAttribute('agentid'),
+                faceId: this.widget.getAttribute('faceid')
+            });
             
             // Widget event listeners - log everything for debugging
             this.widget.addEventListener('simli-ready', () => {

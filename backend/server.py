@@ -40,6 +40,8 @@ app.add_middleware(
 # Configuration from environment
 SIMLI_API_KEY = os.getenv("SIMLI_API_KEY", "")
 SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.ai")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 PORT = int(os.getenv("PORT", 8000))
 
 # Path to frontend files (parent directory of backend/)
@@ -67,20 +69,41 @@ async def get_simli_token(
         )
     
     try:
+        # Use /auto/start/configurable to explicitly provide LLM and TTS keys
+        # This ensures the widget has all credentials needed for audio
         async with httpx.AsyncClient() as client:
+            
+            # Build request payload
+            payload = {
+                "simliAPIKey": SIMLI_API_KEY,
+                "agentId": agentId,
+                "faceId": faceId,
+                "expiryStamp": -1,
+                "createTranscript": True
+            }
+            
+            # Add LLM and TTS keys if configured (required for audio to work!)
+            if OPENAI_API_KEY:
+                payload["llmAPIKey"] = OPENAI_API_KEY
+                print(f"[HEARSAY] Including OpenAI API key")
+            else:
+                print(f"[HEARSAY] WARNING: OPENAI_API_KEY not configured!")
+                
+            if ELEVENLABS_API_KEY:
+                payload["ttsAPIKey"] = ELEVENLABS_API_KEY
+                print(f"[HEARSAY] Including ElevenLabs API key")
+            else:
+                print(f"[HEARSAY] WARNING: ELEVENLABS_API_KEY not configured!")
+            
+            print(f"[HEARSAY] Calling /auto/start/configurable with keys: simli={bool(SIMLI_API_KEY)}, llm={bool(OPENAI_API_KEY)}, tts={bool(ELEVENLABS_API_KEY)}")
+            
             response = await client.post(
-                f"{SIMLI_API_URL}/auto/token",
+                f"{SIMLI_API_URL}/auto/start/configurable",
                 headers={
                     "Authorization": f"Bearer {SIMLI_API_KEY}",
                     "Content-Type": "application/json"
                 },
-                json={
-                    "simliAPIKey": SIMLI_API_KEY,
-                    "agentId": agentId,
-                    "faceId": faceId,
-                    "expiryStamp": -1,
-                    "createTranscript": True
-                },
+                json=payload,
                 timeout=30.0
             )
             
@@ -201,7 +224,9 @@ async def health_check():
     return {
         "status": "ok",
         "service": "hearsay",
-        "simli_configured": bool(SIMLI_API_KEY)
+        "simli_configured": bool(SIMLI_API_KEY),
+        "openai_configured": bool(OPENAI_API_KEY),
+        "elevenlabs_configured": bool(ELEVENLABS_API_KEY)
     }
 
 

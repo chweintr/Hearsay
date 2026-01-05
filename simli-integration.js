@@ -288,8 +288,32 @@ export class SimliIntegration {
             
             // Call startSession() directly on the widget instead of clicking buttons
             const tryStartSession = () => {
+                console.log('[Simli] Checking widget state:', {
+                    widgetExists: !!this.widget,
+                    hasStartSession: this.widget ? typeof this.widget.startSession : 'N/A',
+                    token: this.widget?.getAttribute('token')?.substring(0, 20) + '...',
+                    agentId: this.widget?.getAttribute('agentid'),
+                    shadowRoot: !!this.widget?.shadowRoot
+                });
+                
                 if (this.widget && typeof this.widget.startSession === 'function') {
                     console.log('[Simli] ✅ Calling widget.startSession() directly');
+                    
+                    // Monitor for the session API call
+                    const originalXHROpen = XMLHttpRequest.prototype.open;
+                    XMLHttpRequest.prototype.open = function(method, url) {
+                        if (url.includes('simli.ai/session')) {
+                            console.log('[Simli] 🌐 Session API call:', method, url);
+                            this.addEventListener('load', function() {
+                                console.log('[Simli] 🌐 Session API response:', this.status, this.responseText.substring(0, 200));
+                            });
+                            this.addEventListener('error', function() {
+                                console.error('[Simli] ❌ Session API error');
+                            });
+                        }
+                        return originalXHROpen.apply(this, arguments);
+                    };
+                    
                     this.widget.startSession();
                     return true;
                 } else {

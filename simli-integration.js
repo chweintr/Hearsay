@@ -286,79 +286,33 @@ export class SimliIntegration {
             // Aggressively hide dotted face loading animation
             this.hideSimliLoadingUI();
             
-            // Auto-click Simli's Connect/Start button after it loads
-            const clickStartButton = () => {
-                console.log('[Simli] Looking for Connect/Start button...');
-                
-                // Try to find buttons everywhere - widget, shadow DOM, iframes
-                const findAndClickButtons = (root, depth = 0) => {
-                    if (!root || depth > 3) return;
-                    
-                    // Find all buttons and clickable elements
-                    const buttons = root.querySelectorAll('button, [role="button"], .btn, [onclick]');
-                    console.log(`[Simli] Found ${buttons.length} clickables at depth ${depth}`);
-                    
-                    buttons.forEach(btn => {
-                        const text = (btn.textContent || btn.innerText || '').toLowerCase().trim();
-                        const className = (btn.className || '').toLowerCase();
-                        console.log(`[Simli] Button: "${text}" class="${className}"`);
-                        
-                        // DON'T click close/end/leave buttons!
-                        if (text.includes('close') || text.includes('end') || 
-                            text.includes('leave') || text.includes('disconnect') ||
-                            text.includes('stop') || className.includes('close') ||
-                            className.includes('active')) {
-                            console.log('[Simli] Skipping close/end button');
-                            return;
-                        }
-                        
-                        // DON'T click if already connecting
-                        if (text.includes('connecting')) {
-                            console.log('[Simli] Already connecting, skipping');
-                            return;
-                        }
-                        
-                        // Click buttons that look like start/connect buttons
-                        if (text.includes('start') || text.includes('connect') || 
-                            text.includes('begin') || text.includes('call') ||
-                            className.includes('start') || className.includes('connect')) {
-                            console.log('[Simli] Clicking start/connect button!');
-                            btn.click();
-                        }
-                    });
-                    
-                    // Check shadow DOM
-                    if (root.shadowRoot) {
-                        findAndClickButtons(root.shadowRoot, depth + 1);
-                    }
-                    
-                    // Check child elements with shadow roots
-                    root.querySelectorAll('*').forEach(el => {
-                        if (el.shadowRoot) {
-                            findAndClickButtons(el.shadowRoot, depth + 1);
-                        }
-                    });
-                    
-                    // Check iframes
-                    root.querySelectorAll('iframe').forEach(iframe => {
-                        try {
-                            if (iframe.contentDocument) {
-                                findAndClickButtons(iframe.contentDocument, depth + 1);
-                            }
-                        } catch (e) {
-                            // Cross-origin iframe, can't access
-                        }
-                    });
-                };
-                
-                findAndClickButtons(this.widget);
+            // Call startSession() directly on the widget instead of clicking buttons
+            const tryStartSession = () => {
+                if (this.widget && typeof this.widget.startSession === 'function') {
+                    console.log('[Simli] ✅ Calling widget.startSession() directly');
+                    this.widget.startSession();
+                    return true;
+                } else {
+                    console.log('[Simli] Widget or startSession not ready yet...');
+                    return false;
+                }
             };
             
-            // Try multiple times with increasing delays
-            setTimeout(clickStartButton, 800);
-            setTimeout(clickStartButton, 2000);
-            setTimeout(clickStartButton, 4000);
-            setTimeout(clickStartButton, 6000);
+            // Try to start session with retries
+            const startWithRetry = (attempts = 0) => {
+                if (attempts > 10) {
+                    console.error('[Simli] Failed to start session after 10 attempts');
+                    return;
+                }
+                
+                if (!tryStartSession()) {
+                    // Retry with increasing delay
+                    setTimeout(() => startWithRetry(attempts + 1), 500 + (attempts * 200));
+                }
+            };
+            
+            // Start after widget has had time to initialize
+            setTimeout(() => startWithRetry(), 800);
             
         } catch (error) {
             console.error('[Simli] Widget creation failed:', error);

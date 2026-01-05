@@ -74,14 +74,16 @@ async def get_simli_token(
             # Clean API key
             simli_key = SIMLI_API_KEY.strip().replace('\n', '').replace('\r', '').replace(' ', '')
             
-            # Simple payload - agents have their own keys configured in Simli dashboard
+            # Include agentId and faceId to link token to specific agent configuration
             payload = {
                 "simliAPIKey": simli_key,
+                "agentId": agentId,
+                "faceId": faceId,
                 "expiryStamp": -1,
                 "createTranscript": True
             }
             
-            print(f"[HEARSAY] Calling /auto/token for agent {agentId}")
+            print(f"[HEARSAY] Calling /auto/token with agentId={agentId}, faceId={faceId}")
             
             response = await client.post(
                 f"{SIMLI_API_URL}/auto/token",

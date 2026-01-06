@@ -324,24 +324,25 @@ export class SimliIntegration {
                 }
             };
             
-            // Try both: startSession() method AND clicking buttons
+            // Try to start session - only once!
+            let sessionStarted = false;
             const tryStartSession = () => {
-                if (!this.widget) return;
+                if (!this.widget || sessionStarted) return;
                 
                 // Method 1: Direct API call
                 if (typeof this.widget.startSession === 'function') {
                     console.log('[Simli] ✅ Calling widget.startSession()');
                     this.widget.startSession();
+                    sessionStarted = true;
+                    return;
                 }
                 
-                // Method 2: Click buttons (some versions need this)
+                // Method 2: Click buttons (fallback)
                 clickWidgetButtons();
             };
             
-            // Auto-start after widget loads
-            setTimeout(tryStartSession, 500);
-            setTimeout(tryStartSession, 1500);
-            setTimeout(tryStartSession, 3000);
+            // Auto-start after widget loads - single attempt with fallback
+            setTimeout(tryStartSession, 800);
             
         } catch (error) {
             console.error('[Simli] Widget creation failed:', error);

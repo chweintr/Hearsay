@@ -12,7 +12,9 @@ export class BlackRemover {
         this.ctx = null;
         this.video = null;
         this.isRunning = false;
-        this.threshold = 15; // Pixels with R,G,B all below this become transparent
+        this.threshold = 8; // LOWERED: Only pure black (pupils, hair are darker but not THIS dark)
+        this.edgeFadeStart = 0.35; // Start fading at 35% from center
+        this.useEdgeFade = true; // Apply circular gradient to fade edges
         
         console.log('[BlackRemover] Initialized');
     }
@@ -84,14 +86,42 @@ export class BlackRemover {
             const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
             const data = imageData.data;
             
-            // Replace black pixels with transparent
+            // Calculate center for edge fade
+            const centerX = this.canvas.width / 2;
+            const centerY = this.canvas.height / 2;
+            const maxRadius = Math.min(centerX, centerY);
+            
+            // Replace black pixels with transparent, with edge protection
             for (let i = 0; i < data.length; i += 4) {
                 const r = data[i];
                 const g = data[i + 1];
                 const b = data[i + 2];
                 
-                // If all RGB values are below threshold, make transparent
-                if (r < this.threshold && g < this.threshold && b < this.threshold) {
+                // Calculate pixel position
+                const pixelIndex = i / 4;
+                const x = pixelIndex % this.canvas.width;
+                const y = Math.floor(pixelIndex / this.canvas.width);
+                
+                // Distance from center (0 = center, 1 = edge)
+                const dx = (x - centerX) / maxRadius;
+                const dy = (y - centerY) / maxRadius;
+                const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+                
+                // In the center area, use VERY strict threshold to protect features
+                // At edges, use normal threshold to remove background
+                let effectiveThreshold = this.threshold;
+                if (distFromCenter < this.edgeFadeStart) {
+                    // Center zone: only remove PURE black (threshold 3)
+                    effectiveThreshold = 3;
+                } else if (distFromCenter < 0.7) {
+                    // Transition zone: gradually increase threshold
+                    const t = (distFromCenter - this.edgeFadeStart) / (0.7 - this.edgeFadeStart);
+                    effectiveThreshold = 3 + t * (this.threshold - 3);
+                }
+                // Beyond 0.7: use full threshold
+                
+                // If all RGB values are below effective threshold, make transparent
+                if (r < effectiveThreshold && g < effectiveThreshold && b < effectiveThreshold) {
                     data[i + 3] = 0; // Set alpha to 0
                 }
             }

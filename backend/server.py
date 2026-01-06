@@ -74,14 +74,20 @@ async def get_simli_token(
             # Clean API key
             simli_key = SIMLI_API_KEY.strip().replace('\n', '').replace('\r', '').replace(' ', '')
             
-            # Full payload per Simli docs - including expiry and transcript
+            # Full payload per Simli docs - including TTS key for voice!
+            elevenlabs_key = ELEVENLABS_API_KEY.strip().replace('\n', '').replace('\r', '') if ELEVENLABS_API_KEY else ""
+            
             payload = {
                 "simliAPIKey": simli_key,
                 "agentId": agentId,
                 "faceId": faceId,
+                "ttsAPIKey": elevenlabs_key,  # CRITICAL: Without this, no voice!
                 "expiryStamp": -1,  # -1 means no expiry
                 "createTranscript": True  # Enable transcript for Writing Engine
             }
+            
+            # Log what we're sending (without exposing full keys)
+            print(f"[HEARSAY] ttsAPIKey present: {bool(elevenlabs_key)}, length: {len(elevenlabs_key)}")
             
             print(f"[HEARSAY] Calling /auto/token for agent {agentId}")
             

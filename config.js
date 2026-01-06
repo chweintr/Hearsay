@@ -101,13 +101,13 @@ export const characters = {
     eddie: {
         name: 'Eddie',
         role: 'Night Chef',
-        agentId: 'xxx',
-        faceId: 'xxx',
+        agentId: '48daac40-f2ff-4174-af70-5ce922ce8efe',
+        faceId: '9402a60c-ae80-4cb9-8bed-55ccb60e586f',
         idleToActive: ['assets/videos/Eddie_walkup.mp4'],
         activeToIdle: ['assets/videos/Eddie_walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
         previewVideo: 'assets/videos/Eddie_walkup.mp4',
-        status: 'coming_soon'
+        status: 'ready'
     },
     
     dotty: {

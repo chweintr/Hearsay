@@ -74,14 +74,16 @@ async def get_simli_token(
             # Clean API key
             simli_key = SIMLI_API_KEY.strip().replace('\n', '').replace('\r', '').replace(' ', '')
             
-            # Simple payload per Simli docs
+            # Full payload per Simli docs - including expiry and transcript
             payload = {
                 "simliAPIKey": simli_key,
                 "agentId": agentId,
-                "faceId": faceId
+                "faceId": faceId,
+                "expiryStamp": -1,  # -1 means no expiry
+                "createTranscript": True  # Enable transcript for Writing Engine
             }
             
-            print(f"[HEARSAY] Calling /getSessionToken for agent {agentId}")
+            print(f"[HEARSAY] Calling /auto/token for agent {agentId}")
             
             response = await client.post(
                 f"{SIMLI_API_URL}/auto/token",

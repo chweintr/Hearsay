@@ -163,10 +163,10 @@ export const characters = {
         role: 'The Comedian',
         agentId: 'xxx',  // TODO: Add when Simli agent created
         faceId: 'xxx',   // TODO: Add when Simli face created
-        idleToActive: [],  // TODO: Add Milton_Walkup.mp4 when ready
-        activeToIdle: [],
+        idleToActive: ['assets/videos/Milton_Walkup.mp4'],
+        activeToIdle: ['assets/videos/Milton_Walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
-        previewVideo: null,  // TODO: Add Milton_Walkup.mp4 when ready
+        previewVideo: 'assets/videos/Milton_Walkup.mp4',
         status: 'coming_soon',
         availability: 0.3,  // 30% chance he's "in town"
         unavailableMessages: [

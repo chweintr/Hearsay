@@ -12,11 +12,12 @@ export class BlackRemover {
         this.ctx = null;
         this.video = null;
         this.isRunning = false;
-        this.threshold = 8; // LOWERED: Only pure black (pupils, hair are darker but not THIS dark)
-        this.edgeFadeStart = 0.35; // Start fading at 35% from center
-        this.useEdgeFade = true; // Apply circular gradient to fade edges
+        // ULTRA STRICT: Only remove pure black (0,0,0) to protect hair/pupils
+        this.threshold = 3; // Edge threshold (background cleanup)
+        this.centerThreshold = 1; // Center threshold - ONLY RGB(0,0,0) 
+        this.edgeFadeStart = 0.4; // Start fading at 40% from center (larger safe zone)
         
-        console.log('[BlackRemover] Initialized');
+        console.log('[BlackRemover] Initialized with ultra-strict thresholds');
     }
     
     /**
@@ -107,21 +108,21 @@ export class BlackRemover {
                 const dy = (y - centerY) / maxRadius;
                 const distFromCenter = Math.sqrt(dx * dx + dy * dy);
                 
-                // In the center area, use VERY strict threshold to protect features
-                // At edges, use normal threshold to remove background
+                // ULTRA STRICT: Protect face features (hair, pupils, mouth)
+                // Center = only pure black (0,0,0), edges = slightly more lenient
                 let effectiveThreshold = this.threshold;
                 if (distFromCenter < this.edgeFadeStart) {
-                    // Center zone: only remove PURE black (threshold 3)
-                    effectiveThreshold = 3;
-                } else if (distFromCenter < 0.7) {
+                    // Center zone: ONLY remove RGB(0,0,0) or RGB(1,1,1)
+                    effectiveThreshold = this.centerThreshold;
+                } else if (distFromCenter < 0.75) {
                     // Transition zone: gradually increase threshold
-                    const t = (distFromCenter - this.edgeFadeStart) / (0.7 - this.edgeFadeStart);
-                    effectiveThreshold = 3 + t * (this.threshold - 3);
+                    const t = (distFromCenter - this.edgeFadeStart) / (0.75 - this.edgeFadeStart);
+                    effectiveThreshold = this.centerThreshold + t * (this.threshold - this.centerThreshold);
                 }
-                // Beyond 0.7: use full threshold
+                // Beyond 0.75: use edge threshold for background cleanup
                 
-                // If all RGB values are below effective threshold, make transparent
-                if (r < effectiveThreshold && g < effectiveThreshold && b < effectiveThreshold) {
+                // STRICT CHECK: ALL RGB must be below threshold (not just average)
+                if (r <= effectiveThreshold && g <= effectiveThreshold && b <= effectiveThreshold) {
                     data[i + 3] = 0; // Set alpha to 0
                 }
             }

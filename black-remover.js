@@ -12,12 +12,21 @@ export class BlackRemover {
         this.ctx = null;
         this.video = null;
         this.isRunning = false;
-        // ULTRA STRICT: Only remove pure black (0,0,0) to protect hair/pupils
-        this.threshold = 3; // Edge threshold (background cleanup)
-        this.centerThreshold = 1; // Center threshold - ONLY RGB(0,0,0) 
-        this.edgeFadeStart = 0.4; // Start fading at 40% from center (larger safe zone)
         
-        console.log('[BlackRemover] Initialized with ultra-strict thresholds');
+        // Thresholds for black removal
+        this.threshold = 4; // Edge threshold (background)
+        this.centerThreshold = 0; // Center: NEVER remove anything (hair protection)
+        
+        // Head protection zone - NO black removal here at all
+        // Head is typically upper-center of frame
+        this.headZone = {
+            centerX: 0.5,   // Horizontal center (0-1)
+            centerY: 0.35,  // Slightly above vertical center (heads are upper)
+            radiusX: 0.35,  // Wide enough for hair
+            radiusY: 0.4    // Tall enough for hair + face
+        };
+        
+        console.log('[BlackRemover] Initialized with HEAD PROTECTION ZONE');
     }
     
     /**
@@ -87,12 +96,13 @@ export class BlackRemover {
             const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
             const data = imageData.data;
             
-            // Calculate center for edge fade
-            const centerX = this.canvas.width / 2;
-            const centerY = this.canvas.height / 2;
-            const maxRadius = Math.min(centerX, centerY);
+            // Calculate head protection zone in pixels
+            const headCenterX = this.canvas.width * this.headZone.centerX;
+            const headCenterY = this.canvas.height * this.headZone.centerY;
+            const headRadiusX = this.canvas.width * this.headZone.radiusX;
+            const headRadiusY = this.canvas.height * this.headZone.radiusY;
             
-            // Replace black pixels with transparent, with edge protection
+            // Replace black pixels with transparent, with HEAD PROTECTION
             for (let i = 0; i < data.length; i += 4) {
                 const r = data[i];
                 const g = data[i + 1];
@@ -103,25 +113,30 @@ export class BlackRemover {
                 const x = pixelIndex % this.canvas.width;
                 const y = Math.floor(pixelIndex / this.canvas.width);
                 
-                // Distance from center (0 = center, 1 = edge)
-                const dx = (x - centerX) / maxRadius;
-                const dy = (y - centerY) / maxRadius;
-                const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+                // Check if pixel is inside head protection ellipse
+                const dx = (x - headCenterX) / headRadiusX;
+                const dy = (y - headCenterY) / headRadiusY;
+                const distFromHeadCenter = Math.sqrt(dx * dx + dy * dy);
                 
-                // ULTRA STRICT: Protect face features (hair, pupils, mouth)
-                // Center = only pure black (0,0,0), edges = slightly more lenient
-                let effectiveThreshold = this.threshold;
-                if (distFromCenter < this.edgeFadeStart) {
-                    // Center zone: ONLY remove RGB(0,0,0) or RGB(1,1,1)
-                    effectiveThreshold = this.centerThreshold;
-                } else if (distFromCenter < 0.75) {
-                    // Transition zone: gradually increase threshold
-                    const t = (distFromCenter - this.edgeFadeStart) / (0.75 - this.edgeFadeStart);
-                    effectiveThreshold = this.centerThreshold + t * (this.threshold - this.centerThreshold);
+                // HEAD PROTECTION: Don't remove ANY black inside the head zone
+                if (distFromHeadCenter < 1.0) {
+                    // Inside head ellipse: SKIP - don't touch this pixel
+                    continue;
                 }
-                // Beyond 0.75: use edge threshold for background cleanup
                 
-                // STRICT CHECK: ALL RGB must be below threshold (not just average)
+                // Outside head zone: remove pure black background
+                // Use stricter threshold near head, more lenient at edges
+                let effectiveThreshold = this.threshold;
+                if (distFromHeadCenter < 1.3) {
+                    // Transition zone just outside head: very strict
+                    effectiveThreshold = 1;
+                } else if (distFromHeadCenter < 1.6) {
+                    // Further out: gradually increase
+                    const t = (distFromHeadCenter - 1.3) / 0.3;
+                    effectiveThreshold = 1 + t * (this.threshold - 1);
+                }
+                
+                // Remove if pure black (or very near black at edges)
                 if (r <= effectiveThreshold && g <= effectiveThreshold && b <= effectiveThreshold) {
                     data[i + 3] = 0; // Set alpha to 0
                 }

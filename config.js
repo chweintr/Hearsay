@@ -149,13 +149,13 @@ export const characters = {
     priya: {
         name: 'Priya',
         role: 'Bartender',
-        agentId: 'xxx',  // TODO: Add when Simli agent created
-        faceId: 'xxx',   // TODO: Add when Simli face created
+        agentId: 'a0819479-98ea-4c0b-990e-b44e14ce1378',
+        faceId: '28503d8d-f54b-4e1f-b5fd-b3e2c9dc3f7e',
         idleToActive: ['assets/videos/Priya_Walkuup.mp4'],
         activeToIdle: ['assets/videos/Priya_Walkuup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
         previewVideo: 'assets/videos/Priya_Walkuup.mp4',
-        status: 'coming_soon'  // Change to 'ready' when agent ID added
+        status: 'ready'
     },
     
     milton: {

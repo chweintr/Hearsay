@@ -438,6 +438,11 @@ body.simli-active .animated-text-container {
     /* AGGRESSIVE fix for alpha-channel videos */
     mix-blend-mode: normal !important;
     background-color: #1a1512 !important;
+    /* Force opaque rendering */
+    isolation: isolate;
+    opacity: 1 !important;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
     /* Fallback: composite over solid color */
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

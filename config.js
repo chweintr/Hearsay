@@ -158,19 +158,19 @@ export const characters = {
         status: 'coming_soon'  // Change to 'ready' when agent ID added
     },
     
-    lenny: {
-        name: 'Lenny',
+    milton: {
+        name: 'Milton',
         role: 'The Comedian',
-        agentId: 'xxx',
-        faceId: 'xxx',
-        idleToActive: [],
+        agentId: 'xxx',  // TODO: Add when Simli agent created
+        faceId: 'xxx',   // TODO: Add when Simli face created
+        idleToActive: [],  // TODO: Add Milton_Walkup.mp4 when ready
         activeToIdle: [],
-        knockSound: null,
-        previewVideo: null,
+        knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
+        previewVideo: null,  // TODO: Add Milton_Walkup.mp4 when ready
         status: 'coming_soon',
         availability: 0.3,  // 30% chance he's "in town"
         unavailableMessages: [
-            "Lenny's on tour. Try again later.",
+            "Milton's on tour. Try again later.",
             "Not in tonight. Check back tomorrow.",
             "Performing in Wellington this week."
         ]
@@ -179,13 +179,13 @@ export const characters = {
     caleb: {
         name: 'Caleb',
         role: 'The Author',
-        agentId: 'xxx',
-        faceId: 'xxx',
-        idleToActive: [],
-        activeToIdle: [],
-        knockSound: null,
-        previewVideo: null,
-        status: 'coming_soon'
+        agentId: 'xxx',  // TODO: Add when Simli agent created
+        faceId: 'xxx',   // TODO: Add when Simli face created
+        idleToActive: ['assets/videos/Caleb_Walkup.mp4'],
+        activeToIdle: ['assets/videos/Caleb_Walkup.mp4'],
+        knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
+        previewVideo: 'assets/videos/Caleb_Walkup.mp4',
+        status: 'coming_soon'  // Change to 'ready' when agent ID added
     },
     rufus: {
         name: 'Rufus',

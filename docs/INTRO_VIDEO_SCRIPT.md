@@ -48,10 +48,34 @@
 
 **[VISUAL: The heraldic crest. THE KNOCK title.]**
 
-> Someone is at your door.  
+> Someone's knocking.  
 > Will you answer?
 
 **[VISUAL: "BEGIN" button appears.]**
+
+---
+
+## DESIGN NOTE: Summoned vs. Unbidden Characters
+
+### Current: User Selects
+User browses gallery, clicks a face, character approaches.
+
+### Future: Unbidden Knocks
+Characters knock on their own. User doesn't choose — they respond.
+
+### Hybrid (Recommended)
+- **Some characters knock unbidden** — notification/sound, user accepts or ignores
+- **Some can be summoned** — gallery still available
+- **Rare characters ONLY appear unbidden** — Ghost of Vance, special events
+- **Time-based logic** — Tane at night, Eddie around dinner, Dotty afternoon
+
+**Implementation would require:**
+- Random timer system
+- Notification UI ("Someone's at the door...")
+- Accept/Ignore buttons
+- Logic to prevent interrupting active conversations
+
+**Narrative benefit:** Feels less like a menu, more like *they* found *you*.
 
 ---
 
@@ -75,7 +99,7 @@
 
 **[VISUAL: "BEGIN" button.]**
 
-> Will you answer?
+> Someone's knocking. Will you answer?
 
 ---
 

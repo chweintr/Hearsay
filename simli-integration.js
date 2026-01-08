@@ -181,6 +181,10 @@ export class SimliIntegration {
             // Store current character for transcript metadata
             this.currentCharacter = character;
             
+            // Record conversation START immediately (don't wait for transcript)
+            // This ensures "End Session" knows a conversation happened
+            this.sessionManager.recordConversationStart(character);
+            
             // Show loading state
             document.body.classList.add('loading');
             

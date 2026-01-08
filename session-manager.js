@@ -55,41 +55,39 @@ export class SessionManager {
     }
     
     /**
-     * Store a conversation transcript for this session
-     * @param {string} simliSessionId - Simli's session ID for this conversation
+     * Record that a conversation has started (before transcript is available)
+     * This ensures the session knows conversations happened even if transcript fetch fails
      * @param {Object} character - Character info
-     * @param {Object} transcriptData - Raw transcript from Simli
      */
-    storeConversation(simliSessionId, character, transcriptData) {
+    recordConversationStart(character) {
         try {
-            // Get existing transcripts for this session
             const transcripts = this.getSessionTranscripts();
             
-            // Add new conversation
+            // Check if we already have a pending conversation with this character
+            const pending = transcripts.find(t => 
+                t.character === character?.name && t.status === 'pending'
+            );
+            
+            if (pending) {
+                console.log(`[Session] Already tracking conversation with ${character?.name}`);
+                return;
+            }
+            
+            // Add pending conversation record
             const conversation = {
-                simliSessionId,
+                id: crypto.randomUUID(),
                 character: character?.name || 'Unknown',
                 characterId: character?.id || null,
                 role: character?.role || null,
-                timestamp: new Date().toISOString(),
-                transcript: transcriptData.transcript || transcriptData
+                startedAt: new Date().toISOString(),
+                status: 'pending', // Will be updated to 'complete' when transcript arrives
+                transcript: null
             };
             
             transcripts.push(conversation);
+            this.saveTranscripts(transcripts);
             
-            // Store back to localStorage (persists beyond session for retrieval)
-            const storageKey = `${this.TRANSCRIPTS_KEY}_${this.sessionId}`;
-            localStorage.setItem(storageKey, JSON.stringify({
-                userSessionId: this.sessionId,
-                sessionStart: this.sessionStart,
-                lastUpdated: new Date().toISOString(),
-                conversations: transcripts
-            }));
-            
-            // Update session index
-            this.updateSessionIndex();
-            
-            console.log(`[Session] 💾 Conversation stored: ${character?.name} (${transcripts.length} total)`);
+            console.log(`[Session] 🎬 Conversation started: ${character?.name} (${transcripts.length} total)`);
             
             // Dispatch event for UI updates
             window.dispatchEvent(new CustomEvent('hearsay-conversation-stored', {
@@ -100,7 +98,71 @@ export class SessionManager {
                 }
             }));
             
-            return conversation;
+        } catch (error) {
+            console.error('[Session] Error recording conversation start:', error);
+        }
+    }
+    
+    /**
+     * Save transcripts array to localStorage
+     */
+    saveTranscripts(transcripts) {
+        const storageKey = `${this.TRANSCRIPTS_KEY}_${this.sessionId}`;
+        localStorage.setItem(storageKey, JSON.stringify({
+            userSessionId: this.sessionId,
+            sessionStart: this.sessionStart,
+            lastUpdated: new Date().toISOString(),
+            conversations: transcripts
+        }));
+        this.updateSessionIndex();
+    }
+    
+    /**
+     * Store a conversation transcript for this session
+     * Updates a pending record if it exists, otherwise creates new
+     * @param {string} simliSessionId - Simli's session ID for this conversation
+     * @param {Object} character - Character info
+     * @param {Object} transcriptData - Raw transcript from Simli
+     */
+    storeConversation(simliSessionId, character, transcriptData) {
+        try {
+            // Get existing transcripts for this session
+            const transcripts = this.getSessionTranscripts();
+            
+            // Find pending conversation for this character
+            const pendingIndex = transcripts.findIndex(t => 
+                t.character === character?.name && t.status === 'pending'
+            );
+            
+            if (pendingIndex >= 0) {
+                // Update the pending record with transcript
+                transcripts[pendingIndex] = {
+                    ...transcripts[pendingIndex],
+                    simliSessionId,
+                    timestamp: new Date().toISOString(),
+                    status: 'complete',
+                    transcript: transcriptData.transcript || transcriptData
+                };
+                console.log(`[Session] 📝 Updated pending conversation with transcript: ${character?.name}`);
+            } else {
+                // No pending record, add new (shouldn't normally happen)
+                transcripts.push({
+                    simliSessionId,
+                    character: character?.name || 'Unknown',
+                    characterId: character?.id || null,
+                    role: character?.role || null,
+                    timestamp: new Date().toISOString(),
+                    status: 'complete',
+                    transcript: transcriptData.transcript || transcriptData
+                });
+                console.log(`[Session] 💾 New conversation stored: ${character?.name}`);
+            }
+            
+            this.saveTranscripts(transcripts);
+            
+            console.log(`[Session] Total conversations: ${transcripts.length}`);
+            
+            return transcripts[pendingIndex >= 0 ? pendingIndex : transcripts.length - 1];
             
         } catch (error) {
             console.error('[Session] Error storing conversation:', error);
@@ -268,14 +330,26 @@ export class SessionManager {
             return null;
         }
         
+        // Filter to conversations that have actual content
+        const validConversations = data.conversations.filter(conv => {
+            // Include if has transcript OR if it was a real conversation (even without transcript)
+            return conv.transcript || conv.status === 'pending';
+        });
+        
+        if (validConversations.length === 0) {
+            console.warn('[Session] No valid conversations to export');
+            return null;
+        }
+        
         return {
             sessionId: this.sessionId,
             sessionStart: this.sessionStart,
-            transcripts: data.conversations.map(conv => ({
+            transcripts: validConversations.map(conv => ({
                 character: conv.character,
                 role: conv.role,
-                timestamp: conv.timestamp,
-                transcript: conv.transcript
+                timestamp: conv.timestamp || conv.startedAt,
+                // For pending convos without transcript, provide a note
+                transcript: conv.transcript || `[Conversation with ${conv.character} - transcript not captured]`
             }))
         };
     }

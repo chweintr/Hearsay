@@ -1,16 +1,20 @@
 """
-HEARSAY Backend - Simli Token Server
+HEARSAY Backend - Simli Token Server + Writing Engine
 ─────────────────────────────────────────────────────────────────────────────
-Railway-deployable FastAPI server for Simli token generation and transcript retrieval.
+Railway-deployable FastAPI server for Simli token generation, transcript retrieval,
+and chapter generation via Claude Opus.
 
 Endpoints:
     POST /api/simli-token?agentId=xxx&faceId=xxx  → Get session token + sessionId
     GET  /api/simli-transcript/{session_id}       → Retrieve transcript after session
+    POST /api/writing-engine/generate             → Generate chapter from transcripts
     GET  /api/health                               → Health check
     GET  / (serves frontend)
 
 Environment Variables (set in Railway):
     SIMLI_API_KEY - Your Simli API key
+    ELEVENLABS_API_KEY - ElevenLabs API key for TTS
+    ANTHROPIC_API_KEY - Anthropic API key for Writing Engine
     PORT - Railway sets this automatically
 """
 
@@ -20,6 +24,8 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
+from typing import List, Optional
 import httpx
 
 app = FastAPI(
@@ -42,10 +48,21 @@ SIMLI_API_KEY = os.getenv("SIMLI_API_KEY", "")
 SIMLI_API_URL = os.getenv("SIMLI_API_URL", "https://api.simli.ai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 PORT = int(os.getenv("PORT", 8000))
 
 # Path to frontend files (parent directory of backend/)
 FRONTEND_DIR = Path(__file__).parent.parent
+PROMPTS_DIR = Path(__file__).parent / "prompts"
+
+# Load Writing Engine system prompt
+WRITING_ENGINE_PROMPT = ""
+prompt_path = PROMPTS_DIR / "writing_engine.md"
+if prompt_path.exists():
+    WRITING_ENGINE_PROMPT = prompt_path.read_text()
+    print(f"[HEARSAY] Writing Engine prompt loaded: {len(WRITING_ENGINE_PROMPT)} chars")
+else:
+    print(f"[HEARSAY] Warning: Writing Engine prompt not found at {prompt_path}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -211,6 +228,190 @@ async def get_transcript(session_id: str):
         )
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# WRITING ENGINE
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TranscriptEntry(BaseModel):
+    """A single message in a conversation transcript"""
+    speaker: str  # 'user' or character name
+    text: str
+
+class Conversation(BaseModel):
+    """A conversation with one character"""
+    character: str
+    role: Optional[str] = None
+    timestamp: str
+    transcript: List[TranscriptEntry] | str  # Can be list or raw string
+
+class ChapterRequest(BaseModel):
+    """Request to generate a chapter from session transcripts"""
+    sessionId: str
+    transcripts: List[Conversation]
+    previousChapters: Optional[List[str]] = []
+    chapterLength: Optional[str] = "medium"  # short, medium, long
+
+
+@app.post("/api/writing-engine/generate")
+async def generate_chapter(request: ChapterRequest):
+    """
+    Generate a literary chapter from conversation transcripts using Claude Opus.
+    
+    This is the heart of the Writing Engine. It takes raw Simli transcripts
+    and transforms them into narrativized prose.
+    """
+    
+    if not ANTHROPIC_API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="ANTHROPIC_API_KEY not configured. Set it in Railway environment variables."
+        )
+    
+    if not WRITING_ENGINE_PROMPT:
+        raise HTTPException(
+            status_code=500,
+            detail="Writing Engine prompt not loaded. Check backend/prompts/writing_engine.md"
+        )
+    
+    if not request.transcripts or len(request.transcripts) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No transcripts provided"
+        )
+    
+    print(f"[HEARSAY] Generating chapter for session {request.sessionId}")
+    print(f"[HEARSAY] Conversations: {len(request.transcripts)}")
+    
+    try:
+        # Format transcripts for the prompt
+        formatted_transcripts = []
+        for conv in request.transcripts:
+            formatted = f"\n--- Conversation with {conv.character}"
+            if conv.role:
+                formatted += f" ({conv.role})"
+            formatted += f" ---\nTime: {conv.timestamp}\n\n"
+            
+            # Handle transcript format (could be list or string)
+            if isinstance(conv.transcript, list):
+                for entry in conv.transcript:
+                    if isinstance(entry, dict):
+                        speaker = entry.get('speaker', 'unknown')
+                        text = entry.get('text', '')
+                    else:
+                        speaker = entry.speaker
+                        text = entry.text
+                    formatted += f"[{speaker}]: {text}\n"
+            else:
+                # Already a string
+                formatted += conv.transcript
+            
+            formatted_transcripts.append(formatted)
+        
+        transcripts_text = "\n".join(formatted_transcripts)
+        
+        # Build the user message
+        user_message = f"""Please write a chapter based on the following conversation transcripts from tonight's session.
+
+SESSION: {request.sessionId}
+CONVERSATION COUNT: {len(request.transcripts)}
+REQUESTED LENGTH: {request.chapterLength} (~{"1000" if request.chapterLength == "short" else "2000" if request.chapterLength == "medium" else "3500"} words)
+
+{transcripts_text}
+
+---
+
+Write the chapter now. Remember:
+- Preserve actual dialogue (may polish for flow)
+- Add setting, interiority, sensory detail
+- Weave multiple conversations into one coherent chapter
+- Ground us in Room 412, the peephole, the hallway
+- End with an image, not a cliffhanger or closure"""
+
+        # Include previous chapters if provided (for continuity)
+        if request.previousChapters and len(request.previousChapters) > 0:
+            prev_chapters_text = "\n\n---\n\n".join(request.previousChapters[-2:])  # Last 2 chapters
+            user_message = f"""PREVIOUS CHAPTERS (for continuity):
+
+{prev_chapters_text}
+
+---
+
+NOW, for tonight's session:
+
+{user_message}"""
+
+        # Call Claude Opus
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": ANTHROPIC_API_KEY.strip(),
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json"
+                },
+                json={
+                    "model": "claude-opus-4-20250514",
+                    "max_tokens": 8192,
+                    "system": WRITING_ENGINE_PROMPT,
+                    "messages": [
+                        {"role": "user", "content": user_message}
+                    ]
+                },
+                timeout=120.0  # Opus can take a while
+            )
+            
+            if response.status_code != 200:
+                print(f"[HEARSAY] Anthropic API error: {response.status_code}")
+                print(f"[HEARSAY] Response: {response.text}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Anthropic API error: {response.text}"
+                )
+            
+            data = response.json()
+            
+            # Extract the chapter text
+            chapter_content = ""
+            if data.get("content"):
+                for block in data["content"]:
+                    if block.get("type") == "text":
+                        chapter_content += block.get("text", "")
+            
+            if not chapter_content:
+                raise HTTPException(
+                    status_code=500,
+                    detail="No chapter content in Anthropic response"
+                )
+            
+            # Generate chapter ID
+            import uuid
+            chapter_id = str(uuid.uuid4())
+            
+            # Count words
+            word_count = len(chapter_content.split())
+            
+            # Extract character names from transcripts
+            characters = list(set([t.character for t in request.transcripts]))
+            
+            print(f"[HEARSAY] Chapter generated: {word_count} words, {len(characters)} characters")
+            
+            return {
+                "chapterId": chapter_id,
+                "sessionId": request.sessionId,
+                "content": chapter_content,
+                "wordCount": word_count,
+                "charactersIncluded": characters,
+                "generatedAt": __import__('datetime').datetime.utcnow().isoformat() + "Z"
+            }
+            
+    except httpx.RequestError as e:
+        print(f"[HEARSAY] Writing Engine request error: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Failed to connect to Anthropic API: {str(e)}"
+        )
+
+
 @app.get("/api/health")
 async def health_check():
     """Health check for Railway monitoring"""
@@ -219,7 +420,9 @@ async def health_check():
         "service": "hearsay",
         "simli_configured": bool(SIMLI_API_KEY),
         "openai_configured": bool(OPENAI_API_KEY),
-        "elevenlabs_configured": bool(ELEVENLABS_API_KEY)
+        "elevenlabs_configured": bool(ELEVENLABS_API_KEY),
+        "anthropic_configured": bool(ANTHROPIC_API_KEY),
+        "writing_engine_ready": bool(WRITING_ENGINE_PROMPT)
     }
 
 

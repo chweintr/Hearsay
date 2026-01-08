@@ -11,6 +11,7 @@
  */
 
 import { BlackRemover } from './black-remover.js';
+import { getSessionManager } from './session-manager.js';
 
 export class SimliIntegration {
     constructor(stateMachine, config) {
@@ -20,8 +21,11 @@ export class SimliIntegration {
         this.mountPoint = document.getElementById('simli-mount');
         this.blackRemover = new BlackRemover();
         
-        // Session tracking for transcripts
-        this.currentSessionId = null;
+        // Session manager for user session tracking (persists across conversations)
+        this.sessionManager = getSessionManager();
+        
+        // Simli session tracking (per-conversation)
+        this.currentSimliSessionId = null;
         this.currentCharacter = null;
         
         // Bind handlers
@@ -90,10 +94,10 @@ export class SimliIntegration {
             const data = await response.json();
             console.log('[Simli] Token response:', JSON.stringify(data));
             
-            // Store sessionId for transcript retrieval later
+            // Store Simli session ID for transcript retrieval later
             if (data.sessionId) {
-                this.currentSessionId = data.sessionId;
-                console.log(`[Simli] 📋 Session ID saved: ${this.currentSessionId}`);
+                this.currentSimliSessionId = data.sessionId;
+                console.log(`[Simli] 📋 Simli Session ID saved: ${this.currentSimliSessionId}`);
             }
             
             if (!data.token) {
@@ -115,7 +119,7 @@ export class SimliIntegration {
      * @returns {Promise<Object>} Transcript data
      */
     async fetchTranscript(sessionId) {
-        const sid = sessionId || this.currentSessionId;
+        const sid = sessionId || this.currentSimliSessionId;
         if (!sid) {
             console.warn('[Simli] No session ID available for transcript');
             return null;
@@ -561,8 +565,8 @@ export class SimliIntegration {
         // Stop black removal
         this.blackRemover.stop();
         
-        // Save session ID before cleanup
-        const sessionId = this.currentSessionId;
+        // Save Simli session ID before cleanup
+        const simliSessionId = this.currentSimliSessionId;
         const character = this.currentCharacter;
         
         try {
@@ -585,75 +589,28 @@ export class SimliIntegration {
         }
         
         // Fetch transcript after session ends (async, with delay to let Simli process)
-        if (sessionId) {
+        if (simliSessionId) {
             console.log(`[Simli] 📜 Will fetch transcript for ${character?.name} session in 5s...`);
             setTimeout(async () => {
-                const transcript = await this.fetchTranscript(sessionId);
+                const transcript = await this.fetchTranscript(simliSessionId);
                 if (transcript) {
                     console.log('[Simli] Transcript saved for Writing Engine:', transcript);
-                    // TODO: Store transcript in local storage or send to backend
-                    this.storeTranscript(sessionId, character, transcript);
+                    // Store in session manager (bundles all conversations for one chapter)
+                    this.sessionManager.storeConversation(simliSessionId, character, transcript);
                 }
             }, 5000);
         }
         
-        // Clear session tracking
-        this.currentSessionId = null;
+        // Clear Simli session tracking (user session persists)
+        this.currentSimliSessionId = null;
         this.currentCharacter = null;
     }
     
     /**
-     * Store transcript for later retrieval by Writing Engine
-     * For now, stores in localStorage. Can be upgraded to backend storage.
+     * Get session manager (for external access to session data)
      */
-    storeTranscript(sessionId, character, transcriptData) {
-        try {
-            const key = `hearsay_transcript_${sessionId}`;
-            const record = {
-                sessionId,
-                character: character?.name || 'Unknown',
-                characterId: character?.id || null,
-                timestamp: new Date().toISOString(),
-                transcript: transcriptData.transcript
-            };
-            
-            localStorage.setItem(key, JSON.stringify(record));
-            
-            // Also maintain an index of all transcripts
-            const indexKey = 'hearsay_transcript_index';
-            const index = JSON.parse(localStorage.getItem(indexKey) || '[]');
-            index.push({
-                sessionId,
-                character: character?.name,
-                timestamp: record.timestamp
-            });
-            localStorage.setItem(indexKey, JSON.stringify(index));
-            
-            console.log(`[Simli] 💾 Transcript stored: ${key}`);
-            
-        } catch (error) {
-            console.error('[Simli] Error storing transcript:', error);
-        }
-    }
-    
-    /**
-     * Get all stored transcripts
-     * @returns {Array} Array of transcript records
-     */
-    getAllTranscripts() {
-        try {
-            const indexKey = 'hearsay_transcript_index';
-            const index = JSON.parse(localStorage.getItem(indexKey) || '[]');
-            
-            return index.map(item => {
-                const key = `hearsay_transcript_${item.sessionId}`;
-                return JSON.parse(localStorage.getItem(key) || 'null');
-            }).filter(Boolean);
-            
-        } catch (error) {
-            console.error('[Simli] Error retrieving transcripts:', error);
-            return [];
-        }
+    getSessionManager() {
+        return this.sessionManager;
     }
 
     /**

@@ -52,6 +52,7 @@
             <div class="menu-buttons">
                 <button id="about-btn" class="menu-btn">About</button>
                 <button id="store-btn" class="menu-btn">Sensory Packs</button>
+                <button id="chapters-btn" class="menu-btn chapters-btn hidden">Your Story</button>
                 <button id="end-session-btn" class="menu-btn session-btn hidden">End Session</button>
             </div>
             
@@ -170,6 +171,48 @@
                 <h2>Something went wrong</h2>
                 <p id="writing-error-message">Unable to generate chapter.</p>
                 <button id="retry-chapter-btn" class="menu-btn">Try Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chapters Modal (Your Story) -->
+    <div id="chapters-modal" class="modal hidden">
+        <div class="modal-content chapters-modal-content">
+            <button class="modal-close" id="chapters-close">×</button>
+            
+            <div class="chapters-header">
+                <h1>Your Story So Far</h1>
+                <p class="chapters-tagline">The nights you've spent at Room 412, rendered in prose.</p>
+            </div>
+            
+            <!-- No chapters state -->
+            <div id="chapters-empty" class="chapters-empty">
+                <p>No chapters yet.</p>
+                <p class="chapters-hint">Talk to the residents, then click "End Session" to generate your first chapter.</p>
+            </div>
+            
+            <!-- Chapters list -->
+            <div id="chapters-list" class="chapters-list hidden">
+                <!-- Chapters injected by JS -->
+            </div>
+            
+            <!-- Chapter reader -->
+            <div id="chapter-reader" class="chapter-reader hidden">
+                <button id="back-to-chapters" class="menu-btn back-btn">← Back to Chapters</button>
+                <div class="reader-header">
+                    <h2 id="reader-title">Chapter 1</h2>
+                    <div class="reader-meta">
+                        <span id="reader-date"></span>
+                        <span class="meta-sep">•</span>
+                        <span id="reader-words"></span> words
+                        <span class="meta-sep">•</span>
+                        <span id="reader-characters"></span>
+                    </div>
+                </div>
+                <div id="reader-content" class="reader-content"></div>
+                <div class="reader-actions">
+                    <button id="reader-copy-btn" class="menu-btn">Copy to Clipboard</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1151,6 +1194,10 @@
                 const sessionData = sessionManager.exportForWritingEngine();
                 console.log('[WritingEngine] Generating chapter from:', sessionData);
                 
+                // Get previous chapters for RAG context (continuity)
+                const previousChapters = getPreviousChaptersForContext(3);
+                console.log('[WritingEngine] Including', previousChapters.length, 'previous chapters for context');
+                
                 // Call Writing Engine API
                 const response = await fetch('/api/writing-engine/generate', {
                     method: 'POST',
@@ -1158,7 +1205,7 @@
                     body: JSON.stringify({
                         sessionId: sessionData.sessionId,
                         transcripts: sessionData.transcripts,
-                        previousChapters: [], // TODO: Load from localStorage
+                        previousChapters: previousChapters,
                         chapterLength: 'medium'
                     })
                 });
@@ -1191,6 +1238,9 @@
                     userSessionId: sessionData.sessionId
                 });
                 localStorage.setItem(chaptersKey, JSON.stringify(chapters));
+                
+                // Update chapters button visibility
+                updateChaptersButton();
                 
             } catch (error) {
                 console.error('[WritingEngine] Error:', error);
@@ -1237,6 +1287,163 @@
                 writingModal.classList.add('hidden');
             }
         });
+        
+        // ─────────────────────────────────────────────────────────────────────
+        // CHAPTERS PAGE
+        // ─────────────────────────────────────────────────────────────────────
+        
+        const chaptersBtn = document.getElementById('chapters-btn');
+        const chaptersModal = document.getElementById('chapters-modal');
+        const chaptersClose = document.getElementById('chapters-close');
+        const chaptersEmpty = document.getElementById('chapters-empty');
+        const chaptersList = document.getElementById('chapters-list');
+        const chapterReader = document.getElementById('chapter-reader');
+        const backToChapters = document.getElementById('back-to-chapters');
+        const readerTitle = document.getElementById('reader-title');
+        const readerDate = document.getElementById('reader-date');
+        const readerWords = document.getElementById('reader-words');
+        const readerCharacters = document.getElementById('reader-characters');
+        const readerContent = document.getElementById('reader-content');
+        const readerCopyBtn = document.getElementById('reader-copy-btn');
+        
+        // Get all chapters from localStorage
+        function getStoredChapters() {
+            try {
+                return JSON.parse(localStorage.getItem('hearsay_chapters') || '[]');
+            } catch (e) {
+                console.error('[Chapters] Error reading chapters:', e);
+                return [];
+            }
+        }
+        
+        // Get previous chapters for RAG context (returns last N chapter contents)
+        function getPreviousChaptersForContext(limit = 3) {
+            const chapters = getStoredChapters();
+            return chapters.slice(-limit).map(c => c.content);
+        }
+        
+        // Update chapters button visibility
+        function updateChaptersButton() {
+            const chapters = getStoredChapters();
+            if (chapters.length > 0) {
+                chaptersBtn?.classList.remove('hidden');
+            } else {
+                chaptersBtn?.classList.add('hidden');
+            }
+        }
+        
+        // Render chapters list
+        function renderChaptersList() {
+            const chapters = getStoredChapters();
+            
+            if (chapters.length === 0) {
+                chaptersEmpty?.classList.remove('hidden');
+                chaptersList?.classList.add('hidden');
+                return;
+            }
+            
+            chaptersEmpty?.classList.add('hidden');
+            chaptersList?.classList.remove('hidden');
+            chapterReader?.classList.add('hidden');
+            
+            chaptersList.innerHTML = chapters.map((chapter, index) => {
+                const date = new Date(chapter.generatedAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                const characters = chapter.charactersIncluded?.join(', ') || 'Unknown';
+                const preview = chapter.content?.substring(0, 150) + '...' || '';
+                
+                return `
+                    <div class="chapter-card" data-chapter-index="${index}">
+                        <div class="chapter-card-header">
+                            <h3>Chapter ${index + 1}</h3>
+                            <span class="chapter-date">${date}</span>
+                        </div>
+                        <p class="chapter-preview">${preview}</p>
+                        <div class="chapter-card-meta">
+                            <span>${chapter.wordCount || '?'} words</span>
+                            <span class="meta-sep">•</span>
+                            <span>${characters}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add click handlers
+            chaptersList.querySelectorAll('.chapter-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const index = parseInt(card.dataset.chapterIndex);
+                    openChapter(index);
+                });
+            });
+        }
+        
+        // Open a specific chapter in the reader
+        function openChapter(index) {
+            const chapters = getStoredChapters();
+            const chapter = chapters[index];
+            
+            if (!chapter) return;
+            
+            chaptersList?.classList.add('hidden');
+            chapterReader?.classList.remove('hidden');
+            
+            readerTitle.textContent = `Chapter ${index + 1}`;
+            readerDate.textContent = new Date(chapter.generatedAt).toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            readerWords.textContent = chapter.wordCount || '?';
+            readerCharacters.textContent = chapter.charactersIncluded?.join(', ') || 'Unknown';
+            
+            // Render content as paragraphs
+            readerContent.innerHTML = chapter.content
+                .split('\n\n')
+                .filter(p => p.trim())
+                .map(p => `<p>${p}</p>`)
+                .join('');
+        }
+        
+        // Chapters button click
+        chaptersBtn?.addEventListener('click', () => {
+            renderChaptersList();
+            chaptersModal?.classList.remove('hidden');
+        });
+        
+        // Back to chapters list
+        backToChapters?.addEventListener('click', () => {
+            chapterReader?.classList.add('hidden');
+            chaptersList?.classList.remove('hidden');
+        });
+        
+        // Copy from reader
+        readerCopyBtn?.addEventListener('click', () => {
+            const text = readerContent.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                readerCopyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    readerCopyBtn.textContent = 'Copy to Clipboard';
+                }, 2000);
+            });
+        });
+        
+        // Close chapters modal
+        chaptersClose?.addEventListener('click', () => {
+            chaptersModal?.classList.add('hidden');
+        });
+        
+        chaptersModal?.addEventListener('click', (e) => {
+            if (e.target === chaptersModal) {
+                chaptersModal?.classList.add('hidden');
+            }
+        });
+        
+        // Initialize chapters button
+        updateChaptersButton();
 
         // ─────────────────────────────────────────────────────────────────────
         // INIT

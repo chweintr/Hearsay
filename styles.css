@@ -129,6 +129,47 @@ body {
     animation: crestGlow 4s ease-in-out infinite alternate;
 }
 
+/* Entry video sequence */
+.entry-video {
+    max-width: min(95vw, 900px);
+    max-height: 75vh;
+    object-fit: contain;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.5s ease;
+}
+
+.entry-video.faded {
+    opacity: 0.3;
+}
+
+.skip-intro-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--brass-dark);
+    color: var(--brass-mid);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.skip-intro-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: var(--brass-mid);
+    color: var(--parchment);
+}
+
+.skip-intro-btn.hidden {
+    display: none;
+}
+
 @keyframes crestGlow {
     from { filter: drop-shadow(0 0 30px rgba(139, 90, 43, 0.3)); }
     to { filter: drop-shadow(0 0 50px rgba(139, 90, 43, 0.5)); }

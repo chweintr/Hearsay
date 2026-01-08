@@ -16,13 +16,17 @@
 </head>
 <body>
     <!-- ═══════════════════════════════════════════════════════════════════════
-         ENTRY PAGE - Heraldic Gateway
+         ENTRY PAGE - Intro Video Sequence
          ═══════════════════════════════════════════════════════════════════════ -->
     <div id="entry-page" class="page active">
         <div class="entry-background"></div>
         <div class="entry-content">
-            <img src="assets/images/Heraldic_Bigger.png" alt="Hotel Crest" class="entry-crest">
-            <button id="enter-btn" class="enter-button">Enter</button>
+            <!-- Video sequence: Landing_1 → Landing_2 → Enter button -->
+            <video id="entry-video" class="entry-video" playsinline muted>
+                <source id="entry-video-source" src="assets/videos/Landing_1.mp4" type="video/mp4">
+            </video>
+            <button id="enter-btn" class="enter-button hidden">Enter</button>
+            <button id="skip-intro-btn" class="skip-intro-btn">Skip</button>
         </div>
     </div>
 
@@ -322,6 +326,62 @@
         const landingPage = document.getElementById('landing-page');
         const experiencePage = document.getElementById('experience-page');
         const enterBtn = document.getElementById('enter-btn');
+        const entryVideo = document.getElementById('entry-video');
+        const entryVideoSource = document.getElementById('entry-video-source');
+        const skipIntroBtn = document.getElementById('skip-intro-btn');
+        
+        // Video sequence for intro
+        const introVideos = [
+            'assets/videos/Landing_1.mp4',
+            'assets/videos/Landing_2.mp4'
+        ];
+        let currentVideoIndex = 0;
+        
+        // Start playing intro videos
+        function startIntroSequence() {
+            if (entryVideo) {
+                entryVideo.play().catch(e => console.log('Autoplay blocked, waiting for interaction'));
+            }
+        }
+        
+        // Handle video ending - play next or show Enter button
+        if (entryVideo) {
+            entryVideo.addEventListener('ended', () => {
+                currentVideoIndex++;
+                
+                if (currentVideoIndex < introVideos.length) {
+                    // Play next video
+                    entryVideoSource.src = introVideos[currentVideoIndex];
+                    entryVideo.load();
+                    entryVideo.play();
+                } else {
+                    // All videos done, show Enter button
+                    showEnterButton();
+                }
+            });
+            
+            // Start on first user interaction if autoplay blocked
+            entryVideo.addEventListener('click', () => {
+                if (entryVideo.paused) {
+                    entryVideo.play();
+                }
+            });
+        }
+        
+        function showEnterButton() {
+            entryVideo?.classList.add('faded');
+            enterBtn?.classList.remove('hidden');
+            skipIntroBtn?.classList.add('hidden');
+        }
+        
+        // Skip button
+        skipIntroBtn?.addEventListener('click', () => {
+            entryVideo?.pause();
+            showEnterButton();
+        });
+        
+        // Try to start video sequence
+        startIntroSequence();
         
         function showEntry() {
             entryPage.classList.add('active');

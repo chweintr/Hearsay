@@ -52,6 +52,12 @@
             <div class="menu-buttons">
                 <button id="about-btn" class="menu-btn">About</button>
                 <button id="store-btn" class="menu-btn">Sensory Packs</button>
+                <button id="end-session-btn" class="menu-btn session-btn hidden">End Session</button>
+            </div>
+            
+            <!-- Session indicator - shows conversation count -->
+            <div id="session-indicator" class="session-indicator hidden">
+                <span id="session-count">0</span> conversation<span id="session-plural">s</span> tonight
             </div>
         </div>
     </div>
@@ -127,6 +133,43 @@
                 <p>They have something to tell you. Whether you believe them is up to you.</p>
                 <p>HEARSAY is a series of conversational experiences. No puzzles. No right answers. Just unreliable narrators and the stories they tell.</p>
                 <p class="about-tagline">Somewhere between a novel, a play, a movie, a mystery, a dream, a confession, and a communion.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Writing Engine Modal -->
+    <div id="writing-modal" class="modal hidden">
+        <div class="modal-content writing-modal-content">
+            <button class="modal-close" id="writing-close">×</button>
+            
+            <!-- Loading State -->
+            <div id="writing-loading" class="writing-state">
+                <div class="writing-spinner"></div>
+                <h2>Writing your chapter...</h2>
+                <p>Claude is weaving your conversations into prose.</p>
+                <p class="writing-hint">This may take 30-60 seconds.</p>
+            </div>
+            
+            <!-- Success State -->
+            <div id="writing-success" class="writing-state hidden">
+                <h2>Your Chapter</h2>
+                <div id="chapter-content" class="chapter-content"></div>
+                <div class="chapter-meta">
+                    <span id="chapter-word-count"></span> words
+                    <span class="meta-sep">•</span>
+                    <span id="chapter-characters"></span>
+                </div>
+                <div class="chapter-actions">
+                    <button id="copy-chapter-btn" class="menu-btn">Copy to Clipboard</button>
+                    <button id="new-session-btn" class="menu-btn">Start New Session</button>
+                </div>
+            </div>
+            
+            <!-- Error State -->
+            <div id="writing-error" class="writing-state hidden">
+                <h2>Something went wrong</h2>
+                <p id="writing-error-message">Unable to generate chapter.</p>
+                <button id="retry-chapter-btn" class="menu-btn">Try Again</button>
             </div>
         </div>
     </div>
@@ -224,6 +267,7 @@
         import { StateMachine } from './state-machine.js';
         import { Compositor } from './compositor.js';
         import { SimliIntegration } from './simli-integration.js';
+        import { getSessionManager } from './session-manager.js';
 
         // ─────────────────────────────────────────────────────────────────────
         // PAGE MANAGEMENT
@@ -1043,11 +1087,163 @@
         }
 
         // ─────────────────────────────────────────────────────────────────────
+        // SESSION MANAGER & WRITING ENGINE
+        // ─────────────────────────────────────────────────────────────────────
+        
+        const sessionManager = getSessionManager();
+        
+        // UI Elements
+        const endSessionBtn = document.getElementById('end-session-btn');
+        const sessionIndicator = document.getElementById('session-indicator');
+        const sessionCount = document.getElementById('session-count');
+        const sessionPlural = document.getElementById('session-plural');
+        const writingModal = document.getElementById('writing-modal');
+        const writingClose = document.getElementById('writing-close');
+        const writingLoading = document.getElementById('writing-loading');
+        const writingSuccess = document.getElementById('writing-success');
+        const writingError = document.getElementById('writing-error');
+        const chapterContent = document.getElementById('chapter-content');
+        const chapterWordCount = document.getElementById('chapter-word-count');
+        const chapterCharacters = document.getElementById('chapter-characters');
+        const copyChapterBtn = document.getElementById('copy-chapter-btn');
+        const newSessionBtn = document.getElementById('new-session-btn');
+        const retryChapterBtn = document.getElementById('retry-chapter-btn');
+        
+        // Update session UI based on conversation count
+        function updateSessionUI() {
+            const count = sessionManager.getConversationCount();
+            
+            if (count > 0) {
+                endSessionBtn?.classList.remove('hidden');
+                sessionIndicator?.classList.remove('hidden');
+                sessionCount.textContent = count;
+                sessionPlural.textContent = count === 1 ? '' : 's';
+            } else {
+                endSessionBtn?.classList.add('hidden');
+                sessionIndicator?.classList.add('hidden');
+            }
+        }
+        
+        // Listen for new conversations being stored
+        window.addEventListener('hearsay-conversation-stored', (e) => {
+            console.log('[Session] Conversation stored:', e.detail);
+            updateSessionUI();
+        });
+        
+        // Initial UI update
+        updateSessionUI();
+        
+        // End Session button click
+        endSessionBtn?.addEventListener('click', async () => {
+            if (!sessionManager.hasConversations()) {
+                alert('No conversations yet. Talk to someone first!');
+                return;
+            }
+            
+            // Show writing modal in loading state
+            writingLoading.classList.remove('hidden');
+            writingSuccess.classList.add('hidden');
+            writingError.classList.add('hidden');
+            writingModal.classList.remove('hidden');
+            
+            try {
+                // Get session data for Writing Engine
+                const sessionData = sessionManager.exportForWritingEngine();
+                console.log('[WritingEngine] Generating chapter from:', sessionData);
+                
+                // Call Writing Engine API
+                const response = await fetch('/api/writing-engine/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionData.sessionId,
+                        transcripts: sessionData.transcripts,
+                        previousChapters: [], // TODO: Load from localStorage
+                        chapterLength: 'medium'
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate chapter');
+                }
+                
+                const chapter = await response.json();
+                console.log('[WritingEngine] Chapter generated:', chapter);
+                
+                // Show success state
+                writingLoading.classList.add('hidden');
+                writingSuccess.classList.remove('hidden');
+                
+                // Display chapter
+                chapterContent.innerHTML = chapter.content
+                    .split('\n\n')
+                    .map(p => `<p>${p}</p>`)
+                    .join('');
+                chapterWordCount.textContent = chapter.wordCount;
+                chapterCharacters.textContent = chapter.charactersIncluded.join(', ');
+                
+                // Store chapter in localStorage
+                const chaptersKey = 'hearsay_chapters';
+                const chapters = JSON.parse(localStorage.getItem(chaptersKey) || '[]');
+                chapters.push({
+                    ...chapter,
+                    userSessionId: sessionData.sessionId
+                });
+                localStorage.setItem(chaptersKey, JSON.stringify(chapters));
+                
+            } catch (error) {
+                console.error('[WritingEngine] Error:', error);
+                
+                // Show error state
+                writingLoading.classList.add('hidden');
+                writingError.classList.remove('hidden');
+                document.getElementById('writing-error-message').textContent = error.message;
+            }
+        });
+        
+        // Copy chapter to clipboard
+        copyChapterBtn?.addEventListener('click', () => {
+            const text = chapterContent.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                copyChapterBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyChapterBtn.textContent = 'Copy to Clipboard';
+                }, 2000);
+            });
+        });
+        
+        // Start new session
+        newSessionBtn?.addEventListener('click', () => {
+            sessionManager.endSession();
+            writingModal.classList.add('hidden');
+            updateSessionUI();
+            // Optionally reload to clear everything
+            // window.location.reload();
+        });
+        
+        // Retry chapter generation
+        retryChapterBtn?.addEventListener('click', () => {
+            endSessionBtn.click();
+        });
+        
+        // Close writing modal
+        writingClose?.addEventListener('click', () => {
+            writingModal.classList.add('hidden');
+        });
+        
+        writingModal?.addEventListener('click', (e) => {
+            if (e.target === writingModal) {
+                writingModal.classList.add('hidden');
+            }
+        });
+
+        // ─────────────────────────────────────────────────────────────────────
         // INIT
         // ─────────────────────────────────────────────────────────────────────
         
         // Expose for debugging
-        window.hearsay = { stateMachine, compositor, simli, config, characters, platform, experience };
+        window.hearsay = { stateMachine, compositor, simli, config, characters, platform, experience, sessionManager };
         console.log(`${platform.name} — ${experience.name} initialized`);
     </script>
 </body>

@@ -16,15 +16,17 @@
 </head>
 <body>
     <!-- ═══════════════════════════════════════════════════════════════════════
-         ENTRY PAGE - Intro Video Sequence
+         ENTRY PAGE - Intro Video with Green Screen Removal
          ═══════════════════════════════════════════════════════════════════════ -->
     <div id="entry-page" class="page active">
         <div class="entry-background"></div>
         <div class="entry-content">
-            <!-- Video sequence: Landing_1 → Landing_2 → Enter button -->
-            <video id="entry-video" class="entry-video" playsinline muted>
-                <source id="entry-video-source" src="assets/videos/Landing_1.mp4" type="video/mp4">
+            <!-- Hidden video source for chroma key processing -->
+            <video id="entry-video" class="entry-video-source" playsinline muted>
+                <source src="assets/videos/Landing.mp4" type="video/mp4">
             </video>
+            <!-- Canvas shows the video with green removed -->
+            <canvas id="entry-canvas" class="entry-canvas"></canvas>
             <button id="enter-btn" class="enter-button hidden">Enter</button>
             <button id="skip-intro-btn" class="skip-intro-btn">Skip</button>
         </div>
@@ -327,51 +329,82 @@
         const experiencePage = document.getElementById('experience-page');
         const enterBtn = document.getElementById('enter-btn');
         const entryVideo = document.getElementById('entry-video');
-        const entryVideoSource = document.getElementById('entry-video-source');
+        const entryCanvas = document.getElementById('entry-canvas');
         const skipIntroBtn = document.getElementById('skip-intro-btn');
         
-        // Video sequence for intro
-        const introVideos = [
-            'assets/videos/Landing_1.mp4',
-            'assets/videos/Landing_2.mp4'
-        ];
-        let currentVideoIndex = 0;
+        // Green screen removal for entry video
+        let entryCtx = null;
+        let entryAnimationId = null;
         
-        // Start playing intro videos
-        function startIntroSequence() {
-            if (entryVideo) {
-                entryVideo.play().catch(e => console.log('Autoplay blocked, waiting for interaction'));
-            }
-        }
-        
-        // Handle video ending - play next or show Enter button
-        if (entryVideo) {
-            entryVideo.addEventListener('ended', () => {
-                currentVideoIndex++;
-                
-                if (currentVideoIndex < introVideos.length) {
-                    // Play next video
-                    entryVideoSource.src = introVideos[currentVideoIndex];
-                    entryVideo.load();
-                    entryVideo.play();
-                } else {
-                    // All videos done, show Enter button
-                    showEnterButton();
-                }
+        function setupEntryChromaKey() {
+            if (!entryVideo || !entryCanvas) return;
+            
+            entryCtx = entryCanvas.getContext('2d', { willReadFrequently: true });
+            
+            // Wait for video metadata to set canvas size
+            entryVideo.addEventListener('loadedmetadata', () => {
+                entryCanvas.width = entryVideo.videoWidth;
+                entryCanvas.height = entryVideo.videoHeight;
+                console.log('[Entry] Canvas sized:', entryCanvas.width, 'x', entryCanvas.height);
             });
             
-            // Start on first user interaction if autoplay blocked
-            entryVideo.addEventListener('click', () => {
+            // Start processing when video plays
+            entryVideo.addEventListener('play', () => {
+                processEntryFrame();
+            });
+            
+            // Stop processing when video ends
+            entryVideo.addEventListener('ended', () => {
+                if (entryAnimationId) {
+                    cancelAnimationFrame(entryAnimationId);
+                }
+                showEnterButton();
+            });
+            
+            // Click canvas to play if autoplay blocked
+            entryCanvas.addEventListener('click', () => {
                 if (entryVideo.paused) {
                     entryVideo.play();
                 }
             });
         }
         
+        function processEntryFrame() {
+            if (!entryVideo || entryVideo.paused || entryVideo.ended) return;
+            
+            // Draw current frame
+            entryCtx.drawImage(entryVideo, 0, 0, entryCanvas.width, entryCanvas.height);
+            
+            // Get pixel data
+            const imageData = entryCtx.getImageData(0, 0, entryCanvas.width, entryCanvas.height);
+            const data = imageData.data;
+            
+            // Chroma key: remove green
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                
+                // Detect green screen (green is dominant, high enough)
+                // Adjust these values if needed for your specific green
+                if (g > 80 && g > r * 1.2 && g > b * 1.2) {
+                    data[i + 3] = 0; // Set alpha to 0 (transparent)
+                }
+            }
+            
+            entryCtx.putImageData(imageData, 0, 0);
+            
+            // Continue processing
+            entryAnimationId = requestAnimationFrame(processEntryFrame);
+        }
+        
         function showEnterButton() {
-            entryVideo?.classList.add('faded');
+            entryCanvas?.classList.add('faded');
             enterBtn?.classList.remove('hidden');
             skipIntroBtn?.classList.add('hidden');
+            if (entryAnimationId) {
+                cancelAnimationFrame(entryAnimationId);
+            }
         }
         
         // Skip button
@@ -380,8 +413,9 @@
             showEnterButton();
         });
         
-        // Try to start video sequence
-        startIntroSequence();
+        // Initialize and start
+        setupEntryChromaKey();
+        entryVideo?.play().catch(e => console.log('[Entry] Autoplay blocked, click to play'));
         
         function showEntry() {
             entryPage.classList.add('active');

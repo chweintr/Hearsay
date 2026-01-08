@@ -95,6 +95,7 @@
                     <input type="range" id="store-ambient-volume" min="0" max="100" value="65">
                     <label>Music</label>
                     <input type="range" id="store-music-volume" min="0" max="100" value="15">
+                    <button id="store-mute-btn" class="mute-btn-mini">Mute</button>
                 </div>
             </div>
             
@@ -299,6 +300,7 @@
                 <label>Music</label>
                 <input type="range" id="music-volume" min="0" max="100" value="15">
             </div>
+            <button id="mute-all-btn" class="mute-btn">Mute All</button>
         </div>
     </div>
 
@@ -1083,11 +1085,37 @@
             });
         }
         
+        // Mute All buttons
+        const muteAllBtn = document.getElementById('mute-all-btn');
+        const storeMuteBtn = document.getElementById('store-mute-btn');
+        
+        function updateMuteButtons() {
+            if (muteAllBtn) {
+                muteAllBtn.textContent = audioMuted ? 'Unmute' : 'Mute All';
+                muteAllBtn.classList.toggle('muted', audioMuted);
+            }
+            if (storeMuteBtn) {
+                storeMuteBtn.textContent = audioMuted ? 'Unmute' : 'Mute';
+                storeMuteBtn.classList.toggle('muted', audioMuted);
+            }
+        }
+        
+        muteAllBtn?.addEventListener('click', () => {
+            toggleAudio();
+            updateMuteButtons();
+        });
+        
+        storeMuteBtn?.addEventListener('click', () => {
+            toggleAudio();
+            updateMuteButtons();
+        });
+        
         // Sync store sliders when store modal opens
         document.getElementById('store-btn')?.addEventListener('click', () => {
             if (storeAmbientSlider) storeAmbientSlider.value = ambientSlider.value;
             if (storeMusicSlider) storeMusicSlider.value = musicSlider.value;
             if (storeAudioToggle) storeAudioToggle.textContent = audioMuted ? '🔇' : '🔊';
+            updateMuteButtons();
         });
         
         // Start audio on first click anywhere on page

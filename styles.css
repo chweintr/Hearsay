@@ -129,6 +129,39 @@ body {
     animation: crestGlow 4s ease-in-out infinite alternate;
 }
 
+/* Click to start overlay */
+.click-to-start {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 200px;
+    border: 2px solid var(--brass-mid);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.click-to-start:hover {
+    border-color: var(--brass-light);
+    transform: scale(1.05);
+    background: rgba(26, 21, 18, 0.7);
+}
+
+.click-to-start.hidden {
+    display: none;
+}
+
+.start-text {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--brass-light);
+    text-align: center;
+}
+
 /* Entry video */
 .entry-video {
     max-width: min(95vw, 900px);
@@ -137,6 +170,10 @@ body {
     border-radius: 4px;
     cursor: pointer;
     transition: opacity 0.5s ease;
+}
+
+.entry-video.hidden {
+    display: none;
 }
 
 .entry-video.faded {

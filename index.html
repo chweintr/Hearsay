@@ -21,11 +21,15 @@
     <div id="entry-page" class="page active">
         <div class="entry-background"></div>
         <div class="entry-content">
-            <video id="entry-video" class="entry-video" playsinline muted>
+            <!-- Click to start overlay (required for audio) -->
+            <div id="click-to-start" class="click-to-start">
+                <span class="start-text">Click to Begin</span>
+            </div>
+            <video id="entry-video" class="entry-video hidden" playsinline>
                 <source src="assets/videos/Landing.mp4" type="video/mp4">
             </video>
             <button id="enter-btn" class="enter-button hidden">Enter</button>
-            <button id="skip-intro-btn" class="skip-intro-btn">Skip</button>
+            <button id="skip-intro-btn" class="skip-intro-btn hidden">Skip</button>
         </div>
     </div>
 
@@ -327,8 +331,17 @@
         const enterBtn = document.getElementById('enter-btn');
         const entryVideo = document.getElementById('entry-video');
         const skipIntroBtn = document.getElementById('skip-intro-btn');
+        const clickToStart = document.getElementById('click-to-start');
         
-        // Simple video playback (black background, no keying needed)
+        // Click to start (required for audio playback)
+        clickToStart?.addEventListener('click', () => {
+            clickToStart.classList.add('hidden');
+            entryVideo?.classList.remove('hidden');
+            skipIntroBtn?.classList.remove('hidden');
+            entryVideo?.play();
+        });
+        
+        // Show Enter button when video ends
         function showEnterButton() {
             entryVideo?.classList.add('faded');
             enterBtn?.classList.remove('hidden');
@@ -336,18 +349,7 @@
         }
         
         if (entryVideo) {
-            // Show Enter button when video ends
             entryVideo.addEventListener('ended', showEnterButton);
-            
-            // Click video to play if autoplay blocked
-            entryVideo.addEventListener('click', () => {
-                if (entryVideo.paused) {
-                    entryVideo.play();
-                }
-            });
-            
-            // Try to autoplay
-            entryVideo.play().catch(e => console.log('[Entry] Autoplay blocked, click to play'));
         }
         
         // Skip button

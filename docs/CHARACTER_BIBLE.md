@@ -266,3 +266,65 @@ User is in Room 412 and may or may not be able to leave. This is deliberately am
 5. Tane's pack includes "SEND US YOUR FACE" QR — generates faux Polaroid
 6. Marisol has incognito mode — random toggle between faceIds
 
+---
+
+## Future Characters (Concept Notes)
+
+### THE GHOST OF VANCE (Owner)
+
+**Concept:** The deceased hotel owner. Died six months ago under mysterious circumstances. Heart attack was the official story, but...
+
+**Possible Implementations:**
+- Appears rarely, at random, late at night (time-locked availability?)
+- Not fully solid — glitchy video effect, transparency, artifacts
+- Speaks in fragments, as if signal is weak
+- May not know he's dead, or may know too well
+- Could be a late-game unlock (only after talking to X other characters)
+
+**What he might know:**
+- What really happened that night
+- Who was in the building
+- What the hotel actually is
+- Why Room 412 matters
+
+**What makes him interesting:**
+- Unreliable narrator taken literally — is this a ghost or a hallucination?
+- Marisol's father — how does she feel about him appearing?
+- Wire has been here longer than Vance — what does Wire know?
+
+**Visual considerations:**
+- Old footage feel (desaturated, film grain)
+- Occasional dropout/static
+- May not always respond to questions — just delivers monologues
+
+**Narrative risk:** Could feel too on-the-nose if not handled carefully. Should be strange, not expository. More questions than answers.
+
+---
+
+## Narrative Threads (Development Notes)
+
+### The Mysterious Night Out with Tane
+- User may have been with Tane "that Thursday" but can't remember
+- Polaroids in Tane's sensory pack hint at this
+- Creates pretext for user's confusion/amnesia about their situation
+- Tane references it; user has no memory
+
+### The Sticky Notes
+- Visible on the inside of the door
+- Could be user's own attempt to piece things together
+- Or left by the last occupant of 412
+- Or both — user found notes, adding to them
+
+### Why User Can't Leave / Doesn't Leave
+- Deliberately ambiguous
+- Could be locked in
+- Could be afraid to leave
+- Could be that "leaving" doesn't work the way they expect
+- Characters should occasionally reference it without explaining
+
+### User Anonymity
+- Characters never see user (peephole only works one way)
+- Explains why they don't ask name/age/gender
+- Some characters assume familiarity ("You look different today" — but they can't see you)
+- Adds to dreamlike/uncanny quality
+

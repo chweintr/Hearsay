@@ -118,10 +118,14 @@ export class BlackRemover {
                 const dy = (y - headCenterY) / headRadiusY;
                 const distFromHeadCenter = Math.sqrt(dx * dx + dy * dy);
                 
-                // HEAD PROTECTION: Don't remove ANY black inside the head zone
+                // HEAD PROTECTION: Inside head zone, only remove PURE black (0,0,0)
+                // This removes background while preserving dark hair (which is never pure 0,0,0)
                 if (distFromHeadCenter < 1.0) {
-                    // Inside head ellipse: SKIP - don't touch this pixel
-                    continue;
+                    // Inside head ellipse: ultra-strict - only RGB(0,0,0) exactly
+                    if (r === 0 && g === 0 && b === 0) {
+                        data[i + 3] = 0; // Remove pure black background
+                    }
+                    continue; // Skip further processing for head zone
                 }
                 
                 // Outside head zone: remove pure black background

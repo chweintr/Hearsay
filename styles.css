@@ -918,7 +918,7 @@ body.simli-active .animated-text-container {
 
 .menu-buttons {
     position: fixed;
-    top: 1rem;
+    bottom: 2rem;  /* Moved to bottom, below character gallery */
     left: 50%;
     transform: translateX(-50%);
     display: flex;

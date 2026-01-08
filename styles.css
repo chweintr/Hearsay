@@ -129,16 +129,8 @@ body {
     animation: crestGlow 4s ease-in-out infinite alternate;
 }
 
-/* Entry video with green screen removal */
-.entry-video-source {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-    width: 1px;
-    height: 1px;
-}
-
-.entry-canvas {
+/* Entry video */
+.entry-video {
     max-width: min(95vw, 900px);
     max-height: 75vh;
     object-fit: contain;
@@ -147,7 +139,7 @@ body {
     transition: opacity 0.5s ease;
 }
 
-.entry-canvas.faded {
+.entry-video.faded {
     opacity: 0.3;
 }
 

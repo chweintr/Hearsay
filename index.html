@@ -1610,8 +1610,42 @@
         // ─────────────────────────────────────────────────────────────────────
         
         // Expose for debugging
-        window.hearsay = { stateMachine, compositor, simli, config, characters, platform, experience, sessionManager };
+        window.hearsay = { 
+            stateMachine, 
+            compositor, 
+            simli, 
+            config, 
+            characters, 
+            platform, 
+            experience, 
+            sessionManager,
+            // Debug helpers
+            debug: {
+                showTranscripts: () => {
+                    const data = sessionManager.exportForWritingEngine();
+                    console.log('=== SESSION DATA ===');
+                    console.log('Session ID:', data?.sessionId);
+                    console.log('Conversations:', data?.transcripts?.length || 0);
+                    (data?.transcripts || []).forEach((t, i) => {
+                        const hasFull = t.transcript && !t.transcript.includes('transcript not captured');
+                        console.log(`  [${i+1}] ${t.character}: ${hasFull ? '✅ Has transcript' : '⏳ Pending'}`);
+                        if (hasFull) console.log('      Preview:', typeof t.transcript === 'string' ? t.transcript.slice(0, 100) : JSON.stringify(t.transcript).slice(0, 100));
+                    });
+                    return data;
+                },
+                showConversations: () => {
+                    const convos = sessionManager.getConversationCount();
+                    console.log(`Total conversations this session: ${convos}`);
+                    return convos;
+                },
+                clearSession: () => {
+                    sessionManager.endSession();
+                    console.log('Session cleared');
+                }
+            }
+        };
         console.log(`${platform.name} — ${experience.name} initialized`);
+        console.log('Debug: Type hearsay.debug.showTranscripts() to check transcript status');
     </script>
 </body>
 </html>

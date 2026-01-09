@@ -201,13 +201,14 @@ export const characters = {
     solomon: {
         name: 'Solomon',
         role: 'The Concierge',
-        agentId: 'xxx',  // TODO: Add when Simli agent created
-        faceId: 'xxx',   // TODO: Add when Simli face created
+        agentId: '05bf4fc1-9e97-4f5e-9fa5-43712181839f',
+        faceId: '38a35d8d-6d7b-4369-85be-d57a419e3ebb',
         idleToActive: ['assets/videos/Solomon_Walkup.mp4'],
         activeToIdle: ['assets/videos/Solomon_Walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
         previewVideo: 'assets/videos/Solomon_Walkup.mp4',
-        status: 'coming_soon'  // Change to 'ready' when agent ID added
+        chromaKey: '#00ff00',  // Green screen removal
+        status: 'ready'
     }
 };
 

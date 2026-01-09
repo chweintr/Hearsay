@@ -414,10 +414,11 @@ body.simli-active .animated-text-container {
     pointer-events: auto; /* Re-enable clicks on cards */
     transition: transform 0.3s ease, opacity 0.3s ease;
     /* Prevent blend mode inheritance from animated text */
-    mix-blend-mode: normal;
+    mix-blend-mode: normal !important;
+    isolation: isolate; /* Break stacking context for alpha videos */
     
     /* Orbital positioning - each card uses --angle from JS */
-    --orbit-radius: 42vmin; /* Distance from center */
+    --orbit-radius: 38vmin; /* Distance from center - brought closer */
     --angle: 0deg;
     
     top: 50%;
@@ -489,20 +490,23 @@ body.simli-active .animated-text-container {
     overflow: hidden;
     margin-bottom: 0.4rem;
     transition: transform 0.2s ease;
-    /* Solid opaque background - NOT transparent */
-    background: #1a1512;
+    /* CRITICAL: Solid opaque background for alpha videos */
+    background: #0a0806 !important;
+    background-color: #0a0806 !important;
     /* Prevent any blend mode inheritance */
-    mix-blend-mode: normal;
+    mix-blend-mode: normal !important;
     isolation: isolate;
 }
 
-/* Solid backdrop layer behind video for alpha-channel videos (Rufus) */
+/* Solid backdrop layer behind video - darker for better contrast */
 .character-circle::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: #1a1512;
+    background: #0a0806 !important;
+    background-color: #0a0806 !important;
     z-index: 0;
+    border-radius: 50%;
 }
 
 .character-circle-border {
@@ -527,7 +531,8 @@ body.simli-active .animated-text-container {
     transition: filter 0.3s ease;
     /* AGGRESSIVE fix for alpha-channel videos */
     mix-blend-mode: normal !important;
-    background-color: #1a1512 !important;
+    background-color: #0a0806 !important;
+    background: #0a0806 !important;
     /* Force opaque rendering */
     isolation: isolate;
     opacity: 1 !important;

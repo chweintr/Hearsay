@@ -1291,6 +1291,21 @@
                 return;
             }
             
+            // Check for pending transcripts
+            const sessionData = sessionManager.exportForWritingEngine();
+            const pendingCount = (sessionData?.transcripts || []).filter(t => 
+                typeof t.transcript === 'string' && t.transcript.includes('transcript not captured')
+            ).length;
+            
+            if (pendingCount > 0) {
+                const proceed = confirm(
+                    `${pendingCount} conversation(s) haven't finished uploading their transcripts yet. ` +
+                    `Wait a few more seconds for better results, or proceed with partial data?\n\n` +
+                    `Click OK to proceed anyway, or Cancel to wait.`
+                );
+                if (!proceed) return;
+            }
+            
             // Show writing modal in loading state
             writingLoading.classList.remove('hidden');
             writingSuccess.classList.add('hidden');
@@ -1298,9 +1313,12 @@
             writingModal.classList.remove('hidden');
             
             try {
-                // Get session data for Writing Engine
-                const sessionData = sessionManager.exportForWritingEngine();
-                console.log('[WritingEngine] Generating chapter from:', sessionData);
+                // Re-export in case transcripts updated while confirm dialog was open
+                const finalSessionData = sessionManager.exportForWritingEngine();
+                
+                // Log what we're sending
+                console.log('[WritingEngine] Generating chapter from:', finalSessionData);
+                console.log('[WritingEngine] Transcripts detail:', JSON.stringify(finalSessionData?.transcripts, null, 2));
                 
                 // Get previous chapters for RAG context (continuity)
                 const previousChapters = getPreviousChaptersForContext(3);
@@ -1311,8 +1329,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        sessionId: sessionData.sessionId,
-                        transcripts: sessionData.transcripts,
+                        sessionId: finalSessionData.sessionId,
+                        transcripts: finalSessionData.transcripts,
                         previousChapters: previousChapters,
                         chapterLength: 'medium'
                     })
@@ -1343,7 +1361,7 @@
                 const chapters = JSON.parse(localStorage.getItem(chaptersKey) || '[]');
                 chapters.push({
                     ...chapter,
-                    userSessionId: sessionData.sessionId
+                    userSessionId: finalSessionData.sessionId
                 });
                 localStorage.setItem(chaptersKey, JSON.stringify(chapters));
                 

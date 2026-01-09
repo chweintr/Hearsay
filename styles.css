@@ -162,12 +162,15 @@ body {
     text-align: center;
 }
 
-/* Entry video */
+/* Entry video - full screen */
 .entry-video {
-    max-width: min(95vw, 900px);
-    max-height: 75vh;
-    object-fit: contain;
-    border-radius: 4px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 5;
     cursor: pointer;
     transition: opacity 0.5s ease;
 }
@@ -177,14 +180,14 @@ body {
 }
 
 .entry-video.faded {
-    opacity: 0.3;
+    opacity: 0.2;
 }
 
 .skip-intro-btn {
     position: fixed;
     bottom: 2rem;
     right: 2rem;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.7);
     border: 1px solid var(--brass-dark);
     color: var(--brass-mid);
     font-family: var(--font-display);
@@ -194,17 +197,26 @@ body {
     padding: 0.5rem 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    z-index: 100;
+    z-index: 200;
 }
 
 .skip-intro-btn:hover {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     border-color: var(--brass-mid);
     color: var(--parchment);
 }
 
 .skip-intro-btn.hidden {
     display: none;
+}
+
+/* Enter button over full screen video */
+#entry-page .enter-button {
+    position: fixed;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
 }
 
 @keyframes crestGlow {

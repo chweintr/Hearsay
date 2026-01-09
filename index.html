@@ -290,9 +290,9 @@
         <source src="assets/sounds/hotel_hallway_subtle_3a.wav" type="audio/wav">
     </audio>
     
-    <!-- Music track - single loop -->
+    <!-- Music tracks - rotate between them -->
     <audio id="music-main" class="music-track" loop preload="auto">
-        <source src="assets/sounds/MataZ.wav" type="audio/wav">
+        <!-- Source set dynamically by JS -->
     </audio>
     
     <!-- Audio Controls -->
@@ -368,6 +368,10 @@
             entryPage.classList.remove('active');
             landingPage.classList.add('active');
             experiencePage.classList.remove('active');
+            // Rotate music when returning to landing
+            if (typeof nextMusicTrack === 'function') {
+                nextMusicTrack();
+            }
         }
         
         function showExperience() {
@@ -1035,6 +1039,32 @@
         const ambientSlider = document.getElementById('ambient-volume');
         const musicSlider = document.getElementById('music-volume');
         const audioToggle = document.getElementById('audio-toggle');
+        
+        // Music track rotation
+        const musicTracks = [
+            'assets/sounds/MataZ.wav',
+            'assets/sounds/beard-contest--(remastered).mp3'
+        ];
+        let currentMusicIndex = Math.floor(Math.random() * musicTracks.length); // Start random
+        
+        function setMusicTrack(index) {
+            if (!musicTrack) return;
+            currentMusicIndex = index % musicTracks.length;
+            musicTrack.src = musicTracks[currentMusicIndex];
+            musicTrack.load();
+            console.log('[Audio] Music track:', musicTracks[currentMusicIndex]);
+        }
+        
+        function nextMusicTrack() {
+            const wasPlaying = !musicTrack?.paused;
+            setMusicTrack(currentMusicIndex + 1);
+            if (wasPlaying && musicTrack) {
+                musicTrack.play().catch(() => {});
+            }
+        }
+        
+        // Set initial track
+        setMusicTrack(currentMusicIndex);
         
         let audioStarted = false;
         let audioMuted = false;

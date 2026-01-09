@@ -487,17 +487,23 @@
         (function initOrbitAnimation() {
             let orbitOffset = 0;
             let isPaused = false;
-            const ROTATION_SPEED = 0.015; // degrees per frame (~90 seconds for full rotation at 60fps)
+            const ROTATION_SPEED = 0.012; // degrees per frame (~90 seconds for full rotation at 60fps)
+            const cards = gallery.querySelectorAll('.character-card');
             
-            // Pause on hover
-            gallery.addEventListener('mouseenter', () => { isPaused = true; });
-            gallery.addEventListener('mouseleave', () => { isPaused = false; });
+            // Pause on hover over any card
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => { isPaused = true; });
+                card.addEventListener('mouseleave', () => { isPaused = false; });
+            });
             
             function animateOrbit() {
                 if (!isPaused) {
                     orbitOffset += ROTATION_SPEED;
                     if (orbitOffset >= 360) orbitOffset -= 360;
-                    gallery.style.setProperty('--orbit-offset', `${orbitOffset}deg`);
+                    // Apply to each card directly for reliable inheritance
+                    cards.forEach(card => {
+                        card.style.setProperty('--orbit-offset', `${orbitOffset}deg`);
+                    });
                 }
                 requestAnimationFrame(animateOrbit);
             }
@@ -1081,19 +1087,21 @@
         const musicSlider = document.getElementById('music-volume');
         const audioToggle = document.getElementById('audio-toggle');
         
-        // Music track rotation
+        // Music track rotation with volume normalization
         const musicTracks = [
-            'assets/sounds/MataZ.wav',
-            'assets/sounds/beard-contest--(remastered).mp3'
+            { src: 'assets/sounds/MataZ.wav', volumeMultiplier: 1.0 },
+            { src: 'assets/sounds/beard-contest--(remastered).mp3', volumeMultiplier: 2.5 } // Boost quieter track
         ];
         let currentMusicIndex = Math.floor(Math.random() * musicTracks.length); // Start random
         
         function setMusicTrack(index) {
             if (!musicTrack) return;
             currentMusicIndex = index % musicTracks.length;
-            musicTrack.src = musicTracks[currentMusicIndex];
+            musicTrack.src = musicTracks[currentMusicIndex].src;
             musicTrack.load();
-            console.log('[Audio] Music track:', musicTracks[currentMusicIndex]);
+            // Apply volume with track-specific multiplier
+            updateMusicVolume(musicSlider?.value || 15);
+            console.log('[Audio] Music track:', musicTracks[currentMusicIndex].src, 'multiplier:', musicTracks[currentMusicIndex].volumeMultiplier);
         }
         
         function nextMusicTrack() {
@@ -1119,7 +1127,9 @@
         }
         
         function updateMusicVolume(value) {
-            const vol = value / 100;
+            const baseVol = value / 100;
+            const multiplier = musicTracks[currentMusicIndex]?.volumeMultiplier || 1.0;
+            const vol = Math.min(1.0, baseVol * multiplier); // Cap at 1.0
             if (musicTrack) musicTrack.volume = vol;
         }
         
@@ -1136,7 +1146,7 @@
             
             // Start music (single track, loops)
             if (musicTrack) {
-                musicTrack.volume = musicSlider.value / 100;
+                updateMusicVolume(musicSlider?.value || 15);
                 musicTrack.play().catch(e => console.log('Music blocked:', e));
             }
             

@@ -46,12 +46,18 @@
 > Your conversations become a chapter.  
 > Your chapter becomes part of a story.
 
-**[VISUAL: The heraldic crest. THE KNOCK title.]**
+**[VISUAL: Return to the rotating sign — "MANE NOBISCUM" / "STAY WITH US"]**
 
 > Someone's knocking.  
 > Will you answer?
 
-**[VISUAL: "BEGIN" button appears.]**
+*[beat]*
+
+> We hope you'll stay with us.
+
+**[VISUAL: Door slowly closes. "BEGIN" button appears.]**
+
+*Note: "Stay with us" carries three meanings — stay at the hotel, keep playing, and... don't end up like the previous owner.*
 
 ---
 
@@ -97,9 +103,10 @@ Characters knock on their own. User doesn't choose — they respond.
 > This is THE KNOCK.  
 > A HEARSAY experience.
 
-**[VISUAL: "BEGIN" button.]**
+**[VISUAL: Return to rotating sign — "STAY WITH US"]**
 
-> Someone's knocking. Will you answer?
+> Someone's knocking. Will you answer?  
+> We hope you'll stay with us.
 
 ---
 

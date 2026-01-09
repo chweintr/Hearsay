@@ -13,6 +13,10 @@ export class BlackRemover {
         this.video = null;
         this.isRunning = false;
         
+        // Chroma key mode: 'black' (default) or 'green'
+        this.chromaKey = 'black';
+        this.chromaThreshold = 100; // For green screen: max color distance
+        
         // Thresholds for black removal
         this.threshold = 4; // Edge threshold (background)
         this.centerThreshold = 0; // Center: NEVER remove anything (hair protection)
@@ -27,6 +31,59 @@ export class BlackRemover {
         };
         
         console.log('[BlackRemover] Initialized with HEAD PROTECTION ZONE');
+    }
+    
+    /**
+     * Set chroma key mode
+     * @param {string} key - 'black' (default), '#00ff00' (green), or hex color
+     */
+    setChromaKey(key) {
+        if (!key || key === 'black') {
+            this.chromaKey = 'black';
+            console.log('[BlackRemover] Using BLACK key');
+        } else if (key.startsWith('#')) {
+            // Parse hex color
+            this.chromaKey = 'custom';
+            this.keyColor = this.hexToRgb(key);
+            console.log(`[BlackRemover] Using CUSTOM key: ${key} → RGB(${this.keyColor.r}, ${this.keyColor.g}, ${this.keyColor.b})`);
+        } else {
+            this.chromaKey = key;
+            console.log(`[BlackRemover] Using ${key.toUpperCase()} key`);
+        }
+    }
+    
+    /**
+     * Convert hex color to RGB
+     */
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 0, g: 255, b: 0 }; // Default to green
+    }
+    
+    /**
+     * Check if a pixel matches the chroma key color
+     */
+    isChromaKeyMatch(r, g, b) {
+        if (this.chromaKey === 'black') {
+            // Black key logic (existing behavior)
+            return false; // Handled separately in processFrame
+        }
+        
+        // For green screen or custom color
+        const keyColor = this.keyColor || { r: 0, g: 255, b: 0 }; // Default green
+        
+        // Color distance in RGB space
+        const distance = Math.sqrt(
+            Math.pow(r - keyColor.r, 2) +
+            Math.pow(g - keyColor.g, 2) +
+            Math.pow(b - keyColor.b, 2)
+        );
+        
+        return distance < this.chromaThreshold;
     }
     
     /**
@@ -102,11 +159,21 @@ export class BlackRemover {
             const headRadiusX = this.canvas.width * this.headZone.radiusX;
             const headRadiusY = this.canvas.height * this.headZone.radiusY;
             
-            // Replace black pixels with transparent, with HEAD PROTECTION
+            // Replace keyed pixels with transparent
             for (let i = 0; i < data.length; i += 4) {
                 const r = data[i];
                 const g = data[i + 1];
                 const b = data[i + 2];
+                
+                // GREEN SCREEN or CUSTOM KEY: Simple color distance matching
+                if (this.chromaKey !== 'black') {
+                    if (this.isChromaKeyMatch(r, g, b)) {
+                        data[i + 3] = 0; // Set alpha to 0
+                    }
+                    continue;
+                }
+                
+                // BLACK KEY: Use head protection zone logic
                 
                 // Calculate pixel position
                 const pixelIndex = i / 4;

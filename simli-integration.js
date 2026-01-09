@@ -28,6 +28,10 @@ export class SimliIntegration {
         this.currentSimliSessionId = null;
         this.currentCharacter = null;
         
+        // LOCAL transcript capture (doesn't rely on Simli API)
+        // This is the primary source - Simli's transcript API is unreliable
+        this.localTranscript = [];
+        
         // Bind handlers
         this.handleStateChange = this.handleStateChange.bind(this);
         this.handleTransitionEnd = this.handleTransitionEnd.bind(this);
@@ -73,6 +77,37 @@ export class SimliIntegration {
         }
     }
 
+    /**
+     * Add entry to local transcript
+     * Called by event listeners on the Simli widget
+     */
+    addToTranscript(speaker, text) {
+        if (!text || text.trim() === '') return;
+        
+        const entry = {
+            speaker: speaker,  // 'user' or 'ai'
+            text: text.trim(),
+            timestamp: new Date().toISOString()
+        };
+        
+        this.localTranscript.push(entry);
+        console.log(`[Simli] 📝 Transcript: ${speaker}: ${text.substring(0, 50)}...`);
+    }
+    
+    /**
+     * Get local transcript for current conversation
+     */
+    getLocalTranscript() {
+        return this.localTranscript;
+    }
+    
+    /**
+     * Clear local transcript (called at start of new conversation)
+     */
+    clearLocalTranscript() {
+        this.localTranscript = [];
+    }
+    
     /**
      * Fetch session token from Railway backend
      * @param {string} agentId - Simli agent ID
@@ -181,6 +216,10 @@ export class SimliIntegration {
             // Store current character for transcript metadata
             this.currentCharacter = character;
             
+            // Clear local transcript for new conversation
+            this.clearLocalTranscript();
+            console.log('[Simli] 📝 Local transcript capture ready');
+            
             // Record conversation START immediately (don't wait for transcript)
             // This ensures "End Session" knows a conversation happened
             this.sessionManager.recordConversationStart(character);
@@ -255,6 +294,44 @@ export class SimliIntegration {
             this.widget.addEventListener('simli-listening', () => {
                 console.log('[Simli] 👂 Listening for user speech');
             });
+            
+            // LOCAL TRANSCRIPT CAPTURE - Listen for transcription events
+            // These event names may vary - Simli docs are sparse
+            // We try multiple possible event names
+            
+            // User speech transcription
+            ['transcription', 'user-transcription', 'speech-result', 'transcript', 'user-speech'].forEach(eventName => {
+                this.widget.addEventListener(eventName, (e) => {
+                    console.log(`[Simli] 📥 Event '${eventName}':`, e.detail);
+                    const text = e.detail?.text || e.detail?.transcript || e.detail?.message || '';
+                    if (text) {
+                        this.addToTranscript('user', text);
+                    }
+                });
+            });
+            
+            // AI response transcription
+            ['ai-response', 'agent-response', 'assistant-message', 'response', 'ai-text'].forEach(eventName => {
+                this.widget.addEventListener(eventName, (e) => {
+                    console.log(`[Simli] 📤 Event '${eventName}':`, e.detail);
+                    const text = e.detail?.text || e.detail?.message || e.detail?.response || '';
+                    if (text) {
+                        this.addToTranscript('ai', text);
+                    }
+                });
+            });
+            
+            // Catch-all: Log ALL events for debugging
+            const logAllEvents = (eventName) => {
+                this.widget.addEventListener(eventName, (e) => {
+                    if (e.detail && typeof e.detail === 'object') {
+                        console.log(`[Simli] EVENT '${eventName}':`, JSON.stringify(e.detail).substring(0, 200));
+                    }
+                });
+            };
+            
+            // Common event names to watch
+            ['message', 'data', 'update', 'text', 'speech', 'audio'].forEach(logAllEvents);
             
             // Catch ALL events on the widget for debugging
             const originalAddEventListener = this.widget.addEventListener.bind(this.widget);
@@ -545,6 +622,14 @@ export class SimliIntegration {
                     }
                 });
                 
+                // Configure chroma key based on character settings
+                // Some characters use green screen (#00ff00), most use black
+                if (this.currentCharacter?.chromaKey) {
+                    this.blackRemover.setChromaKey(this.currentCharacter.chromaKey);
+                } else {
+                    this.blackRemover.setChromaKey('black');
+                }
+                
                 // Start BlackRemover - it will call onReady when canvas is rendering
                 this.blackRemover.start(video);
                 console.log('[Simli] BlackRemover started, waiting for canvas frames...');
@@ -592,17 +677,48 @@ export class SimliIntegration {
             this.widget = null;
         }
         
-        // Fetch transcript after session ends (async, with delay to let Simli process)
-        if (simliSessionId) {
-            console.log(`[Simli] 📜 Will fetch transcript for ${character?.name} session in 5s...`);
-            setTimeout(async () => {
-                const transcript = await this.fetchTranscript(simliSessionId);
-                if (transcript) {
-                    console.log('[Simli] Transcript saved for Writing Engine:', transcript);
-                    // Store in session manager (bundles all conversations for one chapter)
-                    this.sessionManager.storeConversation(simliSessionId, character, transcript);
-                }
-            }, 5000);
+        // PRIMARY: Use local transcript (captured from widget events)
+        const localTranscript = [...this.localTranscript];  // Copy before clearing
+        
+        if (localTranscript.length > 0) {
+            console.log(`[Simli] ✅ LOCAL transcript has ${localTranscript.length} entries`);
+            
+            // Store local transcript immediately
+            this.sessionManager.storeConversation(
+                simliSessionId || `local-${Date.now()}`,
+                character,
+                { messages: localTranscript, source: 'local' }
+            );
+        } else {
+            console.log('[Simli] ⚠️ Local transcript is empty - trying Simli API as fallback');
+            
+            // FALLBACK: Try Simli's transcript API (often fails or returns empty)
+            if (simliSessionId) {
+                console.log(`[Simli] 📜 Will fetch transcript from Simli API in 5s...`);
+                setTimeout(async () => {
+                    const transcript = await this.fetchTranscript(simliSessionId);
+                    if (transcript?.transcript) {
+                        console.log('[Simli] Simli API transcript saved:', transcript);
+                        this.sessionManager.storeConversation(simliSessionId, character, transcript.transcript);
+                    } else {
+                        // Store placeholder so we know conversation happened
+                        console.log('[Simli] ❌ No transcript available - storing placeholder');
+                        this.sessionManager.storeConversation(
+                            simliSessionId || `empty-${Date.now()}`,
+                            character,
+                            { messages: [], source: 'none', note: 'Transcript not captured' }
+                        );
+                    }
+                }, 5000);
+            } else {
+                console.warn('[Simli] ⚠️ No sessionId available - cannot fetch Simli transcript');
+                // Still store that a conversation happened
+                this.sessionManager.storeConversation(
+                    `nosession-${Date.now()}`,
+                    character,
+                    { messages: [], source: 'none', note: 'No session ID available' }
+                );
+            }
         }
         
         // Clear Simli session tracking (user session persists)

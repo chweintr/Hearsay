@@ -348,10 +348,62 @@ export class SessionManager {
                 character: conv.character,
                 role: conv.role,
                 timestamp: conv.timestamp || conv.startedAt,
-                // For pending convos without transcript, provide a note
-                transcript: conv.transcript || `[Conversation with ${conv.character} - transcript not captured]`
+                // Format transcript for Claude
+                transcript: this.formatTranscriptForClaude(conv)
             }))
         };
+    }
+    
+    /**
+     * Format a conversation transcript for Claude
+     * Handles both local captures and Simli API transcripts
+     */
+    formatTranscriptForClaude(conv) {
+        const transcript = conv.transcript;
+        
+        // If no transcript at all
+        if (!transcript) {
+            return `[Conversation with ${conv.character} - transcript not captured]`;
+        }
+        
+        // If it's a local capture with messages array
+        if (transcript.messages && Array.isArray(transcript.messages)) {
+            if (transcript.messages.length === 0) {
+                if (transcript.note) {
+                    return `[${transcript.note}]`;
+                }
+                return `[Conversation with ${conv.character} - no dialogue recorded]`;
+            }
+            
+            // Format as readable dialogue
+            return transcript.messages.map(msg => {
+                const speaker = msg.speaker === 'user' 
+                    ? 'Occupant of 412' 
+                    : conv.character;
+                return `${speaker}: ${msg.text}`;
+            }).join('\n');
+        }
+        
+        // If it's a Simli API transcript (format unknown, treat as raw)
+        if (typeof transcript === 'object') {
+            // Try to extract readable content
+            if (transcript.text) return transcript.text;
+            if (transcript.content) return transcript.content;
+            if (Array.isArray(transcript)) {
+                return transcript.map(t => 
+                    `${t.speaker || t.role || 'Unknown'}: ${t.text || t.content || JSON.stringify(t)}`
+                ).join('\n');
+            }
+            // Last resort: stringify it
+            return JSON.stringify(transcript, null, 2);
+        }
+        
+        // If it's already a string
+        if (typeof transcript === 'string') {
+            return transcript;
+        }
+        
+        return `[Transcript format unknown: ${typeof transcript}]`;
     }
 }
 

@@ -1,177 +1,104 @@
 # THE KNOCK — Intro Video Script
 
-**Duration:** 45-60 seconds  
-**Tone:** Mysterious, inviting, slightly unsettling  
-**Purpose:** Orient first-time users without spoiling the experience
+> For the explainer/tutorial video that plays on entry.
+> Approximately 45-60 seconds.
 
 ---
 
-## SCRIPT (V1)
+## Script (v2)
 
-**[VISUAL: Dark screen. Slow fade in on the peephole view — the brass ring, the hallway beyond.]**
+```
+Someone is at your door.
 
-**NARRATOR (V.O.):**
-> Someone is at your door.
+You see them through the door viewer.
 
-**[VISUAL: A figure approaches in the hallway. Slightly out of focus.]**
+They have something to tell you.
 
-> They have something to tell you.  
-> Whether you believe them is up to you.
+Whether you believe them is up to you.
 
-**[VISUAL: The peephole view. The figure waits.]**
+This is THE KNOCK.
 
-> This is THE KNOCK.  
-> A HEARSAY experience.
+A HEARSAY experience.
 
-**[VISUAL: Cut to the character gallery — faces orbiting the peephole.]**
+You are in Room 412.
 
-> You're in Room 412.  
-> You can't remember how you got here.  
-> People keep coming to your door.
+You cannot remember how you got here.
 
-**[VISUAL: Show a character being selected. The walkup video plays.]**
+People keep coming to your door.
 
-> Click a face to invite them to speak.  
-> They'll approach. You'll talk through the door.  
-> They can hear you. You can hear them.
+Click a face to invite them to speak.
 
-**[VISUAL: Brief glimpse of a character speaking through the peephole.]**
+They approach and step into view.
 
-> What they tell you may or may not be true.  
-> That's the thing about hearsay.
+You talk face to face through the door viewer.
 
-**[VISUAL: Fade to the "End Session" button.]**
+What they tell you may or may not be true.
 
-> When you're done for the night, end your session.  
-> Your conversations become a chapter.  
-> Your chapter becomes part of a story.
+That is the thing about hearsay.
 
-**[VISUAL: Return to the rotating sign — "MANE NOBISCUM" / "STAY WITH US"]**
+When you are done for the night, end your session.
 
-> Someone's knocking.  
-> Will you answer?
+Your conversations become a chapter.
 
-*[beat]*
+Your chapter becomes part of a story.
 
-> We hope you'll stay with us.
+Someone is knocking.
 
-**[VISUAL: Door slowly closes. "BEGIN" button appears.]**
+Will you answer?
 
-*Note: "Stay with us" carries three meanings — stay at the hotel, keep playing, and... don't end up like the previous owner.*
+[pause]
+
+We hope you will stay with us.
+```
 
 ---
 
-## DESIGN NOTE: Summoned vs. Unbidden Characters
+## Notes
 
-### Current: User Selects
-User browses gallery, clicks a face, character approaches.
+### Tone
+- Measured, slightly ominous
+- Not rushed
+- Let each line breathe
 
-### Future: Unbidden Knocks
-Characters knock on their own. User doesn't choose — they respond.
+### Key Narrative Elements Introduced
+1. **The door viewer conceit** — face-to-face, visual experience
+2. **Room 412** — you're stuck here
+3. **Amnesia** — you don't know how you got here
+4. **Unreliability** — "may or may not be true" / hearsay theme
+5. **Writing Engine** — conversations become chapters become story
+6. **The tagline** — "We hope you will stay with us" (double meaning: stay at hotel / keep playing / survive)
 
-### Hybrid (Recommended)
-- **Some characters knock unbidden** — notification/sound, user accepts or ignores
-- **Some can be summoned** — gallery still available
-- **Rare characters ONLY appear unbidden** — Ghost of Vance, special events
-- **Time-based logic** — Tane at night, Eddie around dinner, Dotty afternoon
+### Visual Suggestions
+- Start with peephole POV, someone approaching
+- Cut to character faces as "click a face" is said
+- Show the brass peephole frame
+- End on the rotating hotel sign ("Stay With Us")
 
-**Implementation would require:**
-- Random timer system
-- Notification UI ("Someone's at the door...")
-- Accept/Ignore buttons
-- Logic to prevent interrupting active conversations
-
-**Narrative benefit:** Feels less like a menu, more like *they* found *you*.
-
----
-
-## ALTERNATE SHORTER VERSION (30 seconds)
-
-**[VISUAL: Peephole view.]**
-
-**NARRATOR (V.O.):**
-> Someone is at your door.  
-> They have something to tell you.
-
-**[VISUAL: Character gallery.]**
-
-> Click a face. They'll come to your door.  
-> Talk. Listen. Decide what to believe.
-
-**[VISUAL: Character at the peephole.]**
-
-> This is THE KNOCK.  
-> A HEARSAY experience.
-
-**[VISUAL: Return to rotating sign — "STAY WITH US"]**
-
-> Someone's knocking. Will you answer?  
-> We hope you'll stay with us.
+### ElevenLabs Notes
+If using ElevenLabs for narration:
+- Use `<break time="0.5s"/>` between lines
+- Consider `<prosody rate="slow">` for emphasis lines
+- End pause before "We hope you will stay with us" should be longer
 
 ---
 
-## HOW TO MAKE THE VIDEO
+## Future Mechanic: Unbidden Knocks
 
-### Option 1: Screen Recording (Recommended for MVP)
+Script doesn't mention this yet, but future versions could add:
 
-**Tools:**
-- **Mac:** QuickTime Player → File → New Screen Recording
-- **Show cursor:** System Preferences → Accessibility → Display → Cursor → "Shake mouse pointer to locate" OR use a tool like **Cursor Pro** or **ScreenFlow**
+```
+Most guests you summon.
 
-**Steps:**
-1. Open the site in full screen
-2. Start recording with QuickTime
-3. Slowly navigate: Entry → Landing → Click character → Watch walkup → See character speak
-4. Record "End Session" flow
-5. Add voiceover in post (GarageBand, Audacity, or just your phone voice memo)
+But sometimes...
 
-**To show cursor clearly:**
-- Use **Cursor Pro** (free, shows a highlight around cursor)
-- Or **Mouseposé** (shows click ripples)
-- Or **ScreenFlow** has built-in cursor highlighting
+Someone knocks on their own.
+```
 
-### Option 2: Animated Explainer
-
-- Use **Canva** or **CapCut** with screenshots
-- Add text overlays instead of voiceover
-- More polished, takes longer
-
-### Option 3: Just Text Overlays on Site Footage
-
-- Record the site without voiceover
-- Add text cards between clips: "Click a face..." "Talk through the door..." "Your story unfolds..."
-- Works well for silent/autoplay social media
+This sets up the unbidden character mechanic where certain characters (Ghost of Vance, etc.) appear without being invited.
 
 ---
 
-## VOICEOVER NOTES
+## Version History
 
-**Tone:** 
-- Unhurried, like you're telling a secret
-- Slightly conspiratorial
-- Not dramatic — understated
-- Think: late-night radio host, or someone speaking through a door
-
-**Pacing:**
-- Pause after key lines
-- Let the visuals breathe
-- "Someone is at your door." [beat] "They have something to tell you."
-
-**Voice:**
-- Could be your voice
-- Could be a character (Wire? Caleb?)
-- Could be text-only (no VO)
-
----
-
-## WHERE IT WOULD APPEAR
-
-**First Visit Only:**
-- After clicking "Enter" on the heraldic page
-- Before showing the character gallery
-- "Skip" button available
-- Stores flag in localStorage so it doesn't repeat
-
-**Optional:**
-- "How to Play" button in About modal that replays it
-
+- **v1:** "You can hear them and they can hear you" — sounded audio-only
+- **v2 (current):** "You talk face to face through the door viewer" — captures visual nature

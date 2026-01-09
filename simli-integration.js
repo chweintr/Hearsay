@@ -12,6 +12,7 @@
 
 import { BlackRemover } from './black-remover.js';
 import { getSessionManager } from './session-manager.js';
+import { getAudioRecorder } from './audio-recorder.js';
 
 export class SimliIntegration {
     constructor(stateMachine, config) {
@@ -23,6 +24,9 @@ export class SimliIntegration {
         
         // Session manager for user session tracking (persists across conversations)
         this.sessionManager = getSessionManager();
+        
+        // Audio recorder for Whisper transcription
+        this.audioRecorder = getAudioRecorder();
         
         // Simli session tracking (per-conversation)
         this.currentSimliSessionId = null;
@@ -223,6 +227,15 @@ export class SimliIntegration {
             // Record conversation START immediately (don't wait for transcript)
             // This ensures "End Session" knows a conversation happened
             this.sessionManager.recordConversationStart(character);
+            
+            // Start audio recording for Whisper transcription
+            // This captures user's microphone - the hotel hears everything
+            const recordingStarted = await this.audioRecorder.start(character.id, character.name);
+            if (recordingStarted) {
+                console.log(`[Simli] 🎙️ Audio recording started for ${character.name}`);
+            } else {
+                console.warn('[Simli] ⚠️ Audio recording failed to start - transcript will rely on Simli API');
+            }
             
             // Show loading state
             document.body.classList.add('loading');
@@ -646,13 +659,21 @@ export class SimliIntegration {
     /**
      * Destroy and unmount widget
      */
-    destroyWidget() {
+    async destroyWidget() {
         if (!this.widget) return;
 
         console.log('[Simli] Destroying widget...');
         
         // Stop black removal
         this.blackRemover.stop();
+        
+        // Stop audio recording FIRST (before any cleanup)
+        if (this.audioRecorder.isCurrentlyRecording()) {
+            const recording = await this.audioRecorder.stop();
+            if (recording) {
+                console.log(`[Simli] 🎙️ Audio recording saved: ${(recording.size / 1024).toFixed(1)} KB`);
+            }
+        }
         
         // Save Simli session ID before cleanup
         const simliSessionId = this.currentSimliSessionId;
@@ -731,6 +752,13 @@ export class SimliIntegration {
      */
     getSessionManager() {
         return this.sessionManager;
+    }
+    
+    /**
+     * Get audio recorder (for external access to recordings)
+     */
+    getAudioRecorder() {
+        return this.audioRecorder;
     }
 
     /**

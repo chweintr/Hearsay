@@ -19,13 +19,16 @@ Environment Variables (set in Railway):
 """
 
 import os
+import uuid
+import asyncio
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, Query
+from datetime import datetime
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 import httpx
 
 app = FastAPI(
@@ -54,6 +57,34 @@ PORT = int(os.getenv("PORT", 8000))
 # Path to frontend files (parent directory of backend/)
 FRONTEND_DIR = Path(__file__).parent.parent
 PROMPTS_DIR = Path(__file__).parent / "prompts"
+AUDIO_DIR = Path(__file__).parent / "audio_uploads"
+
+# Ensure audio directory exists
+AUDIO_DIR.mkdir(exist_ok=True)
+
+# In-memory job tracking (for production, use Redis or database)
+chapter_jobs: Dict[str, dict] = {}
+
+# Whisper model (lazy loaded)
+whisper_model = None
+
+def get_whisper_model():
+    """Lazy load Whisper model"""
+    global whisper_model
+    if whisper_model is None:
+        try:
+            from faster_whisper import WhisperModel
+            # Use 'base' model - good balance of speed and accuracy
+            # Use CPU since Railway may not have GPU
+            whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
+            print("[HEARSAY] Whisper model loaded (base, cpu)")
+        except ImportError:
+            print("[HEARSAY] Warning: faster-whisper not installed. Audio transcription disabled.")
+            return None
+        except Exception as e:
+            print(f"[HEARSAY] Warning: Failed to load Whisper: {e}")
+            return None
+    return whisper_model
 
 # Load Writing Engine system prompt
 WRITING_ENGINE_PROMPT = ""
@@ -229,6 +260,175 @@ async def get_transcript(session_id: str):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# AUDIO UPLOAD & TRANSCRIPTION
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.post("/api/upload-audio")
+async def upload_audio(
+    background_tasks: BackgroundTasks,
+    sessionId: str = Form(...),
+    characterId: str = Form(...),
+    characterName: str = Form(...),
+    duration: str = Form(...),
+    timestamp: str = Form(...),
+    audio: UploadFile = File(...)
+):
+    """
+    Upload recorded audio from a conversation.
+    Audio will be transcribed by Whisper in the background.
+    """
+    
+    # Create session directory
+    session_dir = AUDIO_DIR / sessionId
+    session_dir.mkdir(exist_ok=True)
+    
+    # Generate unique filename
+    audio_id = str(uuid.uuid4())[:8]
+    file_ext = Path(audio.filename).suffix or ".webm"
+    audio_filename = f"{characterId}_{timestamp}_{audio_id}{file_ext}"
+    audio_path = session_dir / audio_filename
+    
+    # Save audio file
+    try:
+        contents = await audio.read()
+        with open(audio_path, "wb") as f:
+            f.write(contents)
+        
+        print(f"[HEARSAY] Audio saved: {audio_path} ({len(contents) / 1024:.1f} KB)")
+    except Exception as e:
+        print(f"[HEARSAY] Audio save failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to save audio: {e}")
+    
+    # Create metadata file
+    metadata = {
+        "sessionId": sessionId,
+        "characterId": characterId,
+        "characterName": characterName,
+        "duration": int(duration),
+        "timestamp": int(timestamp),
+        "filename": audio_filename,
+        "status": "pending_transcription",
+        "transcript": None
+    }
+    
+    metadata_path = session_dir / f"{audio_filename}.json"
+    import json
+    with open(metadata_path, "w") as f:
+        json.dump(metadata, f, indent=2)
+    
+    # Queue transcription in background
+    background_tasks.add_task(transcribe_audio_file, str(audio_path), str(metadata_path))
+    
+    return {
+        "status": "queued",
+        "audioId": audio_id,
+        "filename": audio_filename,
+        "sessionId": sessionId,
+        "characterId": characterId
+    }
+
+
+async def transcribe_audio_file(audio_path: str, metadata_path: str):
+    """
+    Background task to transcribe audio using Whisper.
+    """
+    import json
+    
+    print(f"[HEARSAY] Transcribing: {audio_path}")
+    
+    model = get_whisper_model()
+    if model is None:
+        print("[HEARSAY] Whisper not available, skipping transcription")
+        return
+    
+    try:
+        # Transcribe with Whisper
+        segments, info = model.transcribe(audio_path, beam_size=5)
+        
+        # Combine all segments into transcript
+        transcript_parts = []
+        for segment in segments:
+            transcript_parts.append(segment.text.strip())
+        
+        full_transcript = " ".join(transcript_parts)
+        
+        print(f"[HEARSAY] Transcription complete: {len(full_transcript)} chars")
+        print(f"[HEARSAY] Language: {info.language}, Probability: {info.language_probability:.2f}")
+        
+        # Update metadata file
+        with open(metadata_path, "r") as f:
+            metadata = json.load(f)
+        
+        metadata["status"] = "transcribed"
+        metadata["transcript"] = full_transcript
+        metadata["language"] = info.language
+        metadata["languageProb"] = info.language_probability
+        
+        with open(metadata_path, "w") as f:
+            json.dump(metadata, f, indent=2)
+        
+    except Exception as e:
+        print(f"[HEARSAY] Transcription error: {e}")
+        
+        # Update metadata with error
+        try:
+            with open(metadata_path, "r") as f:
+                metadata = json.load(f)
+            metadata["status"] = "error"
+            metadata["error"] = str(e)
+            with open(metadata_path, "w") as f:
+                json.dump(metadata, f, indent=2)
+        except:
+            pass
+
+
+@app.get("/api/session-transcripts/{session_id}")
+async def get_session_transcripts(session_id: str):
+    """
+    Get all transcripts for a session.
+    Used by the Writing Engine to gather conversation data.
+    """
+    import json
+    
+    session_dir = AUDIO_DIR / session_id
+    if not session_dir.exists():
+        return {"sessionId": session_id, "conversations": [], "status": "no_audio"}
+    
+    conversations = []
+    pending = 0
+    
+    # Find all metadata files
+    for metadata_file in session_dir.glob("*.json"):
+        try:
+            with open(metadata_file, "r") as f:
+                metadata = json.load(f)
+            
+            if metadata.get("status") == "pending_transcription":
+                pending += 1
+            
+            conversations.append({
+                "characterId": metadata.get("characterId"),
+                "characterName": metadata.get("characterName"),
+                "timestamp": metadata.get("timestamp"),
+                "duration": metadata.get("duration"),
+                "status": metadata.get("status"),
+                "transcript": metadata.get("transcript")
+            })
+        except Exception as e:
+            print(f"[HEARSAY] Error reading metadata {metadata_file}: {e}")
+    
+    # Sort by timestamp
+    conversations.sort(key=lambda x: x.get("timestamp", 0))
+    
+    return {
+        "sessionId": session_id,
+        "conversations": conversations,
+        "pendingCount": pending,
+        "status": "complete" if pending == 0 else "processing"
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # WRITING ENGINE
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -384,7 +584,6 @@ NOW, for tonight's session:
                 )
             
             # Generate chapter ID
-            import uuid
             chapter_id = str(uuid.uuid4())
             
             # Count words
@@ -401,7 +600,7 @@ NOW, for tonight's session:
                 "content": chapter_content,
                 "wordCount": word_count,
                 "charactersIncluded": characters,
-                "generatedAt": __import__('datetime').datetime.utcnow().isoformat() + "Z"
+                "generatedAt": datetime.utcnow().isoformat() + "Z"
             }
             
     except httpx.RequestError as e:
@@ -410,6 +609,199 @@ NOW, for tonight's session:
             status_code=503,
             detail=f"Failed to connect to Anthropic API: {str(e)}"
         )
+
+
+@app.post("/api/writing-engine/generate-from-audio")
+async def generate_chapter_from_audio(
+    background_tasks: BackgroundTasks,
+    session_id: str = Form(...)
+):
+    """
+    Generate a chapter from audio transcripts.
+    This is the main entry point for the Writing Engine.
+    
+    1. Checks all audio has been transcribed
+    2. Gathers transcripts
+    3. Generates chapter with Claude
+    4. Returns job ID for status polling
+    """
+    import json
+    
+    # Check session exists
+    session_dir = AUDIO_DIR / session_id
+    if not session_dir.exists():
+        raise HTTPException(status_code=404, detail="No audio found for this session")
+    
+    # Gather all transcripts
+    conversations = []
+    pending = 0
+    
+    for metadata_file in session_dir.glob("*.json"):
+        try:
+            with open(metadata_file, "r") as f:
+                metadata = json.load(f)
+            
+            if metadata.get("status") == "pending_transcription":
+                pending += 1
+                continue
+            
+            if metadata.get("transcript"):
+                conversations.append({
+                    "character": metadata.get("characterName", "Unknown"),
+                    "role": None,
+                    "timestamp": datetime.fromtimestamp(metadata.get("timestamp", 0) / 1000).isoformat(),
+                    "transcript": metadata.get("transcript")
+                })
+        except Exception as e:
+            print(f"[HEARSAY] Error reading {metadata_file}: {e}")
+    
+    if pending > 0:
+        return JSONResponse(
+            status_code=202,
+            content={
+                "status": "waiting",
+                "message": f"Still transcribing {pending} conversation(s). Try again in a moment.",
+                "pendingCount": pending
+            }
+        )
+    
+    if len(conversations) == 0:
+        raise HTTPException(status_code=400, detail="No transcripts available for this session")
+    
+    # Sort by timestamp
+    conversations.sort(key=lambda x: x.get("timestamp", ""))
+    
+    # Create job
+    job_id = str(uuid.uuid4())
+    chapter_jobs[job_id] = {
+        "status": "processing",
+        "sessionId": session_id,
+        "startedAt": datetime.utcnow().isoformat(),
+        "conversations": len(conversations),
+        "chapter": None,
+        "error": None
+    }
+    
+    # Queue chapter generation in background
+    background_tasks.add_task(generate_chapter_background, job_id, session_id, conversations)
+    
+    return {
+        "status": "processing",
+        "jobId": job_id,
+        "sessionId": session_id,
+        "conversations": len(conversations),
+        "message": "The hotel is writing your chapter..."
+    }
+
+
+async def generate_chapter_background(job_id: str, session_id: str, conversations: list):
+    """
+    Background task to generate a chapter from transcripts.
+    """
+    
+    try:
+        print(f"[HEARSAY] Generating chapter for job {job_id}")
+        
+        # Format transcripts for Claude
+        formatted_transcripts = []
+        for conv in conversations:
+            formatted = f"\n--- Conversation with {conv['character']} ---\n"
+            formatted += f"Time: {conv['timestamp']}\n\n"
+            
+            # Format as dialogue (user is speaking to character)
+            # Note: We only have user's speech from Whisper
+            formatted += f"Occupant of 412: {conv['transcript']}\n"
+            formatted += f"[{conv['character']} responds - content inferred from conversation flow]\n"
+            
+            formatted_transcripts.append(formatted)
+        
+        transcripts_text = "\n".join(formatted_transcripts)
+        
+        # Build prompt
+        user_message = f"""Please write a chapter based on the following conversation transcripts from tonight's session.
+
+Note: These transcripts capture the occupant's side of the conversation (what they said aloud).
+The character's responses should be inferred from the flow and context of the occupant's words.
+
+SESSION: {session_id}
+CONVERSATION COUNT: {len(conversations)}
+
+{transcripts_text}
+
+---
+
+Write the chapter now. Remember:
+- The transcripts show what the occupant said; imagine what the characters said in response
+- Add setting, interiority, sensory detail
+- Weave multiple conversations into one coherent chapter
+- Ground us in Room 412, the peephole, the hallway
+- End with an image, not a cliffhanger or closure"""
+
+        # Call Claude
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": ANTHROPIC_API_KEY.strip(),
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json"
+                },
+                json={
+                    "model": "claude-opus-4-20250514",
+                    "max_tokens": 8192,
+                    "system": WRITING_ENGINE_PROMPT,
+                    "messages": [
+                        {"role": "user", "content": user_message}
+                    ]
+                },
+                timeout=180.0  # 3 minutes for Opus
+            )
+            
+            if response.status_code != 200:
+                raise Exception(f"Anthropic API error: {response.status_code} - {response.text}")
+            
+            data = response.json()
+            
+            # Extract chapter
+            chapter_content = ""
+            if data.get("content"):
+                for block in data["content"]:
+                    if block.get("type") == "text":
+                        chapter_content += block.get("text", "")
+            
+            if not chapter_content:
+                raise Exception("No chapter content in response")
+            
+            # Update job
+            chapter_jobs[job_id] = {
+                "status": "complete",
+                "sessionId": session_id,
+                "completedAt": datetime.utcnow().isoformat(),
+                "chapter": chapter_content,
+                "wordCount": len(chapter_content.split()),
+                "characters": [c["character"] for c in conversations]
+            }
+            
+            print(f"[HEARSAY] Chapter complete for job {job_id}: {len(chapter_content.split())} words")
+            
+    except Exception as e:
+        print(f"[HEARSAY] Chapter generation error: {e}")
+        chapter_jobs[job_id] = {
+            "status": "error",
+            "sessionId": session_id,
+            "error": str(e)
+        }
+
+
+@app.get("/api/writing-engine/status/{job_id}")
+async def get_chapter_status(job_id: str):
+    """
+    Check status of a chapter generation job.
+    """
+    if job_id not in chapter_jobs:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    return chapter_jobs[job_id]
 
 
 @app.get("/api/health")

@@ -2,17 +2,19 @@
 
 > Developer guide for HEARSAY platform and Room 412 experience.
 > 
-> **Last Updated:** January 3, 2026
+> **Last Updated:** January 9, 2026
 
 ---
 
 ## Architecture Overview
 
-HEARSAY uses a simple client-server architecture:
+HEARSAY uses a client-server architecture with audio processing:
 
 - **Frontend:** Vanilla JS, no framework. State machine pattern for app flow.
-- **Backend:** Python FastAPI server for Simli token generation.
+- **Backend:** Python FastAPI server for Simli tokens + audio processing.
 - **AI Conversations:** Simli widget SDK (handles WebRTC, audio, video).
+- **Transcription:** Whisper (faster-whisper) for audio → text.
+- **Chapter Generation:** Claude Opus 4.5 for narrative prose.
 - **Hosting:** Railway (auto-deploys from GitHub).
 
 ```
@@ -25,30 +27,37 @@ HEARSAY uses a simple client-server architecture:
 │                                         │                    │
 │                              ┌──────────┴──────────┐        │
 │                              │   BlackRemover.js   │        │
-│                              │ (canvas transparency)│        │
+│                              │ (canvas chroma key) │        │
 │                              └─────────────────────┘        │
 │                                         │                    │
-│                              ┌──────────┴──────────┐        │
-│                              │   localStorage      │        │
-│                              │  (transcripts)      │        │
-│                              └─────────────────────┘        │
+│       ┌─────────────────────────────────┴─────────────────┐ │
+│       │              AudioRecorder.js                      │ │
+│       │  (MediaRecorder API captures user microphone)      │ │
+│       └─────────────────────────────────────────────────────┘│
+│                              │                               │
+│                   ┌──────────┴──────────┐                   │
+│                   │   SessionManager    │                   │
+│                   │ (tracks sessions)   │                   │
+│                   └─────────────────────┘                   │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    BACKEND (FastAPI)                         │
-│   POST /api/simli-token    → get token + sessionId           │
-│   GET  /api/simli-transcript/{id} → retrieve transcript      │
-│      Passes: simliAPIKey, agentId, faceId, createTranscript  │
+│                                                             │
+│   POST /api/simli-token      → get token for Simli widget   │
+│   POST /api/upload-audio     → receive recorded audio       │
+│   POST /api/writing-engine/generate → trigger chapter gen   │
+│   GET  /api/writing-engine/status   → check job status      │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
                               │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      SIMLI API                               │
-│        POST https://api.simli.ai/v1/sessions                 │
-│        GET  https://api.simli.ai/auto/transcript/{id}        │
-│            (WebRTC, AI conversation, video, transcripts)     │
-└─────────────────────────────────────────────────────────────┘
+           ┌──────────────────┼──────────────────┐
+           ▼                  ▼                  ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│   SIMLI API     │  │  WHISPER        │  │  ANTHROPIC API  │
+│   (sessions)    │  │  (transcribe)   │  │  (Claude Opus)  │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
 ```
 
 ---
@@ -57,13 +66,15 @@ HEARSAY uses a simple client-server architecture:
 
 ```
 hearsay/
-├── index.html              # Main app - landing page + peephole experience
-├── styles.css              # All styling (landing, peephole, UI)
+├── index.html              # Main app - entry, landing, peephole experience
+├── styles.css              # All styling (entry, landing, peephole, UI)
 ├── config.js               # Platform, experience, and character definitions
 ├── state-machine.js        # App state: idle → transitioning → active
 ├── compositor.js           # Video layer orchestration
-├── simli-integration.js    # Simli widget lifecycle management
-├── black-remover.js        # Canvas-based black→transparent processor
+├── simli-integration.js    # Simli widget lifecycle + audio recording
+├── session-manager.js      # User session tracking across conversations
+├── audio-recorder.js       # MediaRecorder wrapper for audio capture
+├── black-remover.js        # Canvas-based chroma key (black or green)
 │
 ├── requirements.txt        # Python deps (root level for Railway detection)
 ├── Procfile                # Railway start command
@@ -72,181 +83,321 @@ hearsay/
 │
 ├── assets/
 │   ├── videos/
-│   │   ├── The_Knock_Background.mp4   # Landing page background
+│   │   ├── Landing_1080.mp4           # Entry page video (black bg)
 │   │   ├── Background_1.mp4            # Hallway view in peephole
-│   │   ├── Animated_Text.mp4           # "A Conversation" text overlay
 │   │   ├── Wire_Walkup_2.mp4           # Wire's transition video
-│   │   └── Marisol_Walkup.mp4          # Marisol's transition video
+│   │   ├── Marisol_Walkup.mp4          # Marisol's transition video
+│   │   ├── Eddie_walkup.mp4            # Eddie's transition video
+│   │   └── ... (more walkup videos)
 │   ├── sounds/
 │   │   ├── MataZ.wav                   # Background music
+│   │   ├── beard-contest--(remastered).mp3  # Alt music track
 │   │   ├── hotel_hallway_subtle_3a.wav # Ambient sound
 │   │   └── door_knocks/                # Character knock sounds
 │   └── images/
-│       ├── overlay.png                 # Peephole brass frame (full screen)
-│       └── Room_412.png                # Splash image
+│       ├── overlay.png                 # Peephole brass frame
+│       └── Room_412.png                # Fallback splash
 │
 ├── backend/
-│   ├── server.py           # FastAPI token server + static file serving
-│   └── requirements.txt    # Python dependencies (backup)
+│   ├── server.py           # FastAPI: tokens, audio upload, chapter gen
+│   ├── requirements.txt    # Python dependencies
+│   └── prompts/
+│       └── writing_engine.md  # Claude system prompt for chapters
 │
 └── docs/
-    ├── HEARSAY.md          # Full project vision document
-    └── TECHNICAL.md        # This file
+    ├── HEARSAY.md           # Project vision
+    ├── TECHNICAL.md         # This file
+    ├── WRITING_ENGINE.md    # Writing Engine architecture
+    ├── CHARACTER_BIBLE.md   # All character details
+    └── *_PROMPT.md          # Individual character prompts
 ```
 
 ---
 
 ## Visual Layer Stack (Bottom to Top)
 
-The experience uses a shared face container for centering:
-
 | Layer | Element | Content | Notes |
 |-------|---------|---------|-------|
 | Background | `#layer-background` | Hallway video | Full screen, always visible |
-| Face Container | `#face-container` | Centered mount | 55% × 70% of viewport, holds walkup + Simli |
+| Face Container | `#face-container` | Centered mount | 55% × 70% of viewport |
 | ├─ Transition | `#layer-transition` | Walkup videos | Plays during summon |
-| └─ Simli | `#layer-simli` | AI face | Canvas overlay removes black background |
-| Overlay | `#layer-door-overlay` | overlay.png | Full-screen brass peephole frame |
+| └─ Simli | `#layer-simli` | AI face | Canvas removes background |
+| Overlay | `#layer-door-overlay` | overlay.png | Full-screen brass frame |
 | UI | Various | Buttons, sliders | Top layer |
-
-### Face Container CSS
-```css
-#face-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 55%;   /* Adjust to match overlay opening */
-    height: 70%;
-    z-index: 15;
-}
-```
 
 ---
 
-## Black Background Removal (Canvas Method)
-
-Simli outputs video with black background. We remove it using canvas processing:
+## Chroma Key Background Removal
 
 **File:** `black-remover.js`
 
-```javascript
-// For each video frame:
-// 1. Draw frame to canvas
-// 2. Scan all pixels
-// 3. If R, G, B all < threshold (15), set alpha to 0
-// 4. Put modified data back
+Supports two modes:
+1. **Black key (default):** Removes pure black (#000000) backgrounds
+2. **Green key:** Removes green screen (#00ff00) backgrounds
 
-if (r < threshold && g < threshold && b < threshold) {
-    data[i + 3] = 0; // Make transparent
+### Black Key Mode
+```javascript
+// Head protection zone - don't remove dark hair/features
+if (distFromHeadCenter < 1.0) {
+    // Only remove pure RGB(0,0,0)
+    if (r === 0 && g === 0 && b === 0) {
+        data[i + 3] = 0;
+    }
 }
 ```
 
-**Why canvas instead of CSS blend modes:**
-- CSS `mix-blend-mode: screen` affects ALL dark colors (face shadows become see-through)
-- Canvas can target ONLY pure black (#000000 or near-black)
-- Face shadows stay solid
+### Green Key Mode (for Solomon, future characters)
+```javascript
+// config.js
+solomon: {
+    chromaKey: '#00ff00',  // Use green screen removal
+    ...
+}
+
+// black-remover.js
+setChromaKey('#00ff00');  // Called before start()
+```
 
 ---
 
-## Audio System
+## Audio Recording System
 
-Two independent audio tracks with volume sliders:
+**File:** `audio-recorder.js` (NEW)
 
-1. **Ambient** (`#ambient-main`): `hotel_hallway_subtle_3a.wav` - loops
-2. **Music** (`#music-main`): `MataZ.wav` - loops
+Captures user microphone during Simli conversations for Whisper transcription.
 
-### Audio starts on first user interaction (browser policy)
+### Flow
+1. When Simli widget starts → request microphone access
+2. MediaRecorder captures audio stream
+3. On conversation end → stop recording, create blob
+4. On session end → upload all blobs to backend
 
+### Implementation
 ```javascript
-document.body.addEventListener('click', () => {
-    if (!audioStarted) startAudio();
-}, { once: true });
+class AudioRecorder {
+    constructor() {
+        this.mediaRecorder = null;
+        this.audioChunks = [];
+        this.recordings = []; // Array of { characterId, blob, timestamp }
+    }
+    
+    async start() {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.mediaRecorder = new MediaRecorder(stream, { 
+            mimeType: 'audio/webm;codecs=opus' 
+        });
+        
+        this.mediaRecorder.ondataavailable = (e) => {
+            this.audioChunks.push(e.data);
+        };
+        
+        this.mediaRecorder.start();
+    }
+    
+    stop(characterId) {
+        return new Promise((resolve) => {
+            this.mediaRecorder.onstop = () => {
+                const blob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                this.recordings.push({ 
+                    characterId, 
+                    blob, 
+                    timestamp: Date.now() 
+                });
+                this.audioChunks = [];
+                resolve(blob);
+            };
+            this.mediaRecorder.stop();
+        });
+    }
+    
+    async uploadAll(sessionId) {
+        for (const recording of this.recordings) {
+            const formData = new FormData();
+            formData.append('sessionId', sessionId);
+            formData.append('characterId', recording.characterId);
+            formData.append('audio', recording.blob);
+            
+            await fetch('/api/upload-audio', { 
+                method: 'POST', 
+                body: formData 
+            });
+        }
+    }
+}
 ```
 
-### Volume defaults
-- Ambient: 65%
-- Music: 15%
+---
+
+## Session Management
+
+**File:** `session-manager.js`
+
+Tracks user sessions across multiple character conversations.
+
+### Key Concepts
+- **Session:** One visit (tab open → "End Session" or tab close)
+- **Conversation:** One character interaction within a session
+- **Chapter:** One session transformed into narrative prose
+
+### Storage
+```javascript
+// sessionStorage (cleared on tab close)
+hearsay_user_session              // Current session ID
+
+// localStorage (persists)
+hearsay_session_transcripts_{id}  // Conversations for session
+hearsay_sessions_index            // List of all sessions
+hearsay_chapters                  // Generated chapters
+```
+
+### API
+```javascript
+const manager = getSessionManager();
+
+manager.recordConversationStart(character);  // When character summoned
+manager.storeConversation(id, char, data);   // When transcript ready
+manager.exportForWritingEngine();            // Bundle for chapter gen
+manager.endSession();                        // On "End Session" click
+```
 
 ---
 
 ## Simli Widget Integration
 
-### Correct API Endpoint
+### Token Endpoint
 ```
-POST https://api.simli.ai/auto/token
+POST /api/simli-token?agentId=xxx&faceId=xxx
 ```
 
-### Backend Token Request (CRITICAL)
+### Required Payload
 ```python
 payload = {
-    "simliAPIKey": SIMLI_API_KEY,      # API key in body
-    "agentId": agentId,                 # Character config
-    "faceId": faceId,                   # Face to animate
-    "ttsAPIKey": ELEVENLABS_API_KEY,   # REQUIRED for voice!
+    "simliAPIKey": SIMLI_API_KEY,
+    "agentId": agentId,
+    "faceId": faceId,
+    "ttsAPIKey": ELEVENLABS_API_KEY,  # REQUIRED for voice!
     "expiryStamp": -1,
     "createTranscript": True
 }
 ```
 
-### Environment Variables Required
+### Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `SIMLI_API_KEY` | **Yes** | From Simli dashboard |
 | `ELEVENLABS_API_KEY` | **Yes** | For TTS voice output |
+| `ANTHROPIC_API_KEY` | **Yes** | For Claude chapter generation |
 | `PORT` | Auto | Set by Railway |
-
-### Frontend Widget Creation
-```javascript
-const widget = document.createElement('simli-widget');
-widget.setAttribute('token', sessionToken);
-widget.setAttribute('agentId', agentId);
-widget.setAttribute('faceId', faceId);
-document.getElementById('simli-mount').appendChild(widget);
-
-// Auto-click Start button (Simli shows internal button)
-setTimeout(() => {
-    widget.querySelectorAll('button').forEach(btn => {
-        if (!btn.textContent.includes('close')) btn.click();
-    });
-}, 500);
-```
 
 ---
 
 ## Character Configuration
 
-Characters are defined in `config.js`:
+Characters defined in `config.js`:
 
 ```javascript
-wire: {
-    name: 'Wire (Wiremu)',
-    role: 'Long-Time Resident',
-    agentId: '2439209e-abb8-4ccc-ab18-2bbbfc78d4f6',
-    faceId: 'bc603b3f-d355-424d-b613-d7db4588cb8a',
-    idleToActive: ['assets/videos/Wire_Walkup_2.mp4'],
+solomon: {
+    name: 'Solomon',
+    role: 'The Concierge',
+    agentId: '05bf4fc1-9e97-4f5e-9fa5-43712181839f',
+    faceId: '38a35d8d-6d7b-4369-85be-d57a419e3ebb',
+    idleToActive: ['assets/videos/Solomon_Walkup.mp4'],
     knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
-    status: 'ready'  // ready | coming_soon | unavailable
-},
-marisol: {
-    name: 'Marisol',
-    role: "Owner's Daughter",
-    agentId: '24105503-dbf2-48ec-9d14-b800f8ebedde',
-    faceId: '28851337-4976-4692-b5c5-3c2825c8d522',
-    idleToActive: ['assets/videos/Marisol_Walkup.mp4'],
-    knockSound: 'assets/sounds/door_knocks/knock_office.wav',
+    chromaKey: '#00ff00',  // Green screen removal
     status: 'ready'
 }
 ```
 
+### Status Values
+- `ready` — Fully functional
+- `coming_soon` — Shows placeholder message
+- `unavailable` — Hidden from menu
+
 ### Adding a New Character
 
 1. Create agent in Simli dashboard → get `agentId` and `faceId`
-2. Create walkup video (character approaching door)
-3. Create knock sound (or use existing)
-4. Add entry to `characters` object in `config.js`
-5. Character automatically appears in landing gallery
+2. Create walkup video (black or green background)
+3. Add knock sound (or use existing)
+4. Write character prompt (see `/docs/*_PROMPT.md`)
+5. Add entry to `characters` object
+6. If green screen, add `chromaKey: '#00ff00'`
+
+---
+
+## Ready Characters (Jan 9, 2026)
+
+| Character | agentId | faceId | Chroma | Status |
+|-----------|---------|--------|--------|--------|
+| Wire | `2439209e-...` | `bc603b3f-...` | Black | ✅ Ready |
+| Marisol | `24105503-...` | `28851337-...` | Black | ✅ Ready |
+| Eddie | `48daac40-...` | `9402a60c-...` | Black | ✅ Ready |
+| Tane | `ca858324-...` | `7e095ab0-...` | Black | ✅ Ready |
+| Priya | `a0819479-...` | `28503d8d-...` | Black | ✅ Ready |
+| Milton | `c25a4b14-...` | `4a0Khp1o...` | Black | ✅ Ready |
+| Rufus | `97eca1b0-...` | `297c78be-...` | Black | ✅ Ready |
+| Solomon | `05bf4fc1-...` | `38a35d8d-...` | **Green** | ✅ Ready |
+| Dotty | — | — | — | Coming Soon |
+| Constance | — | — | — | Coming Soon |
+| Caleb | — | — | — | Coming Soon |
+
+---
+
+## Writing Engine Pipeline
+
+### Overview
+```
+User Conversations → Audio Recording → Whisper → Claude → Chapter
+```
+
+### Processing Flow
+
+1. **During conversation:** MediaRecorder captures user microphone
+2. **Conversation ends:** Audio blob stored locally
+3. **"End Session" clicked:** All audio uploaded to backend
+4. **Backend processing:**
+   - Whisper transcribes each audio file
+   - Claude Opus 4.5 generates narrative chapter
+   - Chapter stored, user notified
+
+### Backend Endpoints
+
+```python
+# Upload recorded audio
+POST /api/upload-audio
+    Form: sessionId, characterId, audio (file)
+    → Returns: { status: "queued", conversationId }
+
+# Generate chapter from session
+POST /api/writing-engine/generate
+    JSON: { sessionId }
+    → Returns: { jobId, status: "processing" }
+
+# Check job status
+GET /api/writing-engine/status/{jobId}
+    → Returns: { status, chapter? }
+```
+
+### Whisper Configuration
+
+Using `faster-whisper` library:
+
+```python
+from faster_whisper import WhisperModel
+
+model = WhisperModel("base", device="cpu")
+
+def transcribe(audio_path: str) -> str:
+    segments, _ = model.transcribe(audio_path)
+    return " ".join([s.text for s in segments])
+```
+
+| Model | Size | Railway Compatible |
+|-------|------|--------------------|
+| tiny | 39MB | ✅ Yes |
+| base | 74MB | ✅ Yes (recommended) |
+| small | 244MB | ✅ Yes |
+| medium | 769MB | ⚠️ May need more RAM |
 
 ---
 
@@ -256,249 +407,96 @@ marisol: {
 idle → transitioning-in → active → transitioning-out → idle
 ```
 
-### What Happens When User Clicks Character
+### Character Summon Sequence
 
-1. `enterExperience(characterKey)` called
-2. State machine calls `summonCharacter()`
-3. Compositor plays walkup video + knock sound
-4. Video ends → `onTransitionInComplete()`
-5. SimliIntegration creates widget, fetches token
-6. BlackRemover starts processing video frames
-7. Simli face appears with transparent background
+1. User clicks character in gallery
+2. `enterExperience(characterKey)` called
+3. State → `transitioning-in`
+4. Compositor plays walkup video + knock sound
+5. SimliIntegration fetches token, creates widget
+6. **AudioRecorder.start()** begins capturing
+7. BlackRemover processes video frames
+8. State → `active`, Simli face visible
 
----
+### Character Dismissal
 
-## Known Issues & Current State (Jan 3, 2026)
-
-### Working ✓
-- Landing page with **radial character gallery** (9 characters orbit peephole)
-- Background video looping with 5-second pause on first frame
-- Animated text overlay ("A Conversation") with transparent black
-- Music and ambient audio with volume sliders
-- Door knock sounds per character
-- About modal
-- **Wire (Wiremu)** — fully working Simli integration
-- **Marisol** — fully working Simli integration  
-- Character walkup videos centered in peephole
-- **Simli token fetch working** (with agentId, faceId, ttsAPIKey)
-- **Simli voice working** (ElevenLabs TTS connected)
-- **BlackRemover canvas** — removes pure black backgrounds
-- **Store modal** with 10 sensory packs (individual + Hotel Pack)
-- Character hover: simple scale effect (1.1x)
-
-### Ready Characters
-| Character | agentId | faceId | Status |
-|-----------|---------|--------|--------|
-| Wire (Wiremu) | `2439209e-abb8-4ccc-ab18-2bbbfc78d4f6` | `bc603b3f-d355-424d-b613-d7db4588cb8a` | ✅ Ready |
-| Marisol | `24105503-dbf2-48ec-9d14-b800f8ebedde` | `28851337-4976-4692-b5c5-3c2825c8d522` | ✅ Ready |
-| Eddie | — | — | Coming Soon |
-| Dotty | — | — | Coming Soon |
-| Tane | — | — | Coming Soon |
-| Constance | — | — | Coming Soon |
-| Priya | — | — | Coming Soon |
-| Lenny | — | — | Coming Soon |
-| Caleb | — | — | Coming Soon |
-| Rufus | — | — | Coming Soon |
-
-### In Progress / Needs Fixing
-- Walkup→Simli transition: small visual gap during loading
-- Additional character Simli IDs needed (7 remaining)
-
-### Planned Features
-- **Marisol Incognito Mode:** Random toggle between Marisol's regular appearance and an "incognito" version (different faceId). Initially 2 variants, could expand based on budget. User never knows which Marisol they'll get.
-
-- **Writing Engine (Dialogue Harvest → Narrative Pipeline):**
-  - Harvest full conversation transcripts from sessions (Simli's `createTranscript: true`)
-  - Feed harvested dialogue to Writing Agent (Claude Opus 4.5 or Kimi K2)
-  - Transform raw dialogue into narrativized chapters (1500-2500 words)
-  - Custom `.skill` file for author's voice/style
-  - Output: email, user journal, PDF, collective novel contribution
-  - See `docs/HEARSAY.md` for full vision
-
-### Recently Completed (Jan 3)
-- Added Marisol's Simli IDs
-- Radial character menu (horseshoe orbit)
-- Store modal with all 10 sensory pack products
-- Sticky notes added to all packs (handwriting ambiguity)
-- Character hover: simplified to scale effect
-- Updated all documentation
-
-### What Failed / Didn't Work (Reference)
-- CSS `mix-blend-mode: screen` made face shadows transparent (face looked ghostly)
-- High contrast filters didn't isolate pure black well enough
-- Multiple Simli API endpoints tried before finding `/auto/token`
+1. User clicks "Send Away" or "← Back"
+2. **AudioRecorder.stop()** saves recording
+3. State → `transitioning-out`
+4. SimliIntegration destroys widget
+5. SessionManager records conversation
+6. State → `idle`
 
 ---
 
-## Writing Engine Implementation
+## Debugging
 
-### Overview
+### Console Commands
 
-The Writing Engine harvests dialogue from user sessions and transforms raw conversation into narrativized literary chapters. Not summarization—fiction generation using harvested dialogue as raw material.
-
-### Architecture
-
-```
-Session → Transcript Capture → Local Storage → Writing Agent → Chapter Delivery
-```
-
-### Step 1: Transcript Capture ✅ IMPLEMENTED
-
-**Backend Endpoints:**
-```
-POST /api/simli-token?agentId=xxx&faceId=xxx
-    → Returns: { token, sessionId }
-    → Enables createTranscript: true
-
-GET /api/simli-transcript/{session_id}
-    → Polls Simli for transcript after session ends
-    → Returns: { status, sessionId, transcript }
-```
-
-**Frontend Flow (simli-integration.js):**
-1. `fetchToken()` stores `sessionId` when creating session
-2. `destroyWidget()` waits 5s then calls `fetchTranscript()`
-3. `storeTranscript()` saves to localStorage
-4. Dispatches `hearsay-transcript` custom event for other components
-
-**Transcript Storage:**
 ```javascript
-// localStorage keys
-hearsay_transcript_index     // Array of { sessionId, character, timestamp }
-hearsay_transcript_{id}      // Full transcript record per session
+// Check session and transcripts
+hearsay.debug.showTranscripts()
+hearsay.debug.showSessionData()
+
+// Check audio recordings
+hearsay.debug.showRecordings()
 ```
 
-**Retrieve All Transcripts:**
-```javascript
-const simli = /* SimliIntegration instance */;
-const allTranscripts = simli.getAllTranscripts();
+### Common Issues
+
+| Problem | Check | Solution |
+|---------|-------|----------|
+| Simli not talking | `ELEVENLABS_API_KEY` | Verify key in Railway |
+| No audio recording | Microphone permission | User must allow access |
+| Transcript empty | Console for errors | Check Whisper logs |
+| Chapter not generating | `ANTHROPIC_API_KEY` | Verify key, check quota |
+
+### Simli Debugging
+
+Look for these console messages:
 ```
-
-**Session Boundaries:**
-- User clicks "Send Away" button (triggers destroyWidget)
-- User clicks "← Back" button
-- Inactivity timeout (future: 5 min silence)
-- Browser close (navigator.sendBeacon for reliability)
-
-### Step 2: Writing Agent
-
-**Model Options:**
-| Model | Cost | Quality | Notes |
-|-------|------|---------|-------|
-| Claude Opus 4.5 | $$$ | Excellent | Supports .skills, best for literary output |
-| Kimi K2 | $ | Good | Cheaper, test/scale option |
-| Claude Sonnet | $$ | Very Good | Balance of cost/quality |
-
-**Custom Voice (.skill file):**
-```
-// writing-style.skill
-{
-  "name": "HEARSAY Author Voice",
-  "samples": [
-    "excerpt from author's published work...",
-    "another excerpt...",
-    // 5-10 style samples
-  ],
-  "guidelines": {
-    "pov": "second person, present tense",
-    "tone": "literary noir, baroque, melancholic",
-    "avoid": ["said", "walked", "looked"],
-    "prefer": ["murmured", "drifted", "noticed"]
-  }
-}
-```
-
-**New Endpoint:**
-```python
-@app.post("/api/generate-chapter")
-async def generate_chapter(
-    transcript: str,
-    character_id: str,
-    session_metadata: dict
-):
-    prompt = build_writing_prompt(transcript, character_id, session_metadata)
-    
-    # Call Claude API
-    response = await anthropic.messages.create(
-        model="claude-sonnet-4-20250514",  # or opus
-        max_tokens=4000,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    
-    return {"chapter": response.content[0].text}
-```
-
-### Step 3: Chapter Delivery
-
-**Options (implement in order of priority):**
-
-1. **Console/Debug** (MVP)
-   - Log generated chapter to console
-   - Manual copy/paste
-
-2. **Email Delivery**
-   - Resend or SendGrid integration
-   - User provides email at session end
-   - Chapter arrives in inbox
-
-3. **User Journal**
-   - Personal page on site
-   - All chapters collected
-   - Requires user accounts (optional: email-as-ID)
-
-4. **Collective Novel**
-   - Anonymized chapters contributed to shared document
-   - Curated by author
-   - Published as "The Hotel Manuscript"
-
-### Environment Variables Needed
-
-```env
-# Add to Railway
-ANTHROPIC_API_KEY=sk-ant-...
-RESEND_API_KEY=re_...  # for email delivery
-```
-
-### File Structure (Planned)
-
-```
-backend/
-├── server.py              # Existing
-├── writing_engine.py      # NEW: Chapter generation logic
-├── transcript_store.py    # NEW: Session/transcript storage
-└── email_delivery.py      # NEW: Chapter delivery
-```
-
----
-
-## Troubleshooting
-
-### Simli Not Talking
-1. Check `ELEVENLABS_API_KEY` in Railway env vars
-2. Check console for token fetch errors
-3. Verify agentId and faceId are correct
-
-### Simli Not Showing
-1. Check console for `[Simli] Token received: yes`
-2. Check console for `[BlackRemover] Started processing`
-3. Try clicking Connect button manually if visible
-
-### Face Position Wrong
-Adjust in CSS:
-```css
-#face-container {
-    width: 55%;   /* Horizontal size */
-    height: 70%;  /* Vertical size */
-}
+[Simli] Token received: yes
+[Simli] Session ID: xxxxx
+[Simli] 🎬 Video found, starting black removal
+[Simli] 📝 Local transcript capture ready
 ```
 
 ---
 
 ## File Naming Rules
+
 - **No spaces** in filenames (use underscores)
 - **No `#` symbols** (breaks URL encoding)
-- **Use `.mp4`** for videos (not `.mov` - browser compatibility)
+- **Use `.mp4`** for videos (browser compatibility)
+- **Use `.webm`** for recorded audio (efficient, web-native)
+
+---
+
+## Railway Deployment
+
+### Build
+Railway auto-detects Python from `requirements.txt`:
+```
+fastapi
+uvicorn
+httpx
+python-multipart
+faster-whisper
+anthropic
+```
+
+### Start Command (Procfile)
+```
+web: cd backend && python -m uvicorn server:app --host 0.0.0.0 --port $PORT
+```
+
+### Environment Variables
+Set in Railway dashboard:
+- `SIMLI_API_KEY`
+- `ELEVENLABS_API_KEY`
+- `ANTHROPIC_API_KEY`
 
 ---
 
 *For project vision and design principles, see [HEARSAY.md](HEARSAY.md)*
+*For Writing Engine details, see [WRITING_ENGINE.md](WRITING_ENGINE.md)*

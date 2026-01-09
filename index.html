@@ -1291,20 +1291,11 @@
                 return;
             }
             
-            // Check for pending transcripts
-            const sessionData = sessionManager.exportForWritingEngine();
-            const pendingCount = (sessionData?.transcripts || []).filter(t => 
-                typeof t.transcript === 'string' && t.transcript.includes('transcript not captured')
-            ).length;
+            // Get audio recorder
+            const audioRecorder = simli.getAudioRecorder();
+            const recordingCount = audioRecorder.getRecordingCount();
             
-            if (pendingCount > 0) {
-                const proceed = confirm(
-                    `${pendingCount} conversation(s) haven't finished uploading their transcripts yet. ` +
-                    `Wait a few more seconds for better results, or proceed with partial data?\n\n` +
-                    `Click OK to proceed anyway, or Cancel to wait.`
-                );
-                if (!proceed) return;
-            }
+            console.log(`[WritingEngine] Session has ${recordingCount} audio recording(s)`);
             
             // Show writing modal in loading state
             writingLoading.classList.remove('hidden');
@@ -1312,66 +1303,187 @@
             writingError.classList.add('hidden');
             writingModal.classList.remove('hidden');
             
+            const loadingText = document.querySelector('#writing-loading p');
+            
             try {
-                // Re-export in case transcripts updated while confirm dialog was open
-                const finalSessionData = sessionManager.exportForWritingEngine();
+                const sessionId = sessionManager.getSessionId();
                 
-                // Log what we're sending
-                console.log('[WritingEngine] Generating chapter from:', finalSessionData);
-                console.log('[WritingEngine] Transcripts detail:', JSON.stringify(finalSessionData?.transcripts, null, 2));
-                
-                // Get previous chapters for RAG context (continuity)
-                const previousChapters = getPreviousChaptersForContext(3);
-                console.log('[WritingEngine] Including', previousChapters.length, 'previous chapters for context');
-                
-                // Call Writing Engine API
-                const response = await fetch('/api/writing-engine/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        sessionId: finalSessionData.sessionId,
-                        transcripts: finalSessionData.transcripts,
-                        previousChapters: previousChapters,
-                        chapterLength: 'medium'
-                    })
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Failed to generate chapter');
+                // Step 1: Upload audio recordings if any
+                if (recordingCount > 0) {
+                    loadingText.textContent = `Uploading ${recordingCount} recording(s)...`;
+                    console.log('[WritingEngine] Uploading audio recordings...');
+                    
+                    const uploadResults = await audioRecorder.uploadAll(sessionId);
+                    console.log('[WritingEngine] Upload results:', uploadResults);
+                    
+                    const successCount = uploadResults.filter(r => r.success).length;
+                    if (successCount === 0) {
+                        throw new Error('Failed to upload any recordings');
+                    }
+                    
+                    // Wait for transcription (poll for a bit)
+                    loadingText.textContent = 'The hotel is listening... (transcribing audio)';
+                    
+                    let transcriptsReady = false;
+                    let attempts = 0;
+                    const maxAttempts = 30; // 30 * 2s = 60 seconds max
+                    
+                    while (!transcriptsReady && attempts < maxAttempts) {
+                        await new Promise(r => setTimeout(r, 2000)); // Wait 2s
+                        attempts++;
+                        
+                        const statusResponse = await fetch(`/api/session-transcripts/${sessionId}`);
+                        const status = await statusResponse.json();
+                        
+                        if (status.pendingCount === 0) {
+                            transcriptsReady = true;
+                            console.log('[WritingEngine] All transcripts ready');
+                        } else {
+                            loadingText.textContent = `Transcribing... (${status.pendingCount} remaining)`;
+                        }
+                    }
+                    
+                    if (!transcriptsReady) {
+                        console.warn('[WritingEngine] Transcription timeout, proceeding anyway');
+                    }
+                    
+                    // Step 2: Generate chapter from audio transcripts
+                    loadingText.textContent = 'The hotel is writing your chapter...';
+                    
+                    const formData = new FormData();
+                    formData.append('session_id', sessionId);
+                    
+                    const genResponse = await fetch('/api/writing-engine/generate-from-audio', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (genResponse.status === 202) {
+                        // Still processing, keep waiting
+                        const waitData = await genResponse.json();
+                        loadingText.textContent = waitData.message || 'Still processing...';
+                        await new Promise(r => setTimeout(r, 3000));
+                        // Try again
+                        endSessionBtn.click();
+                        return;
+                    }
+                    
+                    if (!genResponse.ok) {
+                        const error = await genResponse.json();
+                        throw new Error(error.detail || 'Failed to start chapter generation');
+                    }
+                    
+                    const jobData = await genResponse.json();
+                    console.log('[WritingEngine] Job started:', jobData);
+                    
+                    // Step 3: Poll for job completion
+                    let chapter = null;
+                    let jobAttempts = 0;
+                    const maxJobAttempts = 60; // 60 * 3s = 3 minutes max
+                    
+                    while (!chapter && jobAttempts < maxJobAttempts) {
+                        await new Promise(r => setTimeout(r, 3000)); // Wait 3s
+                        jobAttempts++;
+                        
+                        const statusResponse = await fetch(`/api/writing-engine/status/${jobData.jobId}`);
+                        const status = await statusResponse.json();
+                        
+                        if (status.status === 'complete') {
+                            chapter = status;
+                            console.log('[WritingEngine] Chapter complete!');
+                        } else if (status.status === 'error') {
+                            throw new Error(status.error || 'Chapter generation failed');
+                        } else {
+                            loadingText.textContent = 'Writing your chapter... (this may take a minute)';
+                        }
+                    }
+                    
+                    if (!chapter) {
+                        throw new Error('Chapter generation timed out');
+                    }
+                    
+                    // Clear recordings after successful generation
+                    audioRecorder.clearRecordings();
+                    
+                    // Show success
+                    writingLoading.classList.add('hidden');
+                    writingSuccess.classList.remove('hidden');
+                    
+                    chapterContent.innerHTML = chapter.chapter
+                        .split('\n\n')
+                        .map(p => `<p>${p}</p>`)
+                        .join('');
+                    chapterWordCount.textContent = chapter.wordCount;
+                    chapterCharacters.textContent = (chapter.characters || []).join(', ');
+                    
+                    // Store chapter
+                    const chaptersKey = 'hearsay_chapters';
+                    const chapters = JSON.parse(localStorage.getItem(chaptersKey) || '[]');
+                    chapters.push({
+                        chapterId: jobData.jobId,
+                        sessionId: sessionId,
+                        content: chapter.chapter,
+                        wordCount: chapter.wordCount,
+                        charactersIncluded: chapter.characters || [],
+                        generatedAt: chapter.completedAt || new Date().toISOString()
+                    });
+                    localStorage.setItem(chaptersKey, JSON.stringify(chapters));
+                    
+                } else {
+                    // Fallback: No audio recordings, use the old text-based method
+                    console.log('[WritingEngine] No audio recordings, using text transcripts');
+                    
+                    const sessionData = sessionManager.exportForWritingEngine();
+                    if (!sessionData || !sessionData.transcripts || sessionData.transcripts.length === 0) {
+                        throw new Error('No conversations recorded. Try talking to someone first!');
+                    }
+                    
+                    loadingText.textContent = 'Writing your chapter...';
+                    
+                    const previousChapters = getPreviousChaptersForContext(3);
+                    
+                    const response = await fetch('/api/writing-engine/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId: sessionData.sessionId,
+                            transcripts: sessionData.transcripts,
+                            previousChapters: previousChapters,
+                            chapterLength: 'medium'
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to generate chapter');
+                    }
+                    
+                    const chapter = await response.json();
+                    
+                    writingLoading.classList.add('hidden');
+                    writingSuccess.classList.remove('hidden');
+                    
+                    chapterContent.innerHTML = chapter.content
+                        .split('\n\n')
+                        .map(p => `<p>${p}</p>`)
+                        .join('');
+                    chapterWordCount.textContent = chapter.wordCount;
+                    chapterCharacters.textContent = chapter.charactersIncluded.join(', ');
+                    
+                    const chaptersKey = 'hearsay_chapters';
+                    const chapters = JSON.parse(localStorage.getItem(chaptersKey) || '[]');
+                    chapters.push({
+                        ...chapter,
+                        userSessionId: sessionData.sessionId
+                    });
+                    localStorage.setItem(chaptersKey, JSON.stringify(chapters));
                 }
                 
-                const chapter = await response.json();
-                console.log('[WritingEngine] Chapter generated:', chapter);
-                
-                // Show success state
-                writingLoading.classList.add('hidden');
-                writingSuccess.classList.remove('hidden');
-                
-                // Display chapter
-                chapterContent.innerHTML = chapter.content
-                    .split('\n\n')
-                    .map(p => `<p>${p}</p>`)
-                    .join('');
-                chapterWordCount.textContent = chapter.wordCount;
-                chapterCharacters.textContent = chapter.charactersIncluded.join(', ');
-                
-                // Store chapter in localStorage
-                const chaptersKey = 'hearsay_chapters';
-                const chapters = JSON.parse(localStorage.getItem(chaptersKey) || '[]');
-                chapters.push({
-                    ...chapter,
-                    userSessionId: finalSessionData.sessionId
-                });
-                localStorage.setItem(chaptersKey, JSON.stringify(chapters));
-                
-                // Update chapters button visibility
                 updateChaptersButton();
                 
             } catch (error) {
                 console.error('[WritingEngine] Error:', error);
                 
-                // Show error state
                 writingLoading.classList.add('hidden');
                 writingError.classList.remove('hidden');
                 document.getElementById('writing-error-message').textContent = error.message;
@@ -1633,6 +1745,17 @@
                     });
                     return data;
                 },
+                showRecordings: () => {
+                    const recorder = simli.getAudioRecorder();
+                    console.log('=== AUDIO RECORDINGS ===');
+                    console.log('Recording count:', recorder.getRecordingCount());
+                    console.log('Total duration:', (recorder.getTotalDuration() / 1000).toFixed(1) + 's');
+                    console.log('Currently recording:', recorder.isCurrentlyRecording());
+                    recorder.getRecordings().forEach((r, i) => {
+                        console.log(`  [${i+1}] ${r.characterName}: ${(r.duration / 1000).toFixed(1)}s, ${(r.size / 1024).toFixed(1)} KB`);
+                    });
+                    return recorder.getRecordings();
+                },
                 showConversations: () => {
                     const convos = sessionManager.getConversationCount();
                     console.log(`Total conversations this session: ${convos}`);
@@ -1641,11 +1764,18 @@
                 clearSession: () => {
                     sessionManager.endSession();
                     console.log('Session cleared');
+                },
+                clearRecordings: () => {
+                    simli.getAudioRecorder().clearRecordings();
+                    console.log('Recordings cleared');
                 }
             }
         };
         console.log(`${platform.name} — ${experience.name} initialized`);
-        console.log('Debug: Type hearsay.debug.showTranscripts() to check transcript status');
+        console.log('Debug commands:');
+        console.log('  hearsay.debug.showTranscripts() — check transcript status');
+        console.log('  hearsay.debug.showRecordings()  — check audio recordings');
+        console.log('  hearsay.debug.showConversations() — count conversations');
     </script>
 </body>
 </html>

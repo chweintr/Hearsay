@@ -6,13 +6,17 @@
 
 ## Overview
 
-The Writing Engine takes raw Simli conversation transcripts and transforms them into narrativized prose chapters using Claude Opus 4.5. Users talk to characters; the engine turns those conversations into a personalized novel.
+The Writing Engine takes user conversations with AI characters and transforms them into narrativized prose chapters using Claude Opus 4.5. Users talk to characters; the engine turns those conversations into a personalized novel.
 
 **Key principle:** The user's actual dialogue is preserved and woven into literary prose, but the engine embellishes — adding setting details, character thoughts, scenes the user didn't directly witness.
 
 ---
 
-## Architecture
+## Architecture (v2 — Audio Recording + Whisper)
+
+**Previous approach:** Relied on Simli's transcript API (unreliable, often returns 404).
+
+**Current approach:** Record audio locally → upload → Whisper transcription → Claude chapter generation.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -20,21 +24,52 @@ The Writing Engine takes raw Simli conversation transcripts and transforms them 
 │                                                                 │
 │   User opens site → SESSION_ID generated (sessionStorage)       │
 │                                                                 │
-│   Talk to Wire    → transcript tagged with SESSION_ID           │
-│   Talk to Eddie   → transcript tagged with SESSION_ID           │
-│   Talk to Priya   → transcript tagged with SESSION_ID           │
+│   Talk to Wire   → Audio recorded (MediaRecorder API)           │
+│   Talk to Eddie  → Audio recorded (MediaRecorder API)           │
+│   Talk to Priya  → Audio recorded (MediaRecorder API)           │
 │                                                                 │
-│   User clicks "End Session" or closes tab                       │
+│   User clicks "End Session"                                     │
 │                          ↓                                      │
-│   All transcripts from SESSION_ID bundled together              │
+│   All audio blobs uploaded to backend                           │
 │                          ↓                                      │
-│   POST /api/writing-engine/generate                             │
+│   "The hotel heard everything.                                  │
+│    Your chapter is being written.                               │
+│    We'll let you know when it's ready."                         │
 │                          ↓                                      │
-│   Claude Opus 4.5 weaves into ONE chapter                       │
+│   User can leave / start new session / close tab                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+                         │
+                         ▼ (Background Processing)
+┌─────────────────────────────────────────────────────────────────┐
+│                    BACKEND PIPELINE                              │
+│                                                                 │
+│   1. Receive audio files from frontend                          │
 │                          ↓                                      │
-│   Chapter stored → Available in /chapters tab                   │
+│   2. Whisper transcribes each conversation                      │
+│      (faster-whisper library, runs on Railway)                  │
+│                          ↓                                      │
+│   3. Claude Opus 4.5 weaves transcripts into ONE chapter        │
+│      (with voice skill + previous chapters for RAG)             │
+│                          ↓                                      │
+│   4. Chapter stored in database                                 │
+│                          ↓                                      │
+│   5. User notified (email / badge on next visit)                │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Why Audio Recording + Whisper?
+
+| Approach | Reliability | Quality | Complexity |
+|----------|-------------|---------|------------|
+| Simli transcript API | ❌ Unreliable (404s, no sessionId) | Unknown | Low |
+| Widget event capture | ❌ Events may not fire | Partial (user only?) | Low |
+| **Audio recording + Whisper** | ✅ We control everything | ✅ Excellent | Medium |
+
+**Whisper is free** — OpenAI's model is open source. We use `faster-whisper` (Python) which runs efficiently on Railway.
 
 ---
 
@@ -50,80 +85,138 @@ The Writing Engine takes raw Simli conversation transcripts and transforms them 
 
 ---
 
+## Audio Recording Flow
+
+### Frontend (browser)
+
+```javascript
+// Start recording when Simli conversation begins
+const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+const audioChunks = [];
+
+mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+mediaRecorder.onstop = () => {
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    // Store blob for upload when session ends
+};
+
+mediaRecorder.start();
+```
+
+### Audio Sources
+
+We capture **user microphone only** (Simli's audio is internal). The transcript will show:
+- User speech (from Whisper)
+- AI responses (from the original prompts/agent config, not transcribed)
+
+**Alternative:** Capture system audio too (complex, requires user permission).
+
+### Upload
+
+When "End Session" is clicked:
+```javascript
+const formData = new FormData();
+formData.append('sessionId', sessionId);
+formData.append('audio', audioBlob, `${characterId}_${timestamp}.webm`);
+
+await fetch('/api/upload-audio', { method: 'POST', body: formData });
+```
+
+---
+
+## Backend Processing
+
+### New Endpoints
+
+```python
+# Upload audio for transcription
+POST /api/writing-engine/upload-audio
+    Form data: sessionId, characterId, audio (file)
+    → Saves audio file, queues for transcription
+    → Returns: { status: "queued", jobId }
+
+# Check job status
+GET /api/writing-engine/status/{jobId}
+    → Returns: { status: "processing" | "complete" | "failed", chapter? }
+
+# Get generated chapter
+GET /api/writing-engine/chapter/{chapterId}
+    → Returns: { chapter, generatedAt, ... }
+```
+
+### Whisper Transcription
+
+```python
+from faster_whisper import WhisperModel
+
+model = WhisperModel("base", device="cpu")  # or "small" for better quality
+
+def transcribe_audio(audio_path: str) -> str:
+    segments, info = model.transcribe(audio_path)
+    return " ".join([segment.text for segment in segments])
+```
+
+**Model options:**
+| Model | Size | Speed | Quality |
+|-------|------|-------|---------|
+| tiny | 39MB | Fastest | Lower |
+| base | 74MB | Fast | Good |
+| small | 244MB | Medium | Better |
+| medium | 769MB | Slow | Best |
+
+Start with `base` for Railway (balance of speed/quality).
+
+---
+
+## User Experience Flow
+
+### Happy Path
+
+1. User has 1-3 conversations with characters
+2. User clicks "End Session"
+3. UI shows:
+   ```
+   ┌─────────────────────────────────────────────┐
+   │                                             │
+   │    The hotel heard everything.              │
+   │                                             │
+   │    Your chapter is being written.           │
+   │    We'll let you know when it's ready.      │
+   │                                             │
+   │    Feel free to keep exploring,             │
+   │    or return later.                         │
+   │                                             │
+   │         [Continue Exploring]                │
+   │                                             │
+   └─────────────────────────────────────────────┘
+   ```
+4. User can close tab, start new session, etc.
+5. Processing happens in background (1-3 minutes typical)
+6. User gets notified when chapter is ready
+
+### Notification Options
+
+| Method | Implementation | User Experience |
+|--------|---------------|-----------------|
+| **Badge on return** | Check localStorage for pending chapters | "Your chapter is ready!" toast |
+| **Email** | Resend/SendGrid integration | Chapter delivered to inbox |
+| **Push notification** | Web Push API | Browser notification |
+
+Start with badge-on-return (simplest), add email later.
+
+---
+
 ## Voice Skill Reference
 
 The Writing Engine uses **Caleb's Third-Person Fiction Voice** for prose generation.
 
-**Location:** `/docs/caleb-third-person-voice.md` (to be added)
+**Location:** `/docs/caleb-third-person-voice.md`
 
-**Key principles from the voice skill:**
+**Key principles:**
 - Measured but alive — sentences have momentum
 - Show the thinking — characters reveal how they arrive at conclusions
 - Spare existential weight — stakes matter but aren't announced
 - Playful precision — exact word choice, unexpected analogies
-- Fluency with abstraction — ineffable concepts get concrete, image-rich language
-
-**Sentence patterns:**
-- Declarative punch: "She had no plan. She had momentum."
-- Self-correction: "He assumed, foolishly, that the pattern would hold."
-- Concrete grounding: "The air smelled of ozone and regret."
-
----
-
-## API Endpoints
-
-### POST /api/writing-engine/generate
-
-Generates a chapter from a session's transcripts.
-
-**Request:**
-```json
-{
-  "sessionId": "uuid",
-  "transcripts": [
-    {
-      "character": "Wire",
-      "timestamp": "2026-01-07T20:30:00Z",
-      "transcript": [
-        {"speaker": "wire", "text": "Kia ora. Been here long time..."},
-        {"speaker": "user", "text": "What happened to the owner?"},
-        ...
-      ]
-    },
-    {
-      "character": "Eddie",
-      "timestamp": "2026-01-07T20:45:00Z", 
-      "transcript": [...]
-    }
-  ],
-  "previousChapters": ["Chapter 1 text...", "Chapter 2 text..."],
-  "userPreferences": {
-    "chapterLength": "medium",  // short (~1000 words), medium (~2000), long (~3500)
-    "embellishmentLevel": "moderate"  // minimal, moderate, rich
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "chapterId": "uuid",
-  "chapterNumber": 3,
-  "title": "The Night Chef's Warning",
-  "content": "The hallway stretched before them, dim and endless...",
-  "wordCount": 2341,
-  "charactersIncluded": ["Wire", "Eddie"],
-  "generatedAt": "2026-01-07T21:00:00Z"
-}
-```
-
-### GET /api/chapters
-
-Returns all chapters for a user.
-
-### GET /api/chapters/{chapterId}
-
-Returns a specific chapter.
 
 ---
 
@@ -141,36 +234,12 @@ Returns a specific chapter.
 ```
 1. Voice Skill (Caleb's third-person fiction voice)
 2. Story World Context (hotel, characters, relationships)
-3. Previous Chapters (last 2-3 for continuity)
-4. Current Session's Transcripts (actual dialogue)
-5. Embellishment Instructions
-6. Chapter Length Guidelines
+3. Character Sensory Details (smells, drinks, objects)
+4. Previous Chapters (last 2-3 for continuity)
+5. Current Session's Transcripts (actual dialogue)
+6. Embellishment Instructions
+7. Chapter Length Guidelines
 ```
-
----
-
-## Frontend Components
-
-### Session Tracking
-```javascript
-// On site load
-const SESSION_ID = sessionStorage.getItem('hearsay_session') 
-  || crypto.randomUUID();
-sessionStorage.setItem('hearsay_session', SESSION_ID);
-```
-
-### End Session Button
-- Appears after first conversation
-- "End Tonight's Session" or similar
-- Triggers chapter generation
-- Shows "Your chapter is being written..." 
-- Can take 30-60 seconds (Opus is thorough)
-
-### /chapters Page
-- List of generated chapters
-- Reading view with nice typography
-- "Your story so far..."
-- Downloadable as PDF/EPUB (future)
 
 ---
 
@@ -183,8 +252,9 @@ The Writing Engine doesn't just transcribe — it embellishes:
 - Character thoughts (what they were thinking but didn't say)
 - Pre-scene context (what character was doing before arriving)
 - Post-scene hints (where character went after)
-- Sensory details (smells, sounds, textures)
+- Sensory details (smells from sensory packs, drinks, textures)
 - Other characters' activities (Eddie in the kitchen, Dotty watching from her doorway)
+- Character glimpses (disguised Marisol passing by, sounds from other rooms)
 
 **What the engine preserves:**
 - User's actual dialogue (may be polished but not changed)
@@ -192,90 +262,93 @@ The Writing Engine doesn't just transcribe — it embellishes:
 - Key information revealed
 - Emotional beats of the conversation
 
----
-
-## Data Flow
-
-```
-1. User has conversations → Transcripts stored in localStorage
-                           (tagged with SESSION_ID)
-
-2. User ends session → Bundle transcripts
-                      → POST to /api/writing-engine/generate
-
-3. Backend receives → Fetches voice skill prompt
-                    → Fetches previous chapters (RAG)
-                    → Constructs prompt for Opus
-                    → Sends to Anthropic API
-
-4. Opus generates → Chapter text returned
-                  → Stored in database
-                  → User notified
-
-5. User views → /chapters page
-              → Read their personalized novel
-```
+**The Hearsay Thread:**
+Occasionally weave in the theme of unreliability:
+- "...but as far as they could tell, it was all just hearsay anyway."
+- "The occupant wasn't sure which of them to believe."
+- Vary terms for the user: "the occupant," "the one in 412," "the observer," "the listener"
 
 ---
 
-## Future Enhancements
+## Data Storage
 
-### RAG for Consistency
-- Embed all chapters with character references
-- Query relevant past events when generating new chapters
-- Maintain world state (who knows what, what's been revealed)
+### localStorage (Frontend)
+```javascript
+hearsay_user_session          // Current session ID
+hearsay_session_transcripts_* // Transcripts per session
+hearsay_sessions_index        // List of all sessions
+hearsay_audio_*               // Audio blobs (temporary)
+hearsay_chapters              // Generated chapters
+hearsay_pending_chapters      // Chapters being generated
+```
 
-### Multi-Session Story Arcs
-- Track overall story progress
-- Generate "Previously on THE KNOCK" summaries
-- Build toward climax across many sessions
-
-### User Choices
-- Let users flag memorable moments
-- Choose which conversations to include in chapter
-- Adjust embellishment level
-
-### Export
-- Download full novel as PDF/EPUB
-- Print-on-demand integration
-- Share individual chapters
+### Backend (Future: Database)
+```
+sessions/
+  {sessionId}/
+    audio/
+      wire_1704667200.webm
+      eddie_1704667800.webm
+    transcripts/
+      wire.txt
+      eddie.txt
+    chapter.md
+    metadata.json
+```
 
 ---
 
 ## Implementation Phases
 
-### Phase 0: Documentation (current)
+### Phase 0: Documentation ✅
 - [x] Architecture document
-- [ ] Add voice skill to repo
-- [ ] Update README
+- [x] Voice skill in repo
+- [x] Updated TECHNICAL.md
 
-### Phase 1: Session Tracking
-- [ ] Generate SESSION_ID on site load
-- [ ] Tag transcripts with SESSION_ID  
-- [ ] Persist across conversations
+### Phase 1: Session Tracking ✅
+- [x] Generate SESSION_ID on site load
+- [x] Track conversations per session
+- [x] Persist across page refreshes
 
-### Phase 2: End Session Flow
-- [ ] Add "End Session" button
-- [ ] Bundle transcripts for session
-- [ ] Loading state while generating
+### Phase 2: Local Capture (Partial) ✅
+- [x] Event listeners for Simli widget transcription events
+- [x] Session manager stores conversation records
+- [ ] **Audio recording with MediaRecorder** ← NEXT
 
-### Phase 3: Backend Endpoint
-- [ ] POST /api/writing-engine/generate
-- [ ] Claude Opus 4.5 integration
-- [ ] Voice skill prompt construction
-- [ ] Chapter storage
+### Phase 3: Audio Recording ← IN PROGRESS
+- [ ] MediaRecorder integration during Simli conversation
+- [ ] Store audio blobs locally
+- [ ] Upload endpoint `/api/upload-audio`
 
-### Phase 4: Chapters Page
-- [ ] /chapters route
-- [ ] List view of chapters
-- [ ] Reading view
-- [ ] Typography and styling
+### Phase 4: Whisper Transcription
+- [ ] Install `faster-whisper` on Railway
+- [ ] Transcribe uploaded audio files
+- [ ] Store transcripts with session
 
-### Phase 5: Polish
-- [ ] Previous chapters as context (RAG-lite)
-- [ ] User preferences
-- [ ] Error handling
-- [ ] Loading states
+### Phase 5: Chapter Generation
+- [ ] POST `/api/writing-engine/generate`
+- [ ] Claude Opus 4.5 with voice skill
+- [ ] Store generated chapters
+
+### Phase 6: Notification & UI
+- [ ] "Chapter is being written" UI
+- [ ] Badge on return when chapter ready
+- [ ] /chapters page improvements
+- [ ] Email delivery (optional)
+
+---
+
+## Environment Variables
+
+```env
+# Required
+SIMLI_API_KEY=...
+ELEVENLABS_API_KEY=...
+ANTHROPIC_API_KEY=...
+
+# Optional (for email)
+RESEND_API_KEY=...
+```
 
 ---
 
@@ -288,14 +361,12 @@ If Writing Engine implementation breaks the main app:
 git checkout v1.0-working-app
 ```
 
-This returns to the fully functional app before Writing Engine changes.
-
 ---
 
 ## References
 
 - Voice Skill: `/docs/caleb-third-person-voice.md`
+- System Prompt: `/backend/prompts/writing_engine.md`
 - Simli Integration: `/docs/SIMLI_INTEGRATION.md`
 - Character Bible: `/docs/CHARACTER_BIBLE.md`
-- Project Description: `/docs/PROJECT_DESCRIPTION.md`
-
+- Technical Docs: `/docs/TECHNICAL.md`

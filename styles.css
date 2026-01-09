@@ -1834,6 +1834,11 @@ body.simli-active .animated-text-container {
     gap: 0.75rem;
 }
 
+/* Hide audio controls until landing page */
+.audio-controls.hidden {
+    display: none !important;
+}
+
 .audio-toggle {
     width: 40px;
     height: 40px;

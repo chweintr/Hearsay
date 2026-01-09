@@ -167,7 +167,7 @@ export const characters = {
         activeToIdle: ['assets/videos/Milton_Walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
         previewVideo: 'assets/videos/Milton_Walkup.mp4',
-        status: 'coming_soon',
+        status: 'ready',
         availability: 0.3,  // 30% chance he's "in town"
         unavailableMessages: [
             "Milton's on tour. Try again later.",

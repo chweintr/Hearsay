@@ -85,7 +85,7 @@
         <div class="modal-content coming-soon-content">
             <button class="modal-close" onclick="document.getElementById('coming-soon-modal').classList.add('hidden')">&times;</button>
             <h2><span class="coming-soon-name">This character</span> is not yet available</h2>
-            <p>The hotel is still preparing their room. Leave your details and we'll let you know when they're ready to receive visitors.</p>
+            <p>The hotel is still preparing their room. Leave your details and we'll let you know when they're ready to knock on your door.</p>
             <form class="waitlist-form" onsubmit="event.preventDefault(); submitWaitlist(this);">
                 <input type="email" name="email" placeholder="your@email.com" required>
                 <button type="submit">Notify Me</button>
@@ -305,8 +305,8 @@
         <!-- Source set dynamically by JS -->
     </audio>
     
-    <!-- Audio Controls -->
-    <div id="audio-controls" class="audio-controls">
+    <!-- Audio Controls (hidden until landing page) -->
+    <div id="audio-controls" class="audio-controls hidden">
         <button id="audio-toggle" class="audio-toggle">🔊</button>
         <div class="volume-sliders">
             <div class="slider-group">
@@ -386,6 +386,8 @@
             entryPage.classList.remove('active');
             landingPage.classList.add('active');
             experiencePage.classList.remove('active');
+            // Show audio controls (hidden on entry page)
+            document.getElementById('audio-controls')?.classList.remove('hidden');
             // Rotate music when returning to landing
             if (typeof nextMusicTrack === 'function') {
                 nextMusicTrack();

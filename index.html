@@ -19,24 +19,28 @@
          ENTRY PAGE - Intro Video
          ═══════════════════════════════════════════════════════════════════════ -->
     <div id="entry-page" class="page active">
-        <!-- Full-screen background video (plays muted as ambient) -->
-        <video id="entry-video-bg" class="entry-video-bg" autoplay loop muted playsinline>
-            <source src="assets/videos/Landing_1080.mp4" type="video/mp4">
-        </video>
-        
-        <!-- Click to start overlay -->
-        <div id="click-to-start" class="click-to-start-overlay">
-            <div class="click-to-start-content">
-                <span class="start-text">Click to Begin</span>
+        <!-- STAGE 1: Full-screen ambient video with Click to Begin -->
+        <div id="entry-stage-1" class="entry-stage">
+            <video id="entry-video-bg" class="entry-video-fullscreen" autoplay loop muted playsinline>
+                <source src="assets/videos/Landing_1080.mp4" type="video/mp4">
+            </video>
+            <div id="click-to-start" class="click-to-start-overlay">
+                <div class="click-to-start-content">
+                    <span class="start-text">Click to Begin</span>
+                </div>
             </div>
         </div>
         
-        <!-- After clicking, show skip + enter -->
-        <video id="entry-video" class="entry-video hidden" playsinline>
-            <source src="assets/videos/Landing_1080.mp4" type="video/mp4">
-        </video>
-        <button id="enter-btn" class="enter-button hidden">Enter</button>
-        <button id="skip-intro-btn" class="skip-intro-btn hidden">Skip</button>
+        <!-- STAGE 2: Letterbox video with sound + controls -->
+        <div id="entry-stage-2" class="entry-stage hidden">
+            <div class="entry-letterbox-container">
+                <video id="entry-video" class="entry-video-letterbox" playsinline>
+                    <source src="assets/videos/Landing_1080.mp4" type="video/mp4">
+                </video>
+            </div>
+            <button id="enter-btn" class="enter-button hidden">Enter</button>
+            <button id="skip-intro-btn" class="skip-intro-btn">Skip</button>
+        </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -339,20 +343,20 @@
         const entryVideoBg = document.getElementById('entry-video-bg');
         const skipIntroBtn = document.getElementById('skip-intro-btn');
         const clickToStart = document.getElementById('click-to-start');
+        const entryStage1 = document.getElementById('entry-stage-1');
+        const entryStage2 = document.getElementById('entry-stage-2');
         
-        // Click to start (required for audio playback)
+        // Click to start: transition from Stage 1 (fullscreen) to Stage 2 (letterbox)
         clickToStart?.addEventListener('click', () => {
-            // Hide the overlay and background video
-            clickToStart.classList.add('hidden');
-            entryVideoBg?.classList.add('hidden');
+            // Hide Stage 1, show Stage 2
+            entryStage1?.classList.add('hidden');
+            entryStage2?.classList.remove('hidden');
             
-            // Show and play the main video with sound
-            entryVideo?.classList.remove('hidden');
-            skipIntroBtn?.classList.remove('hidden');
+            // Start video from beginning with sound
             if (entryVideo) {
                 entryVideo.currentTime = 0;
                 entryVideo.muted = false;
-                entryVideo.play();
+                entryVideo.play().catch(e => console.log('Video play blocked:', e));
             }
         });
         

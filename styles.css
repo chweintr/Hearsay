@@ -105,8 +105,21 @@ body {
     overflow: hidden;
 }
 
-/* Full-screen background video (ambient, muted) */
-.entry-video-bg {
+/* Entry stages */
+.entry-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.entry-stage.hidden {
+    display: none;
+}
+
+/* STAGE 1: Full-screen video */
+.entry-video-fullscreen {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -115,9 +128,20 @@ body {
     z-index: 1;
 }
 
-/* Hide background video once main video plays */
-.entry-video-bg.hidden {
-    display: none;
+/* STAGE 2: Letterbox video container */
+.entry-letterbox-container {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    aspect-ratio: 16/9;
+    background: #000;
+    z-index: 10;
+}
+
+.entry-video-letterbox {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .entry-background {
@@ -195,29 +219,9 @@ body {
     text-align: center;
 }
 
-/* Entry video - full screen */
-.entry-video {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    z-index: 5;
-    cursor: pointer;
-    transition: opacity 0.5s ease;
-}
-
-.entry-video.hidden {
-    display: none;
-}
-
-.entry-video.faded {
-    opacity: 0.2;
-}
-
-.skip-intro-btn {
-    position: fixed;
+/* Stage 2 letterbox controls */
+#entry-stage-2 .skip-intro-btn {
+    position: absolute;
     bottom: 2rem;
     right: 2rem;
     background: rgba(0, 0, 0, 0.7);
@@ -233,23 +237,29 @@ body {
     z-index: 200;
 }
 
-.skip-intro-btn:hover {
+#entry-stage-2 .skip-intro-btn:hover {
     background: rgba(0, 0, 0, 0.9);
     border-color: var(--brass-mid);
     color: var(--parchment);
 }
 
-.skip-intro-btn.hidden {
+#entry-stage-2 .skip-intro-btn.hidden {
     display: none;
 }
 
-/* Enter button over full screen video */
-#entry-page .enter-button {
-    position: fixed;
+/* Enter button in letterbox stage */
+#entry-stage-2 .enter-button {
+    position: absolute;
     bottom: 3rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 200;
+}
+
+/* Fade video when Enter appears */
+.entry-video-letterbox.faded {
+    opacity: 0.3;
+    transition: opacity 0.5s ease;
 }
 
 @keyframes crestGlow {

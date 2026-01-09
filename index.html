@@ -1362,14 +1362,52 @@
         
         // Copy chapter to clipboard
         copyChapterBtn?.addEventListener('click', () => {
-            const text = chapterContent.innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                copyChapterBtn.textContent = 'Copied!';
-                setTimeout(() => {
-                    copyChapterBtn.textContent = 'Copy to Clipboard';
-                }, 2000);
-            });
+            const text = chapterContent?.innerText || '';
+            if (!text) {
+                console.log('[Copy] No content to copy');
+                return;
+            }
+            copyToClipboard(text, copyChapterBtn, 'Copy to Clipboard');
         });
+        
+        // Universal copy function with fallback
+        function copyToClipboard(text, button, originalText) {
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    if (button) {
+                        button.textContent = 'Copied!';
+                        setTimeout(() => { button.textContent = originalText; }, 2000);
+                    }
+                }).catch(err => {
+                    console.log('[Copy] Clipboard API failed, using fallback:', err);
+                    fallbackCopy(text, button, originalText);
+                });
+            } else {
+                fallbackCopy(text, button, originalText);
+            }
+        }
+        
+        // Fallback for HTTP or older browsers
+        function fallbackCopy(text, button, originalText) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                if (button) {
+                    button.textContent = 'Copied!';
+                    setTimeout(() => { button.textContent = originalText; }, 2000);
+                }
+            } catch (err) {
+                console.error('[Copy] Fallback failed:', err);
+                if (button) button.textContent = 'Copy failed';
+            }
+            document.body.removeChild(textarea);
+        }
         
         // Start new session
         newSessionBtn?.addEventListener('click', () => {
@@ -1530,13 +1568,9 @@
         
         // Copy from reader
         readerCopyBtn?.addEventListener('click', () => {
-            const text = readerContent.innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                readerCopyBtn.textContent = 'Copied!';
-                setTimeout(() => {
-                    readerCopyBtn.textContent = 'Copy to Clipboard';
-                }, 2000);
-            });
+            const text = readerContent?.innerText || '';
+            if (!text) return;
+            copyToClipboard(text, readerCopyBtn, 'Copy Chapter');
         });
         
         // Close chapters modal

@@ -465,6 +465,32 @@
             gallery.appendChild(card);
         });
         
+        // ─────────────────────────────────────────────────────────────────────
+        // ORBIT ANIMATION (Slow rotary phone effect)
+        // ─────────────────────────────────────────────────────────────────────
+        
+        (function initOrbitAnimation() {
+            let orbitOffset = 0;
+            let isPaused = false;
+            const ROTATION_SPEED = 0.015; // degrees per frame (~90 seconds for full rotation at 60fps)
+            
+            // Pause on hover
+            gallery.addEventListener('mouseenter', () => { isPaused = true; });
+            gallery.addEventListener('mouseleave', () => { isPaused = false; });
+            
+            function animateOrbit() {
+                if (!isPaused) {
+                    orbitOffset += ROTATION_SPEED;
+                    if (orbitOffset >= 360) orbitOffset -= 360;
+                    gallery.style.setProperty('--orbit-offset', `${orbitOffset}deg`);
+                }
+                requestAnimationFrame(animateOrbit);
+            }
+            
+            // Start the animation
+            requestAnimationFrame(animateOrbit);
+        })();
+        
         // Coming Soon Modal
         function showComingSoonModal(charName) {
             const modal = document.getElementById('coming-soon-modal');

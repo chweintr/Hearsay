@@ -403,6 +403,13 @@ body.simli-active .animated-text-container {
     pointer-events: none; /* Allow clicks through to background */
     z-index: 100;
     isolation: isolate; /* Break out of animated-text blend mode */
+    /* Orbit animation offset - controlled by JS */
+    --orbit-offset: 0deg;
+}
+
+/* Pause orbit on hover */
+.character-gallery:hover {
+    --orbit-paused: 1;
 }
 
 .character-card {
@@ -412,22 +419,23 @@ body.simli-active .animated-text-container {
     align-items: center;
     cursor: pointer;
     pointer-events: auto; /* Re-enable clicks on cards */
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: transform 0.4s ease, opacity 0.3s ease;
     /* Prevent blend mode inheritance from animated text */
     mix-blend-mode: normal !important;
     isolation: isolate; /* Break stacking context for alpha videos */
     
-    /* Orbital positioning - each card uses --angle from JS */
-    --orbit-radius: 38vmin; /* Distance from center - brought closer */
+    /* Orbital positioning - each card uses --angle from JS + orbit offset */
+    --orbit-radius: 33vmin; /* Distance from center - tighter orbit */
     --angle: 0deg;
+    --total-angle: calc(var(--angle) + var(--orbit-offset, 0deg));
     
     top: 50%;
     left: 50%;
     transform: 
         translate(-50%, -50%)
-        rotate(var(--angle))
+        rotate(var(--total-angle))
         translateY(calc(-1 * var(--orbit-radius)))
-        rotate(calc(-1 * var(--angle))); /* Counter-rotate to keep text upright */
+        rotate(calc(-1 * var(--total-angle))); /* Counter-rotate to keep text upright */
 }
 
 .character-card.coming-soon {

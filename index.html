@@ -317,7 +317,6 @@
                 <label>Music</label>
                 <input type="range" id="music-volume" min="0" max="100" value="15">
             </div>
-            <button id="mute-all-btn" class="mute-btn">Mute All</button>
         </div>
     </div>
 
@@ -1136,9 +1135,10 @@
             
             audioMuted = !audioMuted;
             
-            // Mute/unmute all audio
+            // Mute/unmute all audio (including entry video)
             ambientTracks.forEach(track => track.muted = audioMuted);
             if (musicTrack) musicTrack.muted = audioMuted;
+            if (entryVideo) entryVideo.muted = audioMuted;
             
             audioToggle.textContent = audioMuted ? '🔇' : '🔊';
             audioToggle.classList.toggle('playing', !audioMuted);
@@ -1173,25 +1173,15 @@
             });
         }
         
-        // Mute All buttons
-        const muteAllBtn = document.getElementById('mute-all-btn');
+        // Store mute button (mini version in store modal)
         const storeMuteBtn = document.getElementById('store-mute-btn');
         
         function updateMuteButtons() {
-            if (muteAllBtn) {
-                muteAllBtn.textContent = audioMuted ? 'Unmute' : 'Mute All';
-                muteAllBtn.classList.toggle('muted', audioMuted);
-            }
             if (storeMuteBtn) {
                 storeMuteBtn.textContent = audioMuted ? 'Unmute' : 'Mute';
                 storeMuteBtn.classList.toggle('muted', audioMuted);
             }
         }
-        
-        muteAllBtn?.addEventListener('click', () => {
-            toggleAudio();
-            updateMuteButtons();
-        });
         
         storeMuteBtn?.addEventListener('click', () => {
             toggleAudio();

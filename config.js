@@ -161,8 +161,8 @@ export const characters = {
     milton: {
         name: 'Milton',
         role: 'The Comedian',
-        agentId: 'xxx',  // TODO: Add when Simli agent created
-        faceId: 'xxx',   // TODO: Add when Simli face created
+        agentId: 'c25a4b14-34ea-4ab7-b438-c46d45091d7e',
+        faceId: '4a0Khp1o5b79lIkuf4ia',
         idleToActive: ['assets/videos/Milton_Walkup.mp4'],
         activeToIdle: ['assets/videos/Milton_Walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',

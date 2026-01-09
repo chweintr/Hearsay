@@ -19,18 +19,24 @@
          ENTRY PAGE - Intro Video
          ═══════════════════════════════════════════════════════════════════════ -->
     <div id="entry-page" class="page active">
-        <div class="entry-background"></div>
-        <div class="entry-content">
-            <!-- Click to start overlay (required for audio) -->
-            <div id="click-to-start" class="click-to-start">
+        <!-- Full-screen background video (plays muted as ambient) -->
+        <video id="entry-video-bg" class="entry-video-bg" autoplay loop muted playsinline>
+            <source src="assets/videos/Landing_1080.mp4" type="video/mp4">
+        </video>
+        
+        <!-- Click to start overlay -->
+        <div id="click-to-start" class="click-to-start-overlay">
+            <div class="click-to-start-content">
                 <span class="start-text">Click to Begin</span>
             </div>
-            <video id="entry-video" class="entry-video hidden" playsinline>
-                <source src="assets/videos/Landing_1080.mp4" type="video/mp4">
-            </video>
-            <button id="enter-btn" class="enter-button hidden">Enter</button>
-            <button id="skip-intro-btn" class="skip-intro-btn hidden">Skip</button>
         </div>
+        
+        <!-- After clicking, show skip + enter -->
+        <video id="entry-video" class="entry-video hidden" playsinline>
+            <source src="assets/videos/Landing_1080.mp4" type="video/mp4">
+        </video>
+        <button id="enter-btn" class="enter-button hidden">Enter</button>
+        <button id="skip-intro-btn" class="skip-intro-btn hidden">Skip</button>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -330,15 +336,24 @@
         const experiencePage = document.getElementById('experience-page');
         const enterBtn = document.getElementById('enter-btn');
         const entryVideo = document.getElementById('entry-video');
+        const entryVideoBg = document.getElementById('entry-video-bg');
         const skipIntroBtn = document.getElementById('skip-intro-btn');
         const clickToStart = document.getElementById('click-to-start');
         
         // Click to start (required for audio playback)
         clickToStart?.addEventListener('click', () => {
+            // Hide the overlay and background video
             clickToStart.classList.add('hidden');
+            entryVideoBg?.classList.add('hidden');
+            
+            // Show and play the main video with sound
             entryVideo?.classList.remove('hidden');
             skipIntroBtn?.classList.remove('hidden');
-            entryVideo?.play();
+            if (entryVideo) {
+                entryVideo.currentTime = 0;
+                entryVideo.muted = false;
+                entryVideo.play();
+            }
         });
         
         // Show Enter button when video ends

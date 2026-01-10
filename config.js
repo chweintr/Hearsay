@@ -137,13 +137,13 @@ export const characters = {
     constance: {
         name: 'Constance',
         role: 'Fourth Floor',
-        agentId: 'xxx',
-        faceId: 'xxx',
-        idleToActive: [],
-        activeToIdle: [],
-        knockSound: null,
-        previewVideo: null,
-        status: 'coming_soon'
+        agentId: 'xxx',  // TODO: Add when Simli agent created
+        faceId: 'xxx',   // TODO: Add when Simli face created
+        idleToActive: ['assets/videos/Constance_walkup.mp4'],
+        activeToIdle: ['assets/videos/Constance_walkup.mp4'],
+        knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
+        previewVideo: 'assets/videos/Constance_walkup.mp4',
+        status: 'coming_soon'  // Change to 'ready' when agent ID added
     },
     
     priya: {

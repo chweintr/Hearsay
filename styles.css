@@ -352,9 +352,9 @@ body {
 .video-blend-stack {
     position: absolute;
     inset: 0;
-    isolation: isolate;  /* Creates stacking context for blend */
+    isolation: isolate;  /* Creates stacking context for blend - contains mix-blend-mode */
     background: transparent;
-    z-index: 0;
+    z-index: -1; /* BEHIND everything else - ensure blend mode doesn't affect gallery */
 }
 
 .landing-bg-video {
@@ -373,11 +373,11 @@ body {
     transform: translateX(-50%);
     width: 320px;
     height: auto;
-    z-index: 2;
+    z-index: 1; /* BELOW the landing-content (z-index: 10) */
     background: transparent;
     mix-blend-mode: screen;  /* Black becomes transparent */
-    /* ISOLATE this element to prevent blend from leaking to character cards */
-    isolation: isolate;
+    /* This blend mode should only affect what's behind this element (landing video) */
+}
     pointer-events: none;
 }
 

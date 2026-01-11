@@ -484,7 +484,7 @@ body.simli-active .animated-text-container {
     isolation: isolate; /* Break stacking context for alpha videos */
     
     /* Orbital positioning - each card uses --angle from JS */
-    --orbit-radius: 40vmin; /* Distance from center */
+    --orbit-radius: 36vmin; /* Distance from center - reduced to avoid button overlap */
     --angle: 0deg;
     
     top: 50%;

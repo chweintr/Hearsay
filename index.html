@@ -49,15 +49,16 @@
          LANDING PAGE - Character Selection
          ═══════════════════════════════════════════════════════════════════════ -->
     <div id="landing-page" class="page hidden">
-        <!-- Video stack - both videos in same container for blend mode to work -->
+        <!-- Video stack -->
         <div class="video-blend-stack">
-            <video id="landing-video" class="landing-bg-video" autoplay muted playsinline>
+            <video id="landing-video" class="landing-bg-video" autoplay muted playsinline loop>
                 <source src="assets/videos/The_Knock_Background.mp4" type="video/mp4">
             </video>
-            <!-- Animated text overlay - same parent so screen blend works -->
+            <!-- DISABLED: Animated text was causing transparency issues with character faces
             <video id="animated-text-video" class="animated-text-video" autoplay loop muted playsinline>
                 <source src="assets/videos/Animated_Text.mp4" type="video/mp4">
             </video>
+            -->
         </div>
         <div class="landing-overlay"></div>
         
@@ -456,10 +457,10 @@
         const totalChars = characterKeys.length;
         
         // Orbital positioning - characters arranged around the peephole
-        // Start at 120° (lower left), go to 420° (lower right), avoiding top where title is
-        // This creates a horseshoe shape around the bottom/sides
-        const startAngle = 120;
-        const endAngle = 420; // 420 = 60° on the right side
+        // Start at 135° (upper left), go to 405° (upper right), avoiding bottom where buttons are
+        // This creates a horseshoe shape around the top/sides, with gap at bottom for buttons
+        const startAngle = 135;  // Upper left
+        const endAngle = 405;    // Upper right (405 = 45° clockwise)
         const angleStep = (endAngle - startAngle) / (totalChars - 1);
         
         characterKeys.forEach((key, index) => {

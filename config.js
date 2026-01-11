@@ -113,13 +113,13 @@ export const characters = {
     dotty: {
         name: 'Dotty',
         role: 'Room 308',
-        agentId: 'xxx',  // TODO: Add when Simli agent created
-        faceId: 'xxx',   // TODO: Add when Simli face created
+        agentId: '30b5cd79-1b93-4251-b17b-5107011547b5',
+        faceId: '48d0f4c2-702b-4dee-9ace-9ee91d5ef778',
         idleToActive: ['assets/videos/Dotty_Walkup.mp4'],
         activeToIdle: ['assets/videos/Dotty_Walkup.mp4'],
         knockSound: 'assets/sounds/door_knocks/knock_hotel_1.wav',
         previewVideo: 'assets/videos/Dotty_Walkup.mp4',
-        status: 'coming_soon'  // Change to 'ready' when agent ID added
+        status: 'ready'
     },
     
     tane: {

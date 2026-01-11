@@ -31,13 +31,15 @@
             </div>
         </div>
         
-        <!-- STAGE 2: Letterbox video with sound + controls -->
+        <!-- STAGE 2: Intro video with narration -->
         <div id="entry-stage-2" class="entry-stage hidden">
             <div class="entry-letterbox-container">
                 <video id="entry-video" class="entry-video-letterbox" playsinline>
-                    <source src="assets/videos/Landing_1080.mp4" type="video/mp4">
+                    <source src="assets/videos/Intro.mp4" type="video/mp4">
                 </video>
             </div>
+            <!-- Mute button for users who don't want sound -->
+            <button id="intro-mute-btn" class="intro-mute-btn" title="Mute intro">🔊</button>
             <button id="enter-btn" class="enter-button hidden">Enter</button>
             <button id="skip-intro-btn" class="skip-intro-btn">Skip</button>
         </div>
@@ -345,35 +347,65 @@
         const entryStage1 = document.getElementById('entry-stage-1');
         const entryStage2 = document.getElementById('entry-stage-2');
         
-        // Click to start: transition from Stage 1 (fullscreen) to Stage 2 (letterbox)
+        // Intro mute button
+        const introMuteBtn = document.getElementById('intro-mute-btn');
+        let introMuted = false;
+        
+        introMuteBtn?.addEventListener('click', () => {
+            introMuted = !introMuted;
+            if (entryVideo) {
+                entryVideo.muted = introMuted;
+            }
+            introMuteBtn.textContent = introMuted ? '🔇' : '🔊';
+            introMuteBtn.title = introMuted ? 'Unmute intro' : 'Mute intro';
+        });
+        
+        // Click to start: transition from Stage 1 (fullscreen) to Stage 2 (intro video)
         clickToStart?.addEventListener('click', () => {
             // Hide Stage 1, show Stage 2
             entryStage1?.classList.add('hidden');
             entryStage2?.classList.remove('hidden');
             
-            // Start video from beginning with sound
+            // Start intro video from beginning with sound (unless muted)
             if (entryVideo) {
                 entryVideo.currentTime = 0;
-                entryVideo.muted = false;
+                entryVideo.muted = introMuted;
                 entryVideo.play().catch(e => console.log('Video play blocked:', e));
             }
         });
         
-        // Show Enter button when video ends
+        // Show Enter button near end of video (5 seconds before end)
         function showEnterButton() {
-            entryVideo?.classList.add('faded');
             enterBtn?.classList.remove('hidden');
+        }
+        
+        // Auto-advance to landing after video ends (with 2 second pause)
+        function autoAdvanceToLanding() {
             skipIntroBtn?.classList.add('hidden');
+            showEnterButton();
+            // Auto-advance after 2 seconds
+            setTimeout(() => {
+                if (entryPage.classList.contains('active')) {
+                    enterBtn?.click();
+                }
+            }, 2000);
         }
         
         if (entryVideo) {
-            entryVideo.addEventListener('ended', showEnterButton);
+            // Show Enter button 5 seconds before video ends
+            entryVideo.addEventListener('timeupdate', () => {
+                if (entryVideo.duration && entryVideo.currentTime >= entryVideo.duration - 5) {
+                    showEnterButton();
+                }
+            });
+            // Auto-advance when video ends
+            entryVideo.addEventListener('ended', autoAdvanceToLanding);
         }
         
-        // Skip button
+        // Skip button - go directly to landing
         skipIntroBtn?.addEventListener('click', () => {
             entryVideo?.pause();
-            showEnterButton();
+            enterBtn?.click();
         });
         
         function showEntry() {

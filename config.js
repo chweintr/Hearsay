@@ -209,6 +209,22 @@ export const characters = {
         previewVideo: 'assets/videos/Solomon_Walkup.mp4',
         chromaKey: '#00ff00',  // Green screen removal
         status: 'ready'
+    },
+    
+    vance: {
+        name: 'Ghost of Vance',
+        role: 'The Deceased Owner',
+        agentId: 'xxx',  // TODO: Add when Simli agent created
+        faceId: 'xxx',   // TODO: Add when Simli face created
+        idleToActive: ['assets/videos/Vance_Walkup.mp4'],
+        activeToIdle: ['assets/videos/Vance_Walkup.mp4'],
+        knockSound: null,  // Ghosts don't knock
+        previewVideo: 'assets/videos/Vance_Walkup.mp4',
+        status: 'coming_soon',  // Change to 'ready' when agent ID added
+        // Special: This character may only appear unbidden (not summonable)
+        unbiddenOnly: true,
+        // Visual effect: glitchy, transparent, flickering
+        visualEffect: 'ghost'
     }
 };
 

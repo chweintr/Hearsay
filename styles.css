@@ -517,7 +517,7 @@ body.simli-active .animated-text-container {
 
 /* Hover: just scale up the circle, don't move the card (orbital positioning) */
 .character-card:hover .character-circle {
-    transform: scale(1.15);
+    transform: scale(1.15) translateZ(0);
 }
 
 .character-card:hover .character-circle-border {
@@ -542,9 +542,9 @@ body.simli-active .animated-text-container {
     mix-blend-mode: normal !important;
     /* Create isolated compositing context so alpha videos composite against our bg */
     isolation: isolate;
-    /* Force GPU layer for proper alpha compositing */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
+    /* Force GPU layer with SCALE (same as hover uses) - this fixes transparency */
+    transform: scale(1) translateZ(0);
+    -webkit-transform: scale(1) translateZ(0);
     will-change: transform;
     /* Ensure this paints as opaque backdrop */
     backface-visibility: hidden;

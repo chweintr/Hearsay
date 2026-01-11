@@ -540,7 +540,15 @@ body.simli-active .animated-text-container {
     background-color: #0a0806 !important;
     /* Prevent any blend mode inheritance */
     mix-blend-mode: normal !important;
+    /* Create isolated compositing context so alpha videos composite against our bg */
     isolation: isolate;
+    /* Force GPU layer for proper alpha compositing */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+    /* Ensure this paints as opaque backdrop */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Solid backdrop layer behind video - darker for better contrast */
@@ -552,6 +560,17 @@ body.simli-active .animated-text-container {
     background-color: #0a0806 !important;
     z-index: 0;
     border-radius: 50%;
+}
+
+/* ACTUAL HTML element backdrop - more reliable than ::before for alpha videos */
+.character-backdrop {
+    position: absolute;
+    inset: 0;
+    background: #0a0806;
+    background-color: #0a0806;
+    z-index: 0;
+    border-radius: 50%;
+    /* This should paint as a solid layer that alpha videos composite against */
 }
 
 .character-circle-border {
